@@ -724,11 +724,11 @@
       <div class="actions"><button class="btn primary" id="gSetupGo">Continue</button></div>
     </div>
     <div id="gLogin" style="display:none">
-      <p>Private tool — log in to continue.</p>
+      <p>Private tool — enter the password.</p>
       <div class="frow"><label for="gEmail">Email</label><input type="email" id="gEmail" autocomplete="username"></div>
       <div class="frow"><label for="gPass">Password</label><input type="password" id="gPass" autocomplete="current-password"></div>
       <div id="gErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
-      <div class="actions"><button class="btn primary" id="gGo" style="width:100%">Log in</button></div>
+      <div class="actions"><button class="btn primary" id="gGo" style="width:100%">Unlock</button></div>
     </div>
   </div>
 </div>
@@ -2871,12 +2871,45 @@ async function cloudLogin(email, pass){
   cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
   storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
 }
-// ---- gate ----
+// ---- built-in password gate ----
+const GATE_HASH = "4ac13f470fd73d196dbc4204929e3370fb5fd1ccb61ce1f13e19288105026f0a"; // the password, one-way scrambled
+const GATE_KEY = "plantakeoff_unlock", PW_KEY = "plantakeoff_pw";
+async function sha256hex(t){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function cloudEnsure(){
+  if(cloudSes) return true;
+  let pw = ""; try{ pw = atob(storeGet(PW_KEY)||""); }catch{}
+  if(!CLOUD_EMAIL || !pw) return false;
+  try{ await cloudLogin(CLOUD_EMAIL, pw); return true; }
+  catch(e){
+    // maybe the cloud user doesn't exist yet — create it with the same password
+    try{
+      const cfg = cloudCfg();
+      const r = await fetch(cfg.url+"/auth/v1/signup",
+        {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
+         body:JSON.stringify({email:CLOUD_EMAIL, password:pw})});
+      const js = await r.json().catch(()=>({}));
+      if(r.ok){
+        if(js.access_token){
+          cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
+          storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
+          return true;
+        }
+        toast("Almost there — open the Gmail inbox, click the Confirm link, then press ☁️ again");
+        return false;
+      }
+      toast(js.error_description||js.msg||"Cloud login failed");
+    }catch{ toast("Cloud not reachable — check connection"); }
+    return false;
+  }
+}
 const gate = document.getElementById("loginGate");
 let gateNext = null;
 function updateGate(force){
   const cfg = cloudCfg();
-  const show = force===true || force==="setup" || (IS_WEB && (!cfg || !cloudSes));
+  const show = force===true || force==="setup" || (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH);
   gate.classList.toggle("show", show);
   if(!show) return;
   document.getElementById("gClose").style.display = IS_WEB ? "none" : "";
@@ -2904,19 +2937,23 @@ document.getElementById("gSetupGo").onclick = () => {
   updateGate(true);
 };
 async function gateLoginGo(){
-  const em = document.getElementById("gEmail").value.trim();
   const pw = document.getElementById("gPass").value;
   const err = document.getElementById("gErr");
-  if(!em || !pw){ err.textContent = "Enter email and password"; err.style.display=""; return; }
+  if(!pw){ err.textContent = "Enter the password"; err.style.display=""; return; }
   const b = document.getElementById("gGo");
-  b.disabled = true; b.textContent = "Logging in…"; err.style.display = "none";
-  try{
-    await cloudLogin(em, pw);
+  b.disabled = true; b.textContent = "Checking…"; err.style.display = "none";
+  const hex = await sha256hex(pw);
+  if(hex === GATE_HASH){
+    storeSet(GATE_KEY, hex);
+    storeSet(PW_KEY, btoa(pw));
     gate.classList.remove("show");
-    toast("Logged in");
+    toast("Welcome");
+    cloudEnsure(); // connect the cloud quietly in the background
     if(gateNext){ gateNext = null; openCloud(); }
-  }catch(e){ err.textContent = e.message || "Login failed"; err.style.display = ""; }
-  b.disabled = false; b.textContent = "Log in";
+  } else {
+    err.textContent = "Wrong password"; err.style.display = "";
+  }
+  b.disabled = false; b.textContent = "Unlock";
 }
 document.getElementById("gGo").onclick = gateLoginGo;
 gate.addEventListener("keydown", e => {
@@ -2952,9 +2989,14 @@ async function renderCloudList(){
     el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Couldn&#39;t load — check connection and login.</div>';
   }
 }
-function openCloud(){
+async function openCloud(){
   if(!cloudCfg()){ gateNext = true; updateGate("setup"); return; }
-  if(!cloudSes){ gateNext = true; updateGate(true); return; }
+  if(!cloudSes){
+    let pw = ""; try{ pw = atob(storeGet(PW_KEY)||""); }catch{}
+    if(!pw){ gateNext = true; updateGate(true); return; }
+    toast("Connecting…");
+    if(!(await cloudEnsure())) return;
+  }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
