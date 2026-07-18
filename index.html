@@ -701,13 +701,14 @@
 <div class="modalBack" id="cloudBack">
   <div class="modal" style="width:440px;max-width:94vw">
     <h3>☁️ Cloud projects</h3>
-    <p>Projects (plan PDF included) live in your private cloud — open them from any computer after logging in.</p>
+    <p>Your shared jobs, newest first — every save includes the plan PDF automatically.</p>
     <div class="frow"><label for="cloudName">Name</label><input type="text" id="cloudName" placeholder="Project name">
       <button class="btn primary" id="cloudSaveBtn" style="flex:none">Save to cloud</button></div>
     <div id="cloudList" style="max-height:42vh;overflow-y:auto;margin:2px 0 10px"></div>
     <div class="actions">
       <button class="btn" id="cloudSignout">Sign out</button>
       <button class="btn" id="cloudSettings">Settings</button>
+      <button class="btn" id="cloudNew">🆕 New project</button>
       <button class="btn primary" id="cloudClose">Close</button>
     </div>
   </div>
@@ -2979,6 +2980,7 @@ async function renderCloudList(){
        body:JSON.stringify({prefix:"", limit:100, sortBy:{column:"updated_at", order:"desc"}})});
     if(!r.ok) throw 0;
     const items = (await r.json()).filter(x => x.name && x.name!==".emptyFolderPlaceholder");
+    items.sort((a,b) => String(b.updated_at||"").localeCompare(String(a.updated_at||"")));
     if(!items.length){
       el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No cloud projects yet — save one above.</div>';
       return;
@@ -3007,24 +3009,36 @@ async function openCloud(){
   openModal2("cloudBack");
   renderCloudList();
 }
-window.__cloudQuickSave = async function(){
+window.__cloudQuickSave = async function(quiet){
   if(!(await cloudEnsure())) return false;
   const data = serializeProject();
-  if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} }
+  if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} } // PDF always rides along
   try{
     const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(slug(defaultProjectName())+".json"),
       {method:"POST", headers:{"Content-Type":"application/json","x-upsert":"true"},
        body:JSON.stringify(data)});
-    if(!r.ok){ toast("Cloud save failed — saving as a download instead"); return false; }
-  }catch{ toast("Cloud not reachable — saving as a download instead"); return false; }
+    if(!r.ok){ if(!quiet) toast("Cloud save failed — saving as a download instead"); return false; }
+  }catch{ if(!quiet) toast("Cloud not reachable — saving as a download instead"); return false; }
   window.__isDirty = false;
   toast('Saved to cloud — "'+defaultProjectName()+'"'+(pdfData ? " (PDF included)" : ""));
   return true;
 };
+// auto-save to the cloud every 3 minutes while working on the website
+setInterval(() => {
+  if(IS_WEB && cloudSes && window.__isDirty && (measurements.length || pdfDoc)
+     && !document.querySelector(".modalBack.open") && !drawing && !editDrag){
+    window.__cloudQuickSave(true);
+  }
+}, 180000);
 window.__cloudQuickSave.enabled = () => IS_WEB && !!cloudCfg();
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudMenuOpen").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
+document.getElementById("cloudNew").onclick = () => {
+  closeModal("cloudBack");
+  if(measurements.length || categories.length || pdfDoc) askNewProject();
+  else toast("Fresh project — drop a PDF or switch to Map");
+};
 document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
 document.getElementById("cloudSignout").onclick = () => {
   cloudSes = null; storeDel(CLOUD_SES_KEY);
