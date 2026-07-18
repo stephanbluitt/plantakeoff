@@ -3000,28 +3000,49 @@ function openCloud(){
   openModal2("cloudBack");
   renderCloudList();
 }
+async function ghShaOf(fname){
+  try{
+    const l = await ghFetch(ghRepoPath("/contents/"));
+    if(l.ok){ const ex = (await l.json()).find(x => x.name===fname); if(ex) return ex.sha; }
+  }catch{}
+  return null;
+}
+let lastPdfUp = {file:"", bytes:0}; // skip re-uploading an unchanged plan
 async function ghSave(quiet){
   const data = serializeProject();
-  let withPdf = false;
-  if(pdfData){ try{ const b64 = bufToB64(pdfData); if(b64.length < 45e6){ data.pdfB64 = b64; withPdf = true; } }catch{} }
-  const fname = slug(defaultProjectName())+".json";
+  const fbase = slug(defaultProjectName());
+  const fname = fbase+".json";
+  let pdfErr = false;
+  // the plan PDF travels as its own file next to the project — big plans fit this way
+  if(pdfData && pdfData.byteLength < 70e6){
+    data.pdfRef = fbase+".pdf";
+    if(!(lastPdfUp.file===data.pdfRef && lastPdfUp.bytes===pdfData.byteLength)){
+      try{
+        if(!quiet) toast("Uploading plan PDF…");
+        const psha = await ghShaOf(data.pdfRef);
+        const pb = {message:"save: "+data.pdfRef, content: bufToB64(pdfData)};
+        if(psha) pb.sha = psha;
+        const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(data.pdfRef)),
+          {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(pb)});
+        if(!pr.ok){ delete data.pdfRef; pdfErr = true; }
+        else lastPdfUp = {file:fbase+".pdf", bytes:pdfData.byteLength};
+      }catch{ delete data.pdfRef; pdfErr = true; }
+    }
+  }
   try{
-    let sha = null;
-    try{
-      const l = await ghFetch(ghRepoPath("/contents/"));
-      if(l.ok){ const ex = (await l.json()).find(x => x.name===fname); if(ex) sha = ex.sha; }
-    }catch{}
+    const sha = await ghShaOf(fname);
     const body = {message:"save: "+fname, content: txtToB64(JSON.stringify(data))};
     if(sha) body.sha = sha;
     const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(fname)),
       {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
     if(!r.ok){
-      if(!quiet) toast("Cloud save failed ("+r.status+")"+(r.status===401||r.status===403 ? " — check the access code in ☁️ Settings" : ""));
+      if(!quiet) toast("Cloud save failed ("+r.status+")"+(r.status===401||r.status===403 ? " — check the access code in ⚙️ Settings" : ""));
       return false;
     }
   }catch{ if(!quiet) toast("Cloud not reachable — check connection"); return false; }
   window.__isDirty = false;
-  toast('Saved to cloud — "'+defaultProjectName()+'"'+(withPdf ? " (PDF included)" : (pdfData ? " (PDF too large — not included)" : "")));
+  toast('Saved to cloud — "'+defaultProjectName()+'"'+
+    (data.pdfRef ? " (PDF included)" : (pdfData ? (pdfErr ? " (PDF upload failed — will retry next save)" : " (PDF too large for the cloud)") : "")));
   return true;
 }
 window.__cloudQuickSave = function(quiet){ return ghSave(quiet); };
@@ -3065,10 +3086,29 @@ document.getElementById("cloudList").addEventListener("click", async e => {
       const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
         {headers:{Accept:"application/vnd.github.raw"}});
       if(!r.ok) throw 0;
-      const blob = await r.blob();
+      const d = JSON.parse(await r.text());
       fileHandle = null;
+      pushHistory();
+      applyProject(d);
       closeModal("cloudBack");
-      await loadProjectFile(blob);
+      if(d.pdfB64){
+        try{ await loadPdfBytes(b64ToBuf(d.pdfB64), d.pdfName||"plan.pdf"); setMode("pdf"); toast("Project loaded — PDF included"); }
+        catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
+      } else if(d.pdfRef){
+        toast("Loading plan PDF…");
+        try{
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+            {headers:{Accept:"application/vnd.github.raw"}});
+          if(!pr.ok) throw 0;
+          await loadPdfBytes(await pr.arrayBuffer(), d.pdfName||"plan.pdf");
+          setMode("pdf");
+          lastPdfUp = {file:d.pdfRef, bytes:pdfData.byteLength};
+          toast("Project loaded — PDF included");
+        }catch{ toast("Project loaded, but the plan PDF couldn't be fetched"); }
+      } else {
+        toast("Project loaded"+(d.pdfName ? " — open "+d.pdfName+" to see plan markups" : ""));
+      }
+      window.__isDirty = false;
     }catch{ toast("Could not open that project"); }
   } else if(act==="del"){
     if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
@@ -3077,6 +3117,11 @@ document.getElementById("cloudList").addEventListener("click", async e => {
         {method:"DELETE", headers:{"Content-Type":"application/json"},
          body: JSON.stringify({message:"delete: "+name, sha:sha})});
       if(!r.ok) throw 0;
+      const pn = name.replace(/\.json$/,".pdf");
+      const psha = await ghShaOf(pn);
+      if(psha) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(pn)),
+        {method:"DELETE", headers:{"Content-Type":"application/json"},
+         body: JSON.stringify({message:"delete: "+pn, sha:psha})});
       cloudArm = null; renderCloudList(); toast("Deleted from cloud");
     }catch{ toast("Delete failed"); }
   }
