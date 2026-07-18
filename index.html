@@ -2829,6 +2829,7 @@ document.getElementById("scCalib").onclick = () => {
 const CLOUD_CFG_KEY="plantakeoff_cloud", CLOUD_SES_KEY="plantakeoff_cloud_session";
 // To bake the connection in permanently, fill these two and the setup screen never shows:
 const CLOUD_URL="https://nbzwnzluooynezbhsune.supabase.co", CLOUD_KEY="sb_publishable_ioIKqaNCBo5hYj1CFMyaTg_FImDtBUb";
+const CLOUD_EMAIL="stephanbluitt10@gmail.com"; // baked-in login — gate shows only the password box
 const IS_WEB = location.protocol.indexOf("http")===0 && !IS_DESKTOP_APP;
 let cloudSes = null; try{ cloudSes = JSON.parse(storeGet(CLOUD_SES_KEY)||"null"); }catch{}
 function cloudCfg(){
@@ -2886,6 +2887,10 @@ function updateGate(force){
     if(cfg){ document.getElementById("gUrl").value = cfg.url; document.getElementById("gKey").value = cfg.key; }
     document.getElementById("gUrl").focus();
   } else {
+    if(CLOUD_EMAIL){
+      document.getElementById("gEmail").value = CLOUD_EMAIL;
+      document.getElementById("gEmail").closest(".frow").style.display = "none";
+    }
     document.getElementById(document.getElementById("gEmail").value ? "gPass" : "gEmail").focus();
   }
 }
