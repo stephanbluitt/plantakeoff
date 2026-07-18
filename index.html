@@ -419,9 +419,10 @@
   <button class="mi" id="newBtn">New Project <span class="k">⌘N</span></button>
   <div class="sep"></div>
   <button class="mi" id="openBtn">Open PDF…</button>
-  <button class="mi" id="loadProj">Open Project…</button>
+  <button class="mi" id="cloudMenuOpen">☁️ Cloud projects…</button>
+  <button class="mi" id="loadProj">💻 Open from computer…</button>
   <button class="mi" id="saveProj">Save <span class="k">⌘S</span></button>
-  <button class="mi" id="saveAsBtn">Save As… <span class="k">⇧⌘S</span></button>
+  <button class="mi" id="saveAsBtn">💻 Save to computer… <span class="k">⇧⌘S</span></button>
   <button class="mi" id="verBtn">Versions…</button>
   <div class="sep"></div>
   <button class="mi" id="clearBtn">Clear measurements…</button>
@@ -2987,7 +2988,7 @@ async function renderCloudList(){
       '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
       '<div class="vd">'+(x.updated_at ? new Date(x.updated_at).toLocaleString() : "")+
       (x.metadata && x.metadata.size ? " · "+fmtSize(x.metadata.size) : "")+'</div></div>'+
-      '<button class="btn" data-act="open">Open</button>'+
+      '<button class="btn" data-act="open">☁️ Open</button>'+
       '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>').join("");
   }catch{
     el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Couldn&#39;t load — check connection and login.</div>';
@@ -3022,6 +3023,7 @@ window.__cloudQuickSave = async function(){
 };
 window.__cloudQuickSave.enabled = () => IS_WEB && !!cloudCfg();
 document.getElementById("cloudBtn").onclick = openCloud;
+document.getElementById("cloudMenuOpen").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
 document.getElementById("cloudSignout").onclick = () => {
