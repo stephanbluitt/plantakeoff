@@ -720,10 +720,10 @@
     <button id="gClose" class="btn" style="position:absolute;top:10px;right:10px;display:none">✕</button>
     <h3 style="font-size:16px">PLAN<span style="color:var(--amber)">TAKEOFF</span></h3>
     <div id="gSetup" style="display:none">
-      <p>One-time setup — paste the two values from your Supabase project (steps in the setup guide).</p>
-      <div class="frow"><label for="gUrl">Project URL</label><input type="text" id="gUrl" placeholder="https://xxxxx.supabase.co"></div>
-      <div class="frow"><label for="gKey">Anon key</label><input type="text" id="gKey" placeholder="eyJhbGciOi…"></div>
-      <div class="actions"><button class="btn primary" id="gSetupGo">Continue</button></div>
+      <p>One-time setup — paste the storage access code (the ghp_… code from GitHub).</p>
+      <div class="frow"><label for="gKey">Access code</label><input type="text" id="gKey" placeholder="ghp_…"></div>
+      <div id="gSetErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
+      <div class="actions"><button class="btn primary" id="gSetupGo">Connect</button></div>
     </div>
     <div id="gLogin" style="display:none">
       <p>Private tool — enter the password.</p>
@@ -2831,116 +2831,84 @@ document.getElementById("scCalib").onclick = () => {
   toast("Click 2 points of a known dimension on the plan");
 };
 
-// ================= cloud projects (Supabase — free, private, password login) =================
-const CLOUD_CFG_KEY="plantakeoff_cloud", CLOUD_SES_KEY="plantakeoff_cloud_session";
-// To bake the connection in permanently, fill these two and the setup screen never shows:
-const CLOUD_URL="https://nbzwnzluooynezbhsune.supabase.co", CLOUD_KEY="sb_publishable_ioIKqaNCBo5hYj1CFMyaTg_FImDtBUb";
-const CLOUD_EMAIL="stephanbluitt10@gmail.com"; // baked-in login — gate shows only the password box
+// ================= cloud projects (private GitHub repo — one shared access code) =================
+const GH_REPO_NAME = "plantakeoff-projects";
+const TOKEN_KEY = "plantakeoff_ghtoken", GH_OWNER_KEY = "plantakeoff_ghowner";
 const IS_WEB = location.protocol.indexOf("http")===0 && !IS_DESKTOP_APP;
-let cloudSes = null; try{ cloudSes = JSON.parse(storeGet(CLOUD_SES_KEY)||"null"); }catch{}
-function cloudCfg(){
-  if(CLOUD_URL && CLOUD_KEY) return {url:CLOUD_URL, key:CLOUD_KEY};
-  try{ return JSON.parse(storeGet(CLOUD_CFG_KEY)||"null"); }catch{ return null; }
-}
-async function cloudFetch(path, opts, retry){
-  const cfg = cloudCfg(); if(!cfg) throw new Error("no-config");
+function ghToken(){ return storeGet(TOKEN_KEY) || ""; }
+function cloudReady(){ return !!ghToken() && !!storeGet(GH_OWNER_KEY); }
+function ghFetch(path, opts){
   opts = opts || {};
-  const h = Object.assign({}, opts.headers||{});
-  h.apikey = cfg.key;
-  if(cloudSes) h.Authorization = "Bearer "+cloudSes.access_token;
-  const r = await fetch(cfg.url+path, Object.assign({}, opts, {headers:h}));
-  if(r.status===401 && retry!==false && cloudSes && cloudSes.refresh_token){
-    if(await cloudRefresh()) return cloudFetch(path, opts, false);
+  const h = Object.assign({
+    "Authorization": "Bearer "+ghToken(),
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28"
+  }, opts.headers||{});
+  return fetch("https://api.github.com"+path, Object.assign({}, opts, {headers:h}));
+}
+function ghRepoPath(rest){ return "/repos/"+storeGet(GH_OWNER_KEY)+"/"+GH_REPO_NAME+rest; }
+async function ghConnect(token){
+  storeSet(TOKEN_KEY, token);
+  const u = await ghFetch("/user");
+  if(!u.ok){ storeDel(TOKEN_KEY); throw new Error("That code isn't valid — copy the whole ghp_… code"); }
+  const login = (await u.json()).login;
+  let owner = "";
+  const mine = await ghFetch("/repos/"+login+"/"+GH_REPO_NAME);
+  if(mine.ok) owner = login;
+  if(!owner){
+    const s2 = await ghFetch("/user/repos?per_page=100&affiliation=owner,collaborator");
+    if(s2.ok){
+      const hit = (await s2.json()).find(x => x.name===GH_REPO_NAME);
+      if(hit) owner = hit.owner.login;
+    }
   }
-  return r;
+  if(!owner){
+    const c = await ghFetch("/user/repos", {method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({name:GH_REPO_NAME, private:true, auto_init:true,
+        description:"Plan Takeoff cloud projects (private)"})});
+    if(!c.ok){ storeDel(TOKEN_KEY); throw new Error("Code works but can't reach storage — make sure the 'repo' box was checked when creating it"); }
+    owner = login;
+  }
+  storeSet(GH_OWNER_KEY, owner);
+  return true;
 }
-async function cloudRefresh(){
-  try{
-    const cfg = cloudCfg();
-    const r = await fetch(cfg.url+"/auth/v1/token?grant_type=refresh_token",
-      {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
-       body:JSON.stringify({refresh_token:cloudSes.refresh_token})});
-    if(!r.ok) throw 0;
-    const js = await r.json();
-    cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
-    storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
-    return true;
-  }catch{ cloudSes=null; storeDel(CLOUD_SES_KEY); updateGate(); return false; }
-}
-async function cloudLogin(email, pass){
-  const cfg = cloudCfg();
-  const r = await fetch(cfg.url+"/auth/v1/token?grant_type=password",
-    {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
-     body:JSON.stringify({email:email, password:pass})});
-  const js = await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(js.error_description||js.msg||"Wrong email or password");
-  cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
-  storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
-}
+function txtToB64(txt){ return bufToB64(new TextEncoder().encode(txt).buffer); }
+
 // ---- built-in password gate ----
 const GATE_HASH = "4ac13f470fd73d196dbc4204929e3370fb5fd1ccb61ce1f13e19288105026f0a"; // the password, one-way scrambled
-const GATE_KEY = "plantakeoff_unlock", PW_KEY = "plantakeoff_pw";
+const GATE_KEY = "plantakeoff_unlock";
 async function sha256hex(t){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
 }
-async function cloudEnsure(){
-  if(cloudSes) return true;
-  let pw = ""; try{ pw = atob(storeGet(PW_KEY)||""); }catch{}
-  if(!CLOUD_EMAIL || !pw) return false;
-  try{ await cloudLogin(CLOUD_EMAIL, pw); return true; }
-  catch(e){
-    // maybe the cloud user doesn't exist yet — create it with the same password
-    try{
-      const cfg = cloudCfg();
-      const r = await fetch(cfg.url+"/auth/v1/signup",
-        {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
-         body:JSON.stringify({email:CLOUD_EMAIL, password:pw})});
-      const js = await r.json().catch(()=>({}));
-      if(r.ok){
-        if(js.access_token){
-          cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
-          storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
-          return true;
-        }
-        toast("Almost there — open the Gmail inbox, click the Confirm link, then press ☁️ again");
-        return false;
-      }
-      toast(js.error_description||js.msg||"Cloud login failed");
-    }catch{ toast("Cloud not reachable — check connection"); }
-    return false;
-  }
-}
 const gate = document.getElementById("loginGate");
 let gateNext = null;
 function updateGate(force){
-  const cfg = cloudCfg();
   const show = force===true || force==="setup" || (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH);
   gate.classList.toggle("show", show);
   if(!show) return;
-  document.getElementById("gClose").style.display = IS_WEB ? "none" : "";
-  const setup = !cfg || force==="setup";
+  document.getElementById("gClose").style.display = (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH) ? "none" : "";
+  const setup = force==="setup" || (storeGet(GATE_KEY)===GATE_HASH && !cloudReady());
   document.getElementById("gSetup").style.display = setup ? "" : "none";
   document.getElementById("gLogin").style.display = setup ? "none" : "";
-  if(setup){
-    if(cfg){ document.getElementById("gUrl").value = cfg.url; document.getElementById("gKey").value = cfg.key; }
-    document.getElementById("gUrl").focus();
-  } else {
-    if(CLOUD_EMAIL){
-      document.getElementById("gEmail").value = CLOUD_EMAIL;
-      document.getElementById("gEmail").closest(".frow").style.display = "none";
-    }
-    document.getElementById(document.getElementById("gEmail").value ? "gPass" : "gEmail").focus();
-  }
+  if(setup) document.getElementById("gKey").focus();
+  else document.getElementById("gPass").focus();
 }
-document.getElementById("gSetupGo").onclick = () => {
-  const url = document.getElementById("gUrl").value.trim().replace(/\/+$/,"");
-  const key = document.getElementById("gKey").value.trim();
-  if(url.indexOf("https://")!==0 || url.indexOf(".supabase.co")<0 || key.length<30){
-    toast("Check the URL and key — copy them exactly from Supabase"); return;
-  }
-  storeSet(CLOUD_CFG_KEY, JSON.stringify({url:url, key:key}));
-  updateGate(true);
+document.getElementById("gSetupGo").onclick = async () => {
+  const tok = document.getElementById("gKey").value.trim();
+  const err = document.getElementById("gSetErr");
+  if(tok.length < 20){ err.textContent = "Paste the whole code (starts with ghp_)"; err.style.display=""; return; }
+  const b = document.getElementById("gSetupGo");
+  b.disabled = true; b.textContent = "Connecting…"; err.style.display = "none";
+  try{
+    await ghConnect(tok);
+    gate.classList.remove("show");
+    toast("Storage connected");
+    gateNext = null;
+    openCloud();
+  }catch(e){ err.textContent = e.message || "Couldn't connect"; err.style.display = ""; }
+  b.disabled = false; b.textContent = "Connect";
 };
 async function gateLoginGo(){
   const pw = document.getElementById("gPass").value;
@@ -2951,11 +2919,9 @@ async function gateLoginGo(){
   const hex = await sha256hex(pw);
   if(hex === GATE_HASH){
     storeSet(GATE_KEY, hex);
-    storeSet(PW_KEY, btoa(pw));
-    gate.classList.remove("show");
     toast("Welcome");
-    gateNext = null;
-    if(cloudCfg()) openCloud(); // show all saved jobs right after unlocking
+    if(!cloudReady()){ updateGate("setup"); }
+    else { gate.classList.remove("show"); openCloud(); }
   } else {
     err.textContent = "Wrong password"; err.style.display = "";
   }
@@ -2967,7 +2933,8 @@ gate.addEventListener("keydown", e => {
   if(document.getElementById("gLogin").style.display!=="none") gateLoginGo();
   else document.getElementById("gSetupGo").click();
 });
-document.getElementById("gClose").onclick = () => { if(!IS_WEB) gate.classList.remove("show"); };
+document.getElementById("gClose").onclick = () => gate.classList.remove("show");
+
 // ---- cloud modal ----
 let cloudArm = null;
 function fmtSize(n){ return n>1e6 ? (n/1e6).toFixed(1)+" MB" : Math.round(n/1e3)+" KB"; }
@@ -2975,62 +2942,74 @@ async function renderCloudList(){
   const el = document.getElementById("cloudList");
   el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">Loading…</div>';
   try{
-    const r = await cloudFetch("/storage/v1/object/list/projects",
-      {method:"POST", headers:{"Content-Type":"application/json"},
-       body:JSON.stringify({prefix:"", limit:100, sortBy:{column:"updated_at", order:"desc"}})});
+    const r = await ghFetch(ghRepoPath("/contents/"));
     if(!r.ok) throw 0;
-    const items = (await r.json()).filter(x => x.name && x.name!==".emptyFolderPlaceholder");
-    items.sort((a,b) => String(b.updated_at||"").localeCompare(String(a.updated_at||"")));
+    let items = (await r.json()).filter(x => x.type==="file" && /\.json$/.test(x.name));
+    const dates = {};
+    try{
+      const c = await ghFetch(ghRepoPath("/commits?per_page=100"));
+      if(c.ok) for(const k of await c.json()){
+        const m = (k.commit.message||"").match(/^save: (.+)$/);
+        if(m && !(m[1] in dates)) dates[m[1]] = k.commit.committer.date;
+      }
+    }catch{}
+    items.forEach(x => { x.updated = dates[x.name] || ""; });
+    items.sort((a,b) => String(b.updated).localeCompare(String(a.updated)));
     if(!items.length){
       el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No cloud projects yet — save one above.</div>';
       return;
     }
     el.innerHTML = items.map(x =>
-      '<div class="vrow" data-n="'+esc2(x.name)+'"><div class="vmeta">'+
+      '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'"><div class="vmeta">'+
       '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
-      '<div class="vd">'+(x.updated_at ? new Date(x.updated_at).toLocaleString() : "")+
-      (x.metadata && x.metadata.size ? " · "+fmtSize(x.metadata.size) : "")+'</div></div>'+
+      '<div class="vd">'+(x.updated ? new Date(x.updated).toLocaleString() : "")+
+      (x.size ? " · "+fmtSize(x.size) : "")+'</div></div>'+
       '<button class="btn" data-act="open">☁️ Open</button>'+
       '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>').join("");
   }catch{
-    el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Couldn&#39;t load — check connection and login.</div>';
+    el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Could not load — check connection (or the access code in Settings).</div>';
   }
 }
-async function openCloud(){
-  if(!cloudCfg()){ gateNext = true; updateGate("setup"); return; }
-  if(!cloudSes){
-    let pw = ""; try{ pw = atob(storeGet(PW_KEY)||""); }catch{}
-    if(!pw){ gateNext = true; updateGate(true); return; }
-    toast("Connecting…");
-    if(!(await cloudEnsure())) return;
-  }
+function openCloud(){
+  if(!cloudReady()){ gateNext = true; updateGate("setup"); return; }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
   renderCloudList();
 }
-window.__cloudQuickSave = async function(quiet){
-  if(!(await cloudEnsure())) return false;
+async function ghSave(quiet){
   const data = serializeProject();
-  if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} } // PDF always rides along
+  let withPdf = false;
+  if(pdfData){ try{ const b64 = bufToB64(pdfData); if(b64.length < 45e6){ data.pdfB64 = b64; withPdf = true; } }catch{} }
+  const fname = slug(defaultProjectName())+".json";
   try{
-    const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(slug(defaultProjectName())+".json"),
-      {method:"POST", headers:{"Content-Type":"application/json","x-upsert":"true"},
-       body:JSON.stringify(data)});
-    if(!r.ok){ if(!quiet) toast("Cloud save failed — saving as a download instead"); return false; }
-  }catch{ if(!quiet) toast("Cloud not reachable — saving as a download instead"); return false; }
+    let sha = null;
+    try{
+      const l = await ghFetch(ghRepoPath("/contents/"));
+      if(l.ok){ const ex = (await l.json()).find(x => x.name===fname); if(ex) sha = ex.sha; }
+    }catch{}
+    const body = {message:"save: "+fname, content: txtToB64(JSON.stringify(data))};
+    if(sha) body.sha = sha;
+    const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(fname)),
+      {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    if(!r.ok){
+      if(!quiet) toast("Cloud save failed ("+r.status+")"+(r.status===401||r.status===403 ? " — check the access code in ☁️ Settings" : ""));
+      return false;
+    }
+  }catch{ if(!quiet) toast("Cloud not reachable — check connection"); return false; }
   window.__isDirty = false;
-  toast('Saved to cloud — "'+defaultProjectName()+'"'+(pdfData ? " (PDF included)" : ""));
+  toast('Saved to cloud — "'+defaultProjectName()+'"'+(withPdf ? " (PDF included)" : (pdfData ? " (PDF too large — not included)" : "")));
   return true;
-};
+}
+window.__cloudQuickSave = function(quiet){ return ghSave(quiet); };
+window.__cloudQuickSave.enabled = () => IS_WEB && cloudReady();
 // auto-save to the cloud every 3 minutes while working on the website
 setInterval(() => {
-  if(IS_WEB && cloudSes && window.__isDirty && (measurements.length || pdfDoc)
+  if(IS_WEB && cloudReady() && window.__isDirty && (measurements.length || pdfDoc)
      && !document.querySelector(".modalBack.open") && !drawing && !editDrag){
-    window.__cloudQuickSave(true);
+    ghSave(true);
   }
 }, 180000);
-window.__cloudQuickSave.enabled = () => IS_WEB && !!cloudCfg();
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudMenuOpen").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
@@ -3041,9 +3020,8 @@ document.getElementById("cloudNew").onclick = () => {
 };
 document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
 document.getElementById("cloudSignout").onclick = () => {
-  cloudSes = null; storeDel(CLOUD_SES_KEY);
-  closeModal("cloudBack"); toast("Signed out");
-  updateGate();
+  storeDel(TOKEN_KEY); storeDel(GH_OWNER_KEY);
+  closeModal("cloudBack"); toast("Storage disconnected");
 };
 document.getElementById("cloudSaveBtn").onclick = async () => {
   if(!measurements.length && !pdfDoc && !categories.length){ toast("Nothing to save yet"); return; }
@@ -3051,27 +3029,18 @@ document.getElementById("cloudSaveBtn").onclick = async () => {
   syncTitle();
   const b = document.getElementById("cloudSaveBtn");
   b.disabled = true; b.textContent = "Saving…";
-  try{
-    const data = serializeProject();
-    if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} }
-    const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(slug(projectName)+".json"),
-      {method:"POST", headers:{"Content-Type":"application/json","x-upsert":"true"},
-       body:JSON.stringify(data)});
-    if(!r.ok) throw 0;
-    window.__isDirty = false;
-    toast("Saved to cloud"+(pdfData ? " — PDF included" : ""));
-    renderCloudList();
-  }catch{ toast("Cloud save failed — check connection"); }
+  if(await ghSave(false)) renderCloudList();
   b.disabled = false; b.textContent = "Save to cloud";
 };
 document.getElementById("cloudList").addEventListener("click", async e => {
   const row = e.target.closest(".vrow"); if(!row) return;
-  const name = row.dataset.n;
+  const name = row.dataset.n, sha = row.dataset.sha;
   const act = e.target.dataset && e.target.dataset.act;
   if(act==="open"){
     toast("Opening…");
     try{
-      const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(name));
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {headers:{Accept:"application/vnd.github.raw"}});
       if(!r.ok) throw 0;
       const blob = await r.blob();
       fileHandle = null;
@@ -3081,7 +3050,9 @@ document.getElementById("cloudList").addEventListener("click", async e => {
   } else if(act==="del"){
     if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
     try{
-      const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(name), {method:"DELETE"});
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {method:"DELETE", headers:{"Content-Type":"application/json"},
+         body: JSON.stringify({message:"delete: "+name, sha:sha})});
       if(!r.ok) throw 0;
       cloudArm = null; renderCloudList(); toast("Deleted from cloud");
     }catch{ toast("Delete failed"); }
