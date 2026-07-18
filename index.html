@@ -2323,6 +2323,10 @@ function afterSave(label){
   if(pendingNew){ pendingNew = false; setTimeout(resetProject, 250); }
 }
 async function doSave(asNew){
+  // on the website, plain Save goes straight to the cloud (falls back to download if cloud not ready)
+  if(!asNew && typeof window.__cloudQuickSave==="function" && window.__cloudQuickSave.enabled()){
+    if(await window.__cloudQuickSave()) return;
+  }
   // real Save: write straight back to the file we opened, no dialog
   if(!asNew && fileHandle){
     try{
@@ -3002,6 +3006,21 @@ async function openCloud(){
   openModal2("cloudBack");
   renderCloudList();
 }
+window.__cloudQuickSave = async function(){
+  if(!(await cloudEnsure())) return false;
+  const data = serializeProject();
+  if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} }
+  try{
+    const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(slug(defaultProjectName())+".json"),
+      {method:"POST", headers:{"Content-Type":"application/json","x-upsert":"true"},
+       body:JSON.stringify(data)});
+    if(!r.ok){ toast("Cloud save failed — saving as a download instead"); return false; }
+  }catch{ toast("Cloud not reachable — saving as a download instead"); return false; }
+  window.__isDirty = false;
+  toast('Saved to cloud — "'+defaultProjectName()+'"'+(pdfData ? " (PDF included)" : ""));
+  return true;
+};
+window.__cloudQuickSave.enabled = () => IS_WEB && !!cloudCfg();
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
