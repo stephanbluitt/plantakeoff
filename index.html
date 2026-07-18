@@ -407,9 +407,10 @@
     <button class="ibtn" id="undoBtn" title="Undo (Cmd/Ctrl+Z)" disabled>↶</button>
     <button class="ibtn" id="redoBtn" title="Redo (Shift+Cmd/Ctrl+Z)" disabled>↷</button>
     <button class="ibtn" id="cloudBtn" title="Cloud projects — save & open online">☁️</button>
-    <button class="ibtn" id="themeBtn" title="Light / dark mode">☀️</button>
-    <button class="ibtn" id="helpBtn" data-pop="help" title="Tools & shortcuts">?</button>
     <button class="ibtn" id="shareBtn" data-pop="share" title="Export">⤴</button>
+    <button class="ibtn" id="settingsBtn" data-pop="settings" title="Settings">⚙️</button>
+    <button class="ibtn" id="themeBtn" title="Light / dark mode" style="display:none">☀️</button>
+    <button class="ibtn" id="helpBtn" data-pop="help" title="Tools & shortcuts" style="display:none">?</button>
     <button class="ibtn" id="listToggle" title="Measurements">☰</button>
   </div>
 </div>
@@ -733,6 +734,15 @@
       <div class="actions"><button class="btn primary" id="gGo" style="width:100%">Unlock</button></div>
     </div>
   </div>
+</div>
+
+<div class="pop" id="pop-settings">
+  <button class="mi" id="setTheme">🌙 Dark / light mode</button>
+  <button class="mi" id="setInvert">🌓 Invert plan colors</button>
+  <button class="mi" id="setHelp">⌨️ Tools &amp; shortcuts</button>
+  <div class="ph">STORAGE</div>
+  <button class="mi" id="setCode">🔑 Storage access code…</button>
+  <button class="mi" id="setDisc">⛔ Disconnect storage on this device</button>
 </div>
 
 <div id="toast"></div>
@@ -2833,6 +2843,16 @@ document.getElementById("scCalib").onclick = () => {
 
 // ================= cloud projects (private GitHub repo — one shared access code) =================
 const GH_REPO_NAME = "plantakeoff-projects";
+// storage access code, locked with the app password (useless without it — safe in public files)
+const ENC_TOKEN = "Kuabzy0cEAn5FHhFiNikv8H5dGVrlOxwCbt3qv10wdqU1O1+2a7soN9BqXmIPI2qfSo6sAAmik6EQQoZgBvJ/1Puufs=";
+async function decToken(pw){
+  const enc = new TextEncoder();
+  const km = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("plantakeoff-v1"), iterations:120000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const raw = Uint8Array.from(atob(ENC_TOKEN), c=>c.charCodeAt(0));
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv: raw.slice(0,12)}, key, raw.slice(12));
+  return new TextDecoder().decode(pt);
+}
 const TOKEN_KEY = "plantakeoff_ghtoken", GH_OWNER_KEY = "plantakeoff_ghowner";
 const IS_WEB = location.protocol.indexOf("http")===0 && !IS_DESKTOP_APP;
 function ghToken(){ return storeGet(TOKEN_KEY) || ""; }
@@ -2889,7 +2909,7 @@ function updateGate(force){
   gate.classList.toggle("show", show);
   if(!show) return;
   document.getElementById("gClose").style.display = (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH) ? "none" : "";
-  const setup = force==="setup" || (storeGet(GATE_KEY)===GATE_HASH && !cloudReady());
+  const setup = force==="setup" || (storeGet(GATE_KEY)===GATE_HASH && !cloudReady() && !ENC_TOKEN);
   document.getElementById("gSetup").style.display = setup ? "" : "none";
   document.getElementById("gLogin").style.display = setup ? "none" : "";
   if(setup) document.getElementById("gKey").focus();
@@ -2920,6 +2940,9 @@ async function gateLoginGo(){
   if(hex === GATE_HASH){
     storeSet(GATE_KEY, hex);
     toast("Welcome");
+    if(!cloudReady() && ENC_TOKEN){
+      try{ await ghConnect(await decToken(pw)); }catch{}
+    }
     if(!cloudReady()){ updateGate("setup"); }
     else { gate.classList.remove("show"); openCloud(); }
   } else {
@@ -2971,7 +2994,7 @@ async function renderCloudList(){
   }
 }
 function openCloud(){
-  if(!cloudReady()){ gateNext = true; updateGate("setup"); return; }
+  if(!cloudReady()){ gateNext = true; updateGate(ENC_TOKEN ? true : "setup"); return; }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
@@ -3062,6 +3085,19 @@ document.getElementById("cloudBack").addEventListener("keydown", e => {
   if(e.key==="Escape") closeModal("cloudBack");
   if(e.key==="Enter" && e.target.id==="cloudName") document.getElementById("cloudSaveBtn").click();
 });
+document.getElementById("setTheme").onclick = () => document.getElementById("themeBtn").click();
+document.getElementById("setInvert").onclick = () => document.getElementById("pdfInvert").click();
+document.getElementById("setHelp").onclick = () => {
+  setTimeout(() => {
+    const p = document.getElementById("pop-help");
+    positionPop(p, document.getElementById("settingsBtn"));
+  }, 80);
+};
+document.getElementById("setCode").onclick = () => updateGate("setup");
+document.getElementById("setDisc").onclick = () => {
+  storeDel(TOKEN_KEY); storeDel(GH_OWNER_KEY);
+  toast("Storage disconnected on this device");
+};
 updateGate();
 
 setTool("select");
