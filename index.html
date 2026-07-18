@@ -1,0 +1,3019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Plan Takeoff — Measure PDF Plans & Maps</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://mt0.google.com">
+<link rel="dns-prefetch" href="https://server.arcgisonline.com">
+<link rel="dns-prefetch" href="https://photon.komoot.io">
+<link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --bg:#f2f2f7; --panel:#fafafc; --solid:#ffffff; --panel2:#eceef1;
+    --well:#e3e5ea; --line:rgba(0,0,0,.10); --hair:rgba(0,0,0,.07);
+    --ink:#1d1d1f; --dim:#55565c; --faint:#8e8e93;
+    --amber:#d18700; --accent:#d18700;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --sat: env(safe-area-inset-top,0px); --sab: env(safe-area-inset-bottom,0px);
+    --shadow:0 10px 34px rgba(0,0,0,.16), 0 1px 3px rgba(0,0,0,.10);
+    --r:12px;
+  }
+  body[data-theme="dark"]{
+    --bg:#1c1c1e; --panel:#222226; --solid:#232327; --panel2:#2c2c31;
+    --well:#121214; --line:rgba(255,255,255,.13); --hair:rgba(255,255,255,.08);
+    --ink:#f2f2f4; --dim:#b9bac0; --faint:#7f8087;
+    --amber:#ffb224; --accent:#ffb224;
+    --shadow:0 12px 38px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font:13px/1.45 -apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+    background:var(--bg); color:var(--ink); overflow:hidden;
+    display:grid; grid-template-rows:auto 1fr; grid-template-columns:1fr 304px;
+    grid-template-areas:"top top" "canvas side";
+  }
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  button{font:inherit; color:inherit;}
+  /* ================= top bar ================= */
+  #topbar{
+    grid-area:top; display:flex; align-items:center; gap:10px;
+    padding:8px 14px; padding-top:calc(8px + var(--sat));
+    background:var(--panel);
+    border-bottom:1px solid var(--hair);
+  }
+  #appMenuBtn{
+    display:flex; align-items:center; gap:6px; background:none; border:none;
+    font-weight:700; font-size:13px; letter-spacing:.2px; cursor:pointer;
+    padding:6px 8px; border-radius:8px;
+  }
+  #appMenuBtn span{color:var(--amber);}
+  #appMenuBtn em{font-style:normal; font-weight:400; font-size:9px; color:var(--faint);}
+  #appMenuBtn .chev{font-size:9px; color:var(--faint);}
+  #appMenuBtn:hover, #appMenuBtn.on{background:var(--panel2);}
+  .credit{position:fixed; left:16px; bottom:calc(6px + var(--sab)); font-size:8.5px;
+    letter-spacing:.4px; color:var(--faint); opacity:.55; pointer-events:none; z-index:5;}
+  #projTitle{
+    background:transparent; border:1px solid transparent; color:var(--ink);
+    font-size:13px; font-weight:600; padding:6px 10px; border-radius:8px;
+    min-width:120px; max-width:260px; text-align:left;
+  }
+  #projTitle:hover{background:var(--panel2);}
+  #projTitle:focus{background:var(--solid); border-color:var(--line); outline:none;}
+  #projTitle::placeholder{color:var(--faint); font-weight:400;}
+  #modeSeg{
+    display:flex; background:var(--panel2); border-radius:9px; padding:2px; margin-left:auto;
+  }
+  #modeSeg button{
+    background:transparent; color:var(--dim); border:none; padding:5px 16px;
+    font-size:12.5px; font-weight:600; cursor:pointer; border-radius:7px;
+  }
+  #modeSeg button.on{background:var(--solid); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.14);}
+  #topRight{display:flex; align-items:center; gap:4px; margin-left:auto;}
+  #modeSeg{margin-left:auto;} #topRight{margin-left:0;}
+  .ibtn{
+    width:32px; height:32px; border:none; background:none; border-radius:8px;
+    color:var(--dim); cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;
+  }
+  .ibtn:hover{background:var(--panel2); color:var(--ink);}
+  .ibtn:disabled{opacity:.35; cursor:default;}
+  .ibtn.on{background:var(--panel2); color:var(--amber);}
+  #listToggle{display:none;}
+  /* ================= popovers ================= */
+  .pop{
+    position:fixed; z-index:3000; min-width:210px; background:var(--solid);
+    border:1px solid var(--hair); border-radius:12px; box-shadow:var(--shadow);
+    padding:5px; display:none;
+  }
+  .pop.open{display:block;}
+  .pop .mi{
+    display:flex; width:100%; align-items:center; gap:8px; text-align:left;
+    background:none; border:none; padding:8px 10px; border-radius:8px;
+    font-size:12.5px; cursor:pointer; color:var(--ink);
+  }
+  .pop .mi:hover{background:var(--amber); color:#fff;}
+  .pop .mi .k{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--faint);}
+  .pop .mi:hover .k{color:rgba(255,255,255,.8);}
+  .pop .sep{height:1px; background:var(--hair); margin:5px 8px;}
+  .pop .ph{font-size:10px; letter-spacing:1px; color:var(--faint); padding:7px 10px 3px; font-weight:600;}
+  .pop .hrow{display:flex; justify-content:space-between; gap:16px; padding:4px 10px; font-size:12px;}
+  .pop .hrow b{font-family:var(--mono); font-weight:600; color:var(--dim); white-space:nowrap;}
+  #pop-scale{max-height:70vh; overflow-y:auto; min-width:230px;}
+  /* ================= canvas & map ================= */
+  #canvasWrap{grid-area:canvas; overflow:auto; background:var(--well); position:relative;
+    -webkit-overflow-scrolling:touch;}
+  #stage{position:relative; margin:26px auto; width:fit-content; display:none;
+    box-shadow:var(--shadow); border-radius:3px;}
+  #pdfCanvas{display:block; background:#fff; border-radius:3px;}
+  #pdfCanvas.inverted, #hiCanvas.inverted{filter:invert(0.93) hue-rotate(180deg);}
+  #hiCanvas{position:absolute; pointer-events:none; display:none;}
+  #overlay{position:absolute; inset:0; cursor:crosshair;}
+  #dropHint{
+    position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; color:var(--faint); text-align:center; padding:20px;
+  }
+  #dropHint .big{font-size:18px; color:var(--dim); font-weight:600;}
+  #dropHint kbd{font-family:var(--mono); background:var(--panel2); border:1px solid var(--hair);
+    border-radius:4px; padding:1px 6px; font-size:11px;}
+  #canvasWrap.dragover{outline:2px dashed var(--amber); outline-offset:-8px;}
+  #mapWrap{grid-area:canvas; display:none; position:relative;}
+  body[data-mode="map"] #mapWrap{display:block;}
+  body[data-mode="map"] #canvasWrap{display:none;}
+  #mapDiv{position:absolute; inset:0; background:var(--well);}
+  .leaflet-container{font:inherit;}
+  body[data-mode="map"] .pdfOnly{display:none !important;}
+  body:not([data-mode="map"]) .mapOnly{display:none !important;}
+  /* map floating search */
+  #searchBox{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    display:flex; gap:6px; align-items:center; z-index:1000; width:min(440px, 84%);
+  }
+  #addrInput{
+    flex:1; min-width:0; background:var(--panel);
+    border:1px solid var(--hair); color:var(--ink); padding:9px 14px; border-radius:11px;
+    font-size:13px; box-shadow:var(--shadow);
+  }
+  #addrInput:focus{outline:none; border-color:var(--amber);}
+  #addrGo{
+    background:var(--amber); color:#fff; border:none; border-radius:11px;
+    padding:9px 14px; font-weight:600; cursor:pointer; box-shadow:var(--shadow);
+  }
+  #suggList{
+    position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:2500;
+    background:var(--solid); border:1px solid var(--hair); border-radius:12px;
+    overflow:hidden; display:none; box-shadow:var(--shadow);
+  }
+  #suggList.open{display:block;}
+  .sugg{padding:10px 14px; cursor:pointer; font-size:12.5px; display:flex; flex-direction:column; gap:1px;}
+  .sugg:hover,.sugg.hi{background:var(--panel2);}
+  .sugg .s2{color:var(--faint); font-size:11px;}
+  #histBtn{
+    position:absolute; top:56px; right:14px; z-index:1000;
+    background:var(--panel); color:var(--ink); border:1px solid var(--hair);
+    border-radius:10px; padding:8px 10px; font-size:12px; cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  #histBtn:hover{background:var(--panel2);}
+  #histBtn.on{background:var(--amber); color:#fff; border-color:transparent;}
+  #histPill{
+    position:absolute; bottom:calc(16px + var(--sab)); left:50%;
+    transform:translateX(-50%); display:none;
+  }
+  #histPill.show{display:flex;}
+  #histSel,#histSeason{border:none; background:transparent; font-family:var(--mono); font-size:12px; padding:4px;}
+  #baseSwitch{
+    position:absolute; top:14px; right:14px; z-index:1000;
+    background:var(--panel); color:var(--ink);
+    border:1px solid var(--hair); border-radius:10px; padding:8px 10px;
+    font-size:12px; box-shadow:var(--shadow);
+  }
+  /* ================= floating pills ================= */
+  .pill{
+    position:fixed; z-index:1100; display:flex; align-items:center; gap:2px;
+    background:var(--panel);
+    border:1px solid var(--hair); border-radius:14px; padding:5px;
+    box-shadow:var(--shadow);
+  }
+  #toolsPill{left:14px; top:50%; transform:translateY(-50%); flex-direction:column;}
+  .tool{
+    width:40px; height:40px; border-radius:10px; border:none; background:transparent;
+    color:var(--dim); cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .tool:hover{background:var(--panel2); color:var(--ink);}
+  .tool.active{background:var(--amber); color:#fff;}
+  .tool svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .tool .tip{
+    position:absolute; left:50px; top:50%; transform:translateY(-50%);
+    background:var(--solid); color:var(--ink); padding:4px 9px; border-radius:7px;
+    font-size:11px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s;
+    border:1px solid var(--hair); box-shadow:var(--shadow); z-index:30;
+  }
+  .tool:hover .tip{opacity:1;}
+  #navPill{left:50%; transform:translateX(-50%); bottom:calc(16px + var(--sab));}
+  .pbtn{
+    height:30px; min-width:30px; padding:0 8px; border:none; background:none;
+    border-radius:8px; color:var(--dim); cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center; gap:4px;
+  }
+  .pbtn:hover{background:var(--panel2); color:var(--ink);}
+  .pbtn:disabled{opacity:.35; cursor:default;}
+  .pbtn.locked{background:var(--amber); color:#fff;}
+  .pdiv{width:1px; height:18px; background:var(--hair); margin:0 3px;}
+  #pageInfo,#zoomInfo{font-family:var(--mono); font-size:11.5px; min-width:46px; text-align:center;}
+  #scaleChip{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11.5px;}
+  #scaleChip .lbl{color:var(--faint); font-size:9px; letter-spacing:1px;}
+  #scaleChip .val{color:var(--amber); font-weight:700;}
+  #scaleChip.unset .val{color:#ff5d4f;}
+  #livePill{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:calc(64px + var(--sab)); z-index:1150;
+    background:var(--solid); border:1px solid var(--hair); border-radius:10px;
+    padding:6px 14px; font-family:var(--mono); font-size:13px; font-weight:700;
+    color:var(--amber); box-shadow:var(--shadow);
+  }
+  #livePill:has(#liveVal:empty){display:none;}
+  #fab{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:calc(64px + var(--sab)); z-index:1200;
+    display:none; gap:8px; align-items:center;
+    background:var(--solid); border:1px solid var(--hair);
+    border-radius:13px; padding:7px; box-shadow:var(--shadow);
+  }
+  #fab.show{display:flex;}
+  #fab.show ~ #livePill{display:none;}
+  #fab .btn{font-size:13px;}
+  #fabVal{font-family:var(--mono); font-size:13px; color:var(--amber); font-weight:700;
+    padding:0 8px; min-width:64px; text-align:center;}
+  /* ================= buttons / inputs ================= */
+  .btn{
+    background:var(--panel2); border:1px solid var(--hair); color:var(--ink);
+    padding:7px 12px; border-radius:9px; cursor:pointer; font-size:12.5px; white-space:nowrap;
+  }
+  .btn:hover{background:var(--well);}
+  .btn.primary{background:var(--amber); color:#fff; border-color:transparent; font-weight:600;}
+  .btn.primary:hover{filter:brightness(1.06);}
+  .btn:disabled{opacity:.4; cursor:default;}
+  .btn.danger{color:#e5493a; border-color:rgba(229,73,58,.35); background:transparent;}
+  .btn.danger:hover{background:rgba(229,73,58,.08);}
+  select,input[type=number],input[type=text],input[type=search]{
+    background:var(--solid); border:1px solid var(--line); color:var(--ink);
+    padding:7px 9px; border-radius:9px; font-size:12.5px;
+  }
+  select:focus,input:focus{outline:2px solid var(--amber); outline-offset:0;}
+  /* ================= side panel ================= */
+  #side{
+    grid-area:side; background:var(--panel);
+    border-left:1px solid var(--hair); display:flex; flex-direction:column; min-height:0;
+  }
+  #sideHead{display:flex; align-items:center; gap:8px; padding:13px 14px 8px;}
+  #side h2{font-size:13px; font-weight:700; letter-spacing:.2px; margin-right:auto;}
+  #filterSel{font-size:11.5px; padding:4px 7px; border-radius:8px;}
+  #closeSide{display:none; background:none; border:none; color:var(--dim); font-size:17px; cursor:pointer;}
+  #searchWrap{padding:0 14px;}
+  #measSearch{width:100%; margin:0 0 8px; font-size:12px; border-radius:9px;}
+  #catBar{display:flex; gap:6px; padding:0 14px 10px; align-items:center;}
+  #catBar select{flex:1; min-width:0; border-radius:9px;}
+  #catBar .btn{padding:7px 11px;}
+  #measList{flex:1; overflow-y:auto; padding:0 9px 8px; -webkit-overflow-scrolling:touch;}
+  .catHead{display:flex; align-items:center; justify-content:space-between;
+    padding:9px 5px 4px; font-size:11px; letter-spacing:.6px; font-weight:700;}
+  .catHead .cname{display:flex; align-items:center; gap:5px; text-transform:uppercase; cursor:pointer;}
+  .catHead.child{margin-left:16px;}
+  .catHead .cdot{width:8px; height:8px; border-radius:50%;}
+  .catHead .csub{font-family:var(--mono); font-weight:500; color:var(--faint); font-size:10.5px;}
+  .catTog,.catEye,.catEdit{background:none; border:none; color:var(--faint); cursor:pointer;
+    font-size:11px; padding:1px 4px; border-radius:5px;}
+  .catTog:hover,.catEye:hover,.catEdit:hover{color:var(--amber); background:var(--panel2);}
+  .catEye.off{opacity:.4;}
+  .catTog,.catEye,.catEdit{font-size:12px;}
+  .iEye{background:none; border:none; color:var(--faint); cursor:pointer;
+    font-size:12px; padding:1px 4px; border-radius:5px;}
+  .iEye:hover{color:var(--amber); background:var(--panel2);}
+  .iEye.off{opacity:.4;}
+  .mitem.hid{opacity:.55;}
+  .typeHead{display:flex; justify-content:space-between; align-items:center;
+    padding:5px 8px 2px 14px; font-family:var(--mono); font-size:10px;
+    letter-spacing:1px; color:var(--faint);}
+  .typeHead b{color:var(--dim); font-weight:600;}
+  .mitem{
+    border:1px solid var(--hair); border-radius:11px; background:var(--solid);
+    padding:8px 10px; margin-bottom:6px; cursor:pointer;
+  }
+  .mitem:hover{border-color:var(--line);}
+  .mitem.sel{border-color:var(--amber); box-shadow:0 0 0 1px var(--amber);}
+  .mitem .row1{display:flex; align-items:center; gap:8px;}
+  .mitem .swatch{width:15px; height:15px; border-radius:5px; flex:none; border:1px solid var(--line);
+    padding:0; cursor:pointer; background:none;}
+  .mitem input.name{background:transparent; border:none; color:var(--ink); font-size:12.5px; flex:1;
+    padding:2px 4px; border-radius:5px; min-width:0; font-weight:500;}
+  .mitem input.name:hover{background:var(--panel2);}
+  .mitem input.name:focus{outline:1px solid var(--amber); background:var(--solid);}
+  .mitem .del{background:none; border:none; color:var(--faint); cursor:pointer; font-size:14px;
+    padding:2px 6px; border-radius:5px; flex:none;}
+  .mitem .del:hover{color:#e5493a; background:var(--panel2);}
+  .mitem .row2{display:flex; justify-content:space-between; margin-top:4px; gap:6px;
+    font-family:var(--mono); font-size:11.5px; color:var(--dim); align-items:center;}
+  .mitem .qty{color:var(--ink); font-weight:700; text-align:right;}
+  .mitem .sub{color:var(--faint); font-size:10.5px;}
+  .mitem select.catSel{font-size:10.5px; padding:2px 4px; border-radius:5px; max-width:100px;
+    background:transparent; color:var(--faint); border:1px solid transparent;}
+  .mitem select.catSel:hover{border-color:var(--line); color:var(--ink);}
+  #totals{border-top:1px solid var(--hair); padding:11px 16px;
+    padding-bottom:calc(11px + var(--sab)); font-family:var(--mono); font-size:12px;}
+  #totals .trow{display:flex; justify-content:space-between; padding:2px 0; color:var(--dim);}
+  #totals .trow b{color:var(--ink); font-weight:700;}
+  /* ================= modals & toast ================= */
+  .modalBack{position:fixed; inset:0; background:rgba(0,0,0,.38); display:none;
+    align-items:center; justify-content:center; z-index:4000; padding:16px;
+  }
+  .modalBack.open{display:flex;}
+  #loginGate{position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:var(--bg); z-index:6000; padding:16px;}
+  #loginGate.show{display:flex;}
+  #loginGate input[type=email],#loginGate input[type=password]{flex:1; min-width:0;}
+  #cloudList .vrow button{flex:none;}
+  .modal{background:var(--solid); border:1px solid var(--hair); border-radius:14px;
+    padding:20px; width:370px; max-width:100%; box-shadow:var(--shadow);}
+  .modal h3{font-size:14.5px; margin-bottom:6px; font-weight:700;}
+  .modal p{color:var(--dim); font-size:12px; margin-bottom:14px;}
+  .frow{display:flex; gap:8px; margin-bottom:12px; align-items:center;}
+  .frow label{width:110px; color:var(--dim); font-size:12px; flex:none;}
+  .frow input{flex:1; font-family:var(--mono); min-width:0;}
+  .modal .actions{display:flex; gap:8px; justify-content:flex-end; margin-top:4px;}
+  .modal textarea{width:100%; min-height:64px; background:var(--solid); border:1px solid var(--line);
+    color:var(--ink); border-radius:9px; padding:8px; font:12.5px/1.4 inherit; resize:vertical;}
+  .exgrid{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+  .exgrid button{font-size:11px; padding:5px 9px; border-radius:7px; background:var(--panel2);
+    border:1px solid var(--hair); color:var(--dim); cursor:pointer; font-family:var(--mono);}
+  .exgrid button:hover{color:var(--amber); border-color:var(--amber);}
+  .vrow{display:flex; align-items:center; gap:10px; padding:8px 10px;
+    border:1px solid var(--hair); border-radius:10px; margin-bottom:6px; background:var(--solid);}
+  .vrow .vmeta{flex:1; min-width:0;}
+  .vrow .vn{font-weight:600; font-size:12.5px;}
+  .vrow .vd{font-family:var(--mono); font-size:10.5px; color:var(--faint);}
+  .swRow{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .sw{width:26px; height:26px; border-radius:8px; cursor:pointer; border:2px solid transparent; padding:0;}
+  .sw.on{border-color:var(--solid); box-shadow:0 0 0 2px var(--amber);}
+  #toast{
+    position:fixed; bottom:calc(58px + var(--sab)); left:50%; transform:translateX(-50%);
+    background:var(--solid); border:1px solid var(--hair); color:var(--ink);
+    padding:9px 18px; border-radius:11px; font-size:12.5px; z-index:5000;
+    opacity:0; pointer-events:none; transition:opacity .2s; max-width:92vw; text-align:center;
+    box-shadow:var(--shadow);
+  }
+  #toast.show{opacity:1;}
+  #restoreBar{
+    position:fixed; top:calc(62px + var(--sat)); left:50%; transform:translateX(-50%);
+    background:var(--solid); border:1px solid var(--amber); border-radius:12px;
+    padding:10px 14px; z-index:2800; display:none; align-items:center; gap:12px;
+    box-shadow:var(--shadow); max-width:92vw;
+  }
+  #restoreBar.show{display:flex;}
+  #restoreBar .msg{font-size:12.5px;}
+  #restoreBar .msg b{color:var(--amber);}
+  .vtxIcon{width:14px; height:14px; border-radius:50%; background:#fff;
+    border:3px solid var(--amber); box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
+  .cntIcon{width:20px; height:20px; border-radius:50%; color:#fff; font:bold 10px/20px ui-monospace,monospace;
+    text-align:center; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
+  /* ================= mobile ================= */
+  @media (max-width:840px){
+    body{grid-template-rows:auto 1fr; grid-template-columns:1fr; grid-template-areas:"top" "canvas";}
+    input,select{font-size:16px;}
+    #projTitle{max-width:130px;}
+    #modeSeg button{padding:5px 11px;}
+    #toolsPill{left:50%; top:auto; bottom:calc(64px + var(--sab)); transform:translateX(-50%); flex-direction:row;}
+    .tool{width:44px; height:44px;}
+    .tool .tip{display:none;}
+    #navPill{bottom:calc(14px + var(--sab)); max-width:96vw; overflow-x:auto;}
+    #livePill{bottom:calc(120px + var(--sab));}
+    #fab{bottom:calc(120px + var(--sab));}
+    #side{
+      position:fixed; top:0; right:0; bottom:0; width:min(360px,94vw); z-index:1500;
+      transform:translateX(105%); transition:transform .22s; border-left:1px solid var(--hair);
+      box-shadow:var(--shadow); padding-top:var(--sat); background:var(--solid);
+    }
+    #side.open{transform:none;}
+    #closeSide{display:block;}
+    #listToggle{display:flex;}
+    .credit{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+</style>
+</head>
+<body data-mode="pdf">
+
+<div id="topbar">
+  <button id="appMenuBtn" data-pop="project" title="Project menu">
+    PLAN<span>TAKEOFF</span> <em>1.9</em> <span class="chev">▾</span>
+  </button>
+  <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
+  <input type="file" id="fileInput" accept="application/pdf" hidden>
+  <input type="file" id="projInput" accept="application/json" hidden>
+  <div id="modeSeg">
+    <button id="modePdf" class="on">Plan</button>
+    <button id="modeMap">Map</button>
+  </div>
+  <div id="topRight">
+    <button class="ibtn" id="undoBtn" title="Undo (Cmd/Ctrl+Z)" disabled>↶</button>
+    <button class="ibtn" id="redoBtn" title="Redo (Shift+Cmd/Ctrl+Z)" disabled>↷</button>
+    <button class="ibtn" id="cloudBtn" title="Cloud projects — save & open online">☁️</button>
+    <button class="ibtn" id="themeBtn" title="Light / dark mode">☀️</button>
+    <button class="ibtn" id="helpBtn" data-pop="help" title="Tools & shortcuts">?</button>
+    <button class="ibtn" id="shareBtn" data-pop="share" title="Export">⤴</button>
+    <button class="ibtn" id="listToggle" title="Measurements">☰</button>
+  </div>
+</div>
+
+<!-- popover menus -->
+<div class="pop" id="pop-project">
+  <button class="mi" id="newBtn">New Project <span class="k">⌘N</span></button>
+  <div class="sep"></div>
+  <button class="mi" id="openBtn">Open PDF…</button>
+  <button class="mi" id="loadProj">Open Project…</button>
+  <button class="mi" id="saveProj">Save <span class="k">⌘S</span></button>
+  <button class="mi" id="saveAsBtn">Save As… <span class="k">⇧⌘S</span></button>
+  <button class="mi" id="verBtn">Versions…</button>
+  <div class="sep"></div>
+  <button class="mi" id="clearBtn">Clear measurements…</button>
+</div>
+<div class="pop" id="pop-share">
+  <button class="mi" id="copyBtn">Copy for LMN <span class="k">⇧⌘C</span></button>
+  <button class="mi" id="exportBtn">Export CSV <span class="k">⌘E</span></button>
+  <button class="mi" id="printBtn">Print report…</button>
+</div>
+<div class="pop" id="pop-help" style="min-width:300px">
+  <div class="ph">TOOLS</div>
+  <div class="hrow"><span>Select / edit shapes</span><b>V</b></div>
+  <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
+  <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
+  <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
+  <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
+  <div class="hrow"><span>Delete a corner point</span><b>right-click it</b></div>
+  <div class="hrow"><span>Move whole shape</span><b>drag inside it</b></div>
+  <div class="ph">VIEW</div>
+  <div class="hrow"><span>Fit page · zoom</span><b>F · + −</b></div>
+  <div class="hrow"><span>Pages · lock page</span><b>← → · P</b></div>
+  <div class="hrow"><span>Hide category / item</span><b>👁 in list</b></div>
+  <div class="hrow"><span>Show ONLY one category</span><b>Alt + 👁</b></div>
+  <div class="ph">PROJECT</div>
+  <div class="hrow"><span>Undo · Redo</span><b>⌘Z · ⇧⌘Z</b></div>
+  <div class="hrow"><span>Save · Save As</span><b>⌘S · ⇧⌘S</b></div>
+  <div class="hrow"><span>Copy for LMN · CSV</span><b>⇧⌘C · ⌘E</b></div>
+</div>
+<div class="pop" id="pop-scale">
+  <div class="ph">SET SCALE</div>
+  <button class="mi" id="scCalib">📐 Calibrate on plan… <span class="k">C</span></button>
+  <button class="mi" id="scCustom">✎ Custom scale…</button>
+  <div class="sep"></div>
+  <div id="scaleList"></div>
+</div>
+
+<div id="canvasWrap">
+  <div id="dropHint">
+    <div class="big">Drop a PDF plan here, or open one from the menu</div>
+    <div>Or switch to <b>Map</b> to measure any property from satellite</div>
+    <div>Finish shapes with <kbd>double-click</kbd> / <kbd>Enter</kbd> · <kbd>⌘Z</kbd> undo · <kbd>⌘S</kbd> save</div>
+    <div>Select tool: click a shape to edit — drag corners, drag inside to move, right-click a point to delete</div>
+  </div>
+  <div id="stage">
+    <canvas id="pdfCanvas"></canvas>
+    <canvas id="hiCanvas"></canvas>
+    <canvas id="overlay"></canvas>
+  </div>
+</div>
+
+<div id="mapWrap">
+  <div id="mapDiv"></div>
+  <div id="searchBox" class="mapOnly">
+    <input type="search" id="addrInput" placeholder="Search address or place…" autocomplete="off">
+    <button id="addrGo">Go</button>
+    <div id="suggList"></div>
+  </div>
+  <select id="baseSwitch" class="mapOnly" title="Imagery source — Esri is the flattest straight-down view">
+    <option value="ghybrid">Google Hybrid</option>
+    <option value="gsat">Google Satellite</option>
+    <option value="esri">Esri Top-Down</option>
+    <option value="osm">Streets</option>
+  </select>
+  <button id="histBtn" class="mapOnly" title="Time travel — see this property on older imagery dates">🕐 Dates</button>
+  <div class="pill mapOnly" id="histPill">
+    <select id="histSeason" title="Season filter — Winter is best for seeing the ground through trees">
+      <option value="all">All seasons</option>
+      <option value="win">❄ Winter (leaf-off)</option>
+      <option value="spr">🌱 Spring</option>
+      <option value="sum">☀ Summer</option>
+      <option value="fal">🍂 Fall</option>
+    </select>
+    <div class="pdiv"></div>
+    <button class="pbtn" id="histOlder" title="Older capture">◀</button>
+    <select id="histSel" title="Imagery capture date"></select>
+    <button class="pbtn" id="histNewer" title="Newer capture">▶</button>
+    <div class="pdiv"></div>
+    <button class="pbtn" id="histLive" title="Back to current imagery">Live</button>
+  </div>
+</div>
+
+<!-- floating tools -->
+<div class="pill" id="toolsPill">
+  <button class="tool active" data-tool="select" aria-label="Select / pan">
+    <svg viewBox="0 0 24 24"><path d="M5 3l14 8-6.5 1.5L11 19z"/></svg>
+    <span class="tip">Select / edit (V)</span>
+  </button>
+  <button class="tool" data-tool="line" aria-label="Linear measure">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M6.2 17.8L17.8 6.2"/></svg>
+    <span class="tip">Linear — LF (L)</span>
+  </button>
+  <button class="tool" data-tool="area" aria-label="Area measure">
+    <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
+    <span class="tip">Area — SF (A)</span>
+  </button>
+  <button class="tool" data-tool="count" aria-label="Count items">
+    <svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+    <span class="tip">Count — EA (K)</span>
+  </button>
+</div>
+
+<!-- floating plan controls -->
+<div class="pill pdfOnly" id="navPill">
+  <button class="pbtn" id="prevPg" title="Previous page (←)">‹</button>
+  <div id="pageInfo">– / –</div>
+  <button class="pbtn" id="nextPg" title="Next page (→)">›</button>
+  <button class="pbtn" id="lockPg" title="Lock page (P)">🔓</button>
+  <div class="pdiv"></div>
+  <button class="pbtn" id="zoomOut" title="Zoom out (−)">−</button>
+  <button class="pbtn" id="zoomFit" title="Fit page (F)"><span id="zoomInfo">100%</span></button>
+  <button class="pbtn" id="zoomIn" title="Zoom in (+)">+</button>
+  <div class="pdiv"></div>
+  <button class="pbtn" id="scaleChip" data-pop="scale" title="Drawing scale — click to set">
+    <span class="lbl">SCALE</span><span class="val" id="scaleVal">NOT SET</span>
+  </button>
+  <div class="pdiv"></div>
+  <button class="pbtn" id="pdfInvert" title="Invert plan colors">🌓</button>
+</div>
+
+<div id="fab">
+  <button class="btn" id="fabUndo" title="Undo last point">↩</button>
+  <span id="fabVal"></span>
+  <button class="btn primary" id="fabDone">✓ Done</button>
+  <button class="btn" id="fabCancel">✕</button>
+</div>
+<div id="livePill"><span id="liveVal"></span></div>
+
+<div id="side">
+  <div id="sideHead">
+    <h2>Takeoff</h2>
+    <select id="filterSel">
+      <option value="all">Everything</option>
+      <option value="page">This page</option>
+      <option value="map">Map only</option>
+    </select>
+    <button id="closeSide" aria-label="Close panel">✕</button>
+  </div>
+  <div id="searchWrap"><input type="search" id="measSearch" placeholder="Search measurements…"></div>
+  <div id="catBar">
+    <select id="activeCat" title="New measurements go into this category">
+      <option value="">No category</option>
+    </select>
+    <button class="btn" id="addCat" title="New category (e.g. Pavers, Sand, Lawn)">＋</button>
+  </div>
+  <div id="measList"></div>
+  <div id="totals"></div>
+</div>
+
+<span class="credit">made by Stephan Bluitt</span>
+
+<!-- calibration modal -->
+<div class="modalBack" id="calibBack">
+  <div class="modal">
+    <h3>Calibrate scale</h3>
+    <p>Enter the real-world length of the line you just drew on the plan.</p>
+    <div class="frow"><label for="calFt">Feet</label><input type="number" id="calFt" min="0" step="any" placeholder="0"></div>
+    <div class="frow"><label for="calIn">Inches</label><input type="number" id="calIn" min="0" step="any" placeholder="0"></div>
+    <div class="actions">
+      <button class="btn" id="calCancel">Cancel</button>
+      <button class="btn primary" id="calApply">Set scale</button>
+    </div>
+  </div>
+</div>
+
+<!-- custom scale modal -->
+<div class="modalBack" id="customBack">
+  <div class="modal">
+    <h3>Custom scale</h3>
+    <p>Enter your own scale: how many inches on paper equal how much real distance.</p>
+    <div class="exgrid">
+      <button data-p="1" data-f="15" data-i="0">1" = 15'</button>
+      <button data-p="1" data-f="25" data-i="0">1" = 25'</button>
+      <button data-p="0.09375" data-f="1" data-i="0">3/32" = 1'</button>
+      <button data-p="1" data-f="200" data-i="0">1" = 200'</button>
+    </div>
+    <div class="frow"><label for="cusPaper">Paper (inches)</label><input type="number" id="cusPaper" min="0" step="any" placeholder='e.g. 1 or 0.25'></div>
+    <div class="frow"><label for="cusFt">Real feet</label><input type="number" id="cusFt" min="0" step="any" placeholder="e.g. 15"></div>
+    <div class="frow"><label for="cusIn">Real inches</label><input type="number" id="cusIn" min="0" step="any" placeholder="0"></div>
+    <div class="actions">
+      <button class="btn" id="cusCancel">Cancel</button>
+      <button class="btn primary" id="cusApply">Set scale</button>
+    </div>
+  </div>
+</div>
+
+<!-- save project modal -->
+<div class="modalBack" id="saveBack">
+  <div class="modal">
+    <h3>Save project</h3>
+    <p>Name this project — it's used for the file name and report headers.</p>
+    <div class="frow"><label for="projName">Project name</label><input type="text" id="projName" placeholder="e.g. 24 Elm St driveway"></div>
+    <div class="frow" id="savePdfRow"><label></label><label style="width:auto;display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="savePdfInc" checked> Include the PDF inside the project file</label></div>
+    <div class="actions">
+      <button class="btn" id="saveCancel">Cancel</button>
+      <button class="btn primary" id="saveApply">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- new category modal -->
+<div class="modalBack" id="catBack">
+  <div class="modal">
+    <h3>New category</h3>
+    <p>Name the material or scope — new measurements will go into it.</p>
+    <div class="frow"><label for="catName">Name</label><input type="text" id="catName" placeholder="e.g. Pavers, Sand, Lawn"></div>
+    <div class="actions">
+      <button class="btn" id="catCancel">Cancel</button>
+      <button class="btn primary" id="catApply">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- clear all confirm modal -->
+<div class="modalBack" id="clearBack">
+  <div class="modal">
+    <h3>Delete all measurements?</h3>
+    <p>This removes every measurement and count in this project. Categories are kept. This cannot be undone.</p>
+    <div class="actions">
+      <button class="btn" id="clearCancel">Cancel</button>
+      <button class="btn primary" id="clearApply">Delete all</button>
+    </div>
+  </div>
+</div>
+
+<!-- category editor modal -->
+<div class="modalBack" id="catEditBack">
+  <div class="modal">
+    <h3>Edit category</h3>
+    <div class="frow"><label for="ceName">Name</label><input type="text" id="ceName"></div>
+    <div class="frow" style="align-items:flex-start"><label style="padding-top:6px">Color</label>
+      <div class="swRow" id="ceColors" style="margin-bottom:0"></div>
+    </div>
+    <div class="frow"><label for="ceParent">Inside of</label><select id="ceParent" style="flex:1"></select></div>
+    <div class="frow"><label for="ceDepth">Depth (in)</label><input type="number" id="ceDepth" min="0" step="any" placeholder="optional — e.g. 3 for mulch"></div>
+    <div class="frow"><label for="ceWaste">Waste %</label><input type="number" id="ceWaste" min="0" step="any" placeholder="optional — e.g. 10"></div>
+    <div class="frow" style="align-items:flex-start"><label style="padding-top:6px" for="ceNotes">Notes</label>
+      <textarea id="ceNotes" placeholder="Scope notes — included in Copy for LMN"></textarea>
+    </div>
+    <p style="margin:2px 0 10px; font-size:11px;">Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.</p>
+    <div class="actions" style="justify-content:space-between">
+      <button class="btn danger" id="ceDelete">Delete category</button>
+      <span style="display:flex; gap:8px">
+        <button class="btn" id="ceCancel">Cancel</button>
+        <button class="btn primary" id="ceSave">Save</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- new project modal -->
+<div class="modalBack" id="newBack">
+  <div class="modal">
+    <h3>Start a new project?</h3>
+    <p>This clears all measurements, categories, scales and the loaded plan. If you haven't saved, save first — otherwise this work is gone (one undo step can bring the measurements back).</p>
+    <div class="actions">
+      <button class="btn" id="newCancel">Cancel</button>
+      <button class="btn" id="newSaveFirst">Save first…</button>
+      <button class="btn primary" id="newGo">Start new</button>
+    </div>
+  </div>
+</div>
+
+<!-- versions modal -->
+<div class="modalBack" id="verBack">
+  <div class="modal">
+    <h3>Project versions</h3>
+    <p>Snapshots stored inside this project file. Save milestones — "Bid v1", "Revised scope" — and jump back anytime.</p>
+    <div class="frow"><label for="verName">Name</label><input type="text" id="verName" placeholder="e.g. Bid v1">
+      <button class="btn primary" id="verSave" style="flex:none">Save version</button></div>
+    <div id="verList" style="max-height:42vh;overflow-y:auto;margin:2px 0 10px"></div>
+    <div class="actions"><button class="btn" id="verClose">Close</button></div>
+  </div>
+</div>
+
+<!-- cloud projects modal -->
+<div class="modalBack" id="cloudBack">
+  <div class="modal" style="width:440px;max-width:94vw">
+    <h3>☁️ Cloud projects</h3>
+    <p>Projects (plan PDF included) live in your private cloud — open them from any computer after logging in.</p>
+    <div class="frow"><label for="cloudName">Name</label><input type="text" id="cloudName" placeholder="Project name">
+      <button class="btn primary" id="cloudSaveBtn" style="flex:none">Save to cloud</button></div>
+    <div id="cloudList" style="max-height:42vh;overflow-y:auto;margin:2px 0 10px"></div>
+    <div class="actions">
+      <button class="btn" id="cloudSignout">Sign out</button>
+      <button class="btn" id="cloudSettings">Settings</button>
+      <button class="btn primary" id="cloudClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- login gate (web) / cloud login (desktop) -->
+<div id="loginGate">
+  <div class="modal" style="width:380px;max-width:92vw;position:relative">
+    <button id="gClose" class="btn" style="position:absolute;top:10px;right:10px;display:none">✕</button>
+    <h3 style="font-size:16px">PLAN<span style="color:var(--amber)">TAKEOFF</span></h3>
+    <div id="gSetup" style="display:none">
+      <p>One-time setup — paste the two values from your Supabase project (steps in the setup guide).</p>
+      <div class="frow"><label for="gUrl">Project URL</label><input type="text" id="gUrl" placeholder="https://xxxxx.supabase.co"></div>
+      <div class="frow"><label for="gKey">Anon key</label><input type="text" id="gKey" placeholder="eyJhbGciOi…"></div>
+      <div class="actions"><button class="btn primary" id="gSetupGo">Continue</button></div>
+    </div>
+    <div id="gLogin" style="display:none">
+      <p>Private tool — log in to continue.</p>
+      <div class="frow"><label for="gEmail">Email</label><input type="email" id="gEmail" autocomplete="username"></div>
+      <div class="frow"><label for="gPass">Password</label><input type="password" id="gPass" autocomplete="current-password"></div>
+      <div id="gErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
+      <div class="actions"><button class="btn primary" id="gGo" style="width:100%">Log in</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="restoreBar">
+  <span class="msg"><b>Recovered work found</b> — <span id="restoreInfo"></span></span>
+  <button class="btn primary" id="restoreYes">Restore</button>
+  <button class="btn" id="restoreNo">Dismiss</button>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+// ================= state =================
+let mode = "pdf";
+let pdfDoc = null, pdfName = "", pageNum = 1, pageCount = 0, zoom = 1, rendering = false, renderQueued = false;
+let tool = "select";
+let ftPerUnit = {}, defaultFtPerUnit = null, scaleLabel = "NOT SET", scaleLabels = {};
+let measurements = [];       // pdf: {id,src:'pdf',type,page,pts:{x,y},name,color,cat} | map: {id,src:'map',type,pts:{lat,lng},...}
+let categories = [], activeCatId = "", nextCatId = 1;
+let drawing = null, mousePdf = null, selectedId = null, calibPts = null;
+let editDrag = null, selVertex = null;
+let collapsedCats = new Set(), hiddenCats = new Set(), hiddenItems = new Set();
+let pdfData = null; // raw bytes of the loaded PDF (for embedding in project files)
+let fileHandle = null;   // File System Access handle — lets Save write back to the opened file
+let versions = [];       // named snapshots stored inside the project file
+let nextId = 1, pageLocked = false;
+let projectName = "", lastAddress = "";
+const counters = {line:1, area:1, count:1};
+const COLORS = {line:"#0aa2e6", area:"#2fae3f", count:"#e6479a", calibrate:"#ffb224"};
+const PALETTE = ["#0aa2e6","#2fae3f","#e6479a","#ffb224","#9b6bff","#ff7a45","#19c3b1","#e8e6e1"];
+
+const wrap = document.getElementById("canvasWrap");
+const stage = document.getElementById("stage");
+const pdfCanvas = document.getElementById("pdfCanvas");
+const overlay = document.getElementById("overlay");
+const octx = overlay.getContext("2d");
+const hiCanvas = document.getElementById("hiCanvas");
+const hictx = hiCanvas.getContext("2d");
+let baseCache = new Map(); // pageNum -> {canvas, scale}
+let baseBusy = false, baseQueued = false, hiTask = null, hiTimer = null;
+const BASE_MAX = 2000; // css px, longest side of the always-ready base layer
+const dpr = window.devicePixelRatio || 1;
+let shiftDown=false, spaceDown=false, panning=false, panStart=null;
+
+// ================= helpers =================
+const getFPU = (pg=pageNum) => ftPerUnit[pg] ?? defaultFtPerUnit;
+function ftIn(ft){
+  const f = Math.floor(ft); let i = Math.round((ft-f)*12);
+  if(i===12) return (f+1)+"'-0\"";
+  return f+"'-"+i+"\"";
+}
+function fmtLen(ft){ return ft.toFixed(2)+" LF ("+ftIn(ft)+")"; }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function pathLen(pts){ let d=0; for(let i=1;i<pts.length;i++) d+=dist(pts[i-1],pts[i]); return d; }
+function pointInPoly(p, pts){
+  let inside = false;
+  for(let i=0, j=pts.length-1; i<pts.length; j=i++){
+    const a=pts[i], b=pts[j];
+    if((a.y>p.y)!==(b.y>p.y) && p.x < (b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x) inside=!inside;
+  }
+  return inside;
+}
+function distToSeg(p,a,b){
+  const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy;
+  if(!L2) return dist(p,a);
+  let t=((p.x-a.x)*dx+(p.y-a.y)*dy)/L2; t=Math.max(0,Math.min(1,t));
+  return dist(p,{x:a.x+t*dx,y:a.y+t*dy});
+}
+function distToPath(p,pts,closed){
+  let d=Infinity;
+  for(let i=1;i<pts.length;i++) d=Math.min(d,distToSeg(p,pts[i-1],pts[i]));
+  if(closed && pts.length>2) d=Math.min(d,distToSeg(p,pts[pts.length-1],pts[0]));
+  return d;
+}
+function polyArea(pts){
+  let s=0;
+  for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; s += a.x*b.y - b.x*a.y; }
+  return Math.abs(s)/2;
+}
+// --- geodesic (map) math ---
+const R_EARTH = 6378137, M2FT = 3.280839895;
+function havFt(a,b){
+  const dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180;
+  const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return 2*R_EARTH*Math.asin(Math.sqrt(s))*M2FT;
+}
+function geoPathFt(pts){ let d=0; for(let i=1;i<pts.length;i++) d+=havFt(pts[i-1],pts[i]); return d; }
+function geoAreaSF(pts){
+  if(pts.length<3) return 0;
+  let area=0; const rad = Math.PI/180;
+  for(let i=0,n=pts.length;i<n;i++){
+    const p1=pts[i], p2=pts[(i+1)%n];
+    area += (p2.lng-p1.lng)*rad * (2 + Math.sin(p1.lat*rad) + Math.sin(p2.lat*rad));
+  }
+  return Math.abs(area*R_EARTH*R_EARTH/2) * M2FT * M2FT;
+}
+function measureValue(m){
+  if(m.type==="count") return m.pts.length;
+  if(m.src==="map"){
+    return m.type==="line" ? geoPathFt(m.pts) : geoAreaSF(m.pts);
+  }
+  const fpu = getFPU(m.page);
+  if(fpu == null) return null;
+  return m.type==="line" ? pathLen(m.pts)*fpu : polyArea(m.pts)*fpu*fpu;
+}
+function measurePerim(m){
+  if(m.type!=="area" || m.pts.length<3) return null;
+  if(m.src==="map") return geoPathFt([...m.pts, m.pts[0]]);
+  const fpu = getFPU(m.page);
+  return fpu==null ? null : pathLen([...m.pts, m.pts[0]])*fpu;
+}
+function unitOf(t){ return t==="line"?"LF":t==="area"?"SF":"EA"; }
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2000);
+}
+function fracLabel(v){
+  const fracs = [[1,16],[3,32],[1,8],[3,16],[1,4],[3,8],[1,2],[3,4],[1,1],[3,2],[3,1]];
+  for(const [n,d] of fracs){ if(Math.abs(v - n/d) < 1e-6) return d===1 ? n+'"' : n+"/"+d+'"'; }
+  return (+v.toFixed(4))+'"';
+}
+
+// ================= categories =================
+function catOf(id){ return categories.find(c=>c.id===id) || null; }
+function isChildCat(c){ return !!(c && c.parent && catOf(c.parent)); }
+function orderedCats(){
+  const tops = categories.filter(c => !isChildCat(c));
+  const out = [];
+  for(const t of tops){
+    out.push(t);
+    for(const ch of categories) if(ch.parent===t.id) out.push(ch);
+  }
+  return out;
+}
+function catLabel(c){ return isChildCat(c) ? catOf(c.parent).name+" › "+c.name : c.name; }
+function refreshCatSelect(){
+  const sel = document.getElementById("activeCat");
+  sel.innerHTML = '<option value="">No category</option>' +
+    orderedCats().map(c=>'<option value="'+c.id+'">'+
+      (isChildCat(c)? "· " : "")+c.name.replace(/</g,"&lt;")+'</option>').join("");
+  sel.value = activeCatId;
+}
+function addCategory(){
+  openModal("catBack","catName");
+}
+function createCategoryFromModal(){
+  const name = document.getElementById("catName").value.trim();
+  if(!name){ toast("Type a category name"); return; }
+  closeModal("catBack");
+  pushHistory();
+  const c = {id:"c"+(nextCatId++), name, color:PALETTE[(categories.length)%PALETTE.length]};
+  categories.push(c); activeCatId = c.id;
+  refreshCatSelect(); renderList();
+  if(typeof scheduleAutosave==="function") scheduleAutosave();
+  toast('Category "'+name+'" active');
+}
+document.getElementById("addCat").onclick = addCategory;
+document.getElementById("activeCat").onchange = e => { activeCatId = e.target.value; };
+function newName(type){
+  const c = catOf(activeCatId);
+  if(c) return c.name+" "+(measurements.filter(m=>m.cat===c.id).length+1);
+  return (type==="line"?"Line ":type==="area"?"Area ":"Count ") + (counters[type]++);
+}
+function newColor(type){
+  const c = catOf(activeCatId);
+  return c ? c.color : COLORS[type];
+}
+
+// ================= undo / redo history =================
+let undoStack = [], redoStack = [];
+function snapshot(){
+  return JSON.stringify({measurements, categories, activeCatId, counters, nextId, nextCatId});
+}
+function pushHistory(){
+  undoStack.push(snapshot());
+  if(undoStack.length > 60) undoStack.shift();
+  redoStack.length = 0;
+  updateUndoBtns();
+}
+function restoreSnapshot(snap){
+  const d = JSON.parse(snap);
+  measurements = d.measurements; categories = d.categories;
+  activeCatId = d.activeCatId; Object.assign(counters, d.counters);
+  nextId = d.nextId; nextCatId = d.nextCatId;
+  drawing = null; selectedId = null;
+  refreshCatSelect(); refreshAll();
+}
+window.__undo = () => {
+  const ae = document.activeElement;
+  if(ae && ["INPUT","TEXTAREA"].includes(ae.tagName)){ document.execCommand("undo"); return; }
+  if(!undoStack.length) return;
+  redoStack.push(snapshot());
+  restoreSnapshot(undoStack.pop());
+  updateUndoBtns();
+};
+window.__redo = () => {
+  const ae = document.activeElement;
+  if(ae && ["INPUT","TEXTAREA"].includes(ae.tagName)){ document.execCommand("redo"); return; }
+  if(!redoStack.length) return;
+  undoStack.push(snapshot());
+  restoreSnapshot(redoStack.pop());
+  updateUndoBtns();
+};
+function commitHistory(preSnap){
+  undoStack.push(preSnap);
+  if(undoStack.length > 60) undoStack.shift();
+  redoStack.length = 0;
+  updateUndoBtns();
+}
+function deleteVertex(m, idx){
+  if(m.type==="count"){
+    pushHistory();
+    m.pts.splice(idx,1);
+    if(!m.pts.length){ measurements = measurements.filter(x=>x.id!==m.id); selectedId=null; }
+    selVertex=null; if(drawing===m) drawing=null; refreshAll();
+    toast("Point removed"); return;
+  }
+  const min = m.type==="area" ? 3 : 2;
+  if(m.pts.length<=min){ toast("Needs at least "+min+" points — delete the whole item from the list"); return; }
+  pushHistory(); m.pts.splice(idx,1); selVertex=null; refreshAll();
+  toast("Point removed");
+}
+function updateUndoBtns(){
+  document.getElementById("undoBtn").disabled = !undoStack.length;
+  document.getElementById("redoBtn").disabled = !redoStack.length;
+}
+document.getElementById("undoBtn").onclick = () => window.__undo();
+document.getElementById("redoBtn").onclick = () => window.__redo();
+
+// ================= mode switch =================
+function setMode(m){
+  mode = m;
+  document.body.dataset.mode = m;
+  document.getElementById("modePdf").classList.toggle("on", m==="pdf");
+  document.getElementById("modeMap").classList.toggle("on", m==="map");
+  if(drawing){ drawing=null; }
+  if(m==="map"){
+    if(tool==="calibrate") setTool("line");
+    initMap();
+    setTimeout(()=>{ map.invalidateSize(); redrawMapLayers(); }, 60);
+  } else {
+    drawOverlay();
+  }
+  updateFab(); updateLive();
+}
+document.getElementById("modePdf").onclick = () => setMode("pdf");
+document.getElementById("modeMap").onclick = () => setMode("map");
+
+// ================= MAP mode =================
+let map=null, baseLayers={}, currentBase=null, mapLayerGroup=null, tempGroup=null;
+function initMap(){
+  if(map) return;
+  map = L.map("mapDiv", {zoomControl:true, doubleClickZoom:false, attributionControl:true, maxZoom:22})
+    .setView([40.9403, -73.8654], 15); // Yonkers, NY
+  const gOpts = {maxZoom:22, maxNativeZoom:20, subdomains:["0","1","2","3"], attribution:"Imagery © Google"};
+  baseLayers = {
+    ghybrid: L.tileLayer("https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", gOpts),
+    gsat:    L.tileLayer("https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", gOpts),
+    esri:    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+              {maxZoom:22, maxNativeZoom:19, attribution:"Imagery © Esri, Maxar, Earthstar Geographics"}),
+    osm:     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+              {maxZoom:21, maxNativeZoom:19, attribution:"© OpenStreetMap contributors"})
+  };
+  currentBase = baseLayers.ghybrid.addTo(map);
+  mapLayerGroup = L.layerGroup().addTo(map);
+  tempGroup = L.layerGroup().addTo(map);
+  map.on("click", e => {
+    if(tool==="select"){
+      if(selectedId!=null || selVertex){ selectedId=null; selVertex=null; refreshAll(); }
+      return;
+    }
+    if(e.originalEvent && e.originalEvent.detail > 1) return; // part of a double-click
+    mapAddPoint({lat:e.latlng.lat, lng:e.latlng.lng});
+  });
+  map.on("dblclick", () => finishDrawing());
+  map.on("mousemove", e => {
+    if(drawing && mode==="map"){ mouseLL = {lat:e.latlng.lat, lng:e.latlng.lng}; drawTemp(); updateLive(); }
+  });
+}
+let mouseLL = null;
+document.getElementById("baseSwitch").onchange = e => {
+  if(!map) return;
+  const next = baseLayers[e.target.value];
+  if(!next || next===currentBase) return;
+  map.removeLayer(currentBase);
+  currentBase = next.addTo(map);
+};
+
+function mapAddPoint(ll){
+  if(tool==="count"){
+    pushHistory();
+    let m = drawing;
+    if(!m){
+      m = {id:nextId++, src:"map", type:"count", pts:[], name:newName("count"), color:newColor("count"), cat:activeCatId};
+      measurements.push(m); drawing = m; selectedId = m.id;
+    }
+    m.pts.push(ll); refreshAll(); return;
+  }
+  if(tool==="line" || tool==="area"){
+    if(!drawing) drawing = {src:"map", type:tool, pts:[], color:newColor(tool)};
+    drawing.pts.push(ll); drawTemp(); updateFab(); updateLive();
+  }
+}
+
+function enableBodyDrag(layer, m){
+  layer.on("mousedown", (e) => {
+    if(tool!=="select" || (e.originalEvent && e.originalEvent.button!==0)) return;
+    L.DomEvent.stopPropagation(e);
+    map.dragging.disable();
+    const start = e.latlng;
+    const orig = m.pts.map(p=>({...p}));
+    const pre = snapshot();
+    let moved = false;
+    const mv = ev => {
+      const dLat = ev.latlng.lat-start.lat, dLng = ev.latlng.lng-start.lng;
+      m.pts = orig.map(p=>({lat:p.lat+dLat, lng:p.lng+dLng}));
+      layer.setLatLngs(m.pts); moved = true;
+      const v = measureValue(m);
+      document.getElementById("liveVal").textContent =
+        m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
+    };
+    const up = () => {
+      map.off("mousemove", mv); map.off("mouseup", up);
+      map.dragging.enable();
+      if(moved){ commitHistory(pre); refreshAll(); }
+    };
+    map.on("mousemove", mv); map.on("mouseup", up);
+  });
+}
+function addVertexHandles(layer, m){
+  m.pts.forEach((pt,i)=>{
+    const mk = L.marker(pt, {draggable:true, icon:L.divIcon({className:"vtxIcon", iconSize:[14,14], iconAnchor:[7,7]})}).addTo(mapLayerGroup);
+    let pre = null;
+    mk.on("dragstart", ()=>{ pre = snapshot(); });
+    mk.on("drag", e => {
+      m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng};
+      layer.setLatLngs(m.pts);
+    });
+    mk.on("dragend", ()=>{ if(pre) commitHistory(pre); refreshAll(); });
+    mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); deleteVertex(m, i); });
+    mk.on("click", e => { L.DomEvent.stopPropagation(e); selVertex={mId:m.id, idx:i}; });
+  });
+}
+function redrawMapLayers(){
+  if(!map) return;
+  mapLayerGroup.clearLayers();
+  for(const m of measurements){
+    if(m.src!=="map") continue;
+    if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
+    const hot = m.id===selectedId;
+    const style = {color:m.color, weight:hot?4:3, opacity:.95};
+    if(m.type==="line" && m.pts.length>1){
+      const pl = L.polyline(m.pts, style).addTo(mapLayerGroup);
+      pl.bindTooltip(m.name+" — "+geoPathFt(m.pts).toFixed(1)+" LF", {sticky:true});
+      pl.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+      if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); }
+    } else if(m.type==="area" && m.pts.length>2){
+      const pg = L.polygon(m.pts, {...style, fillOpacity:.22}).addTo(mapLayerGroup);
+      pg.bindTooltip(m.name+" — "+geoAreaSF(m.pts).toFixed(0)+" SF", {sticky:true});
+      pg.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+      if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); }
+    } else if(m.type==="count"){
+      m.pts.forEach((p,i)=>{
+        if(hot){
+          const mk = L.marker(p, {draggable:true, icon:L.divIcon({
+            className:"", iconSize:[20,20], iconAnchor:[10,10],
+            html:'<div class="cntIcon" style="background:'+m.color+'">'+(i+1)+'</div>'
+          })}).addTo(mapLayerGroup);
+          let pre = null;
+          mk.on("dragstart", ()=>{ pre = snapshot(); });
+          mk.on("drag", e => { m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng}; });
+          mk.on("dragend", ()=>{ if(pre) commitHistory(pre); refreshAll(); });
+          mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); deleteVertex(m, i); });
+          mk.bindTooltip(m.name+" #"+(i+1)+" — right-click deletes");
+        } else {
+          const cm = L.circleMarker(p, {radius:9, color:m.color, weight:2, fillColor:m.color, fillOpacity:.35})
+            .addTo(mapLayerGroup)
+            .bindTooltip(m.name+" #"+(i+1));
+          cm.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+        }
+      });
+    }
+  }
+  drawTemp();
+}
+function drawTemp(){
+  if(!map) return;
+  tempGroup.clearLayers();
+  if(!drawing || mode!=="map") return;
+  const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
+  if(drawing.type==="line" && pts.length>1)
+    L.polyline(pts, {color:drawing.color, weight:3, dashArray:"7,5"}).addTo(tempGroup);
+  if(drawing.type==="area" && pts.length>1)
+    L.polygon(pts, {color:drawing.color, weight:3, dashArray:"7,5", fillOpacity:.15}).addTo(tempGroup);
+  for(const p of drawing.pts)
+    L.circleMarker(p, {radius:4, color:"#fff", weight:1.5, fillColor:drawing.color, fillOpacity:1}).addTo(tempGroup);
+}
+
+// ---- address search with live suggestions (Photon: typo-tolerant, free) ----
+const addrInput = document.getElementById("addrInput");
+const suggList = document.getElementById("suggList");
+let suggItems = [], suggHi = -1, suggTimer = null, suggSeq = 0;
+
+function photonLabel(p){
+  const a = p.properties;
+  const l1 = [a.housenumber, a.street || a.name].filter(Boolean).join(" ") || a.name || "";
+  const l2 = [a.city || a.county, a.state, a.postcode].filter(Boolean).join(", ");
+  return {l1: l1 || l2, l2: l1 ? l2 : (a.country||"")};
+}
+async function fetchSuggestions(q){
+  const seq = ++suggSeq;
+  let items = [];
+  try{
+    const c = map ? map.getCenter() : {lat:40.94, lng:-73.87};
+    const r = await fetch("https://photon.komoot.io/api/?limit=6&lat="+c.lat+"&lon="+c.lng+"&q="+encodeURIComponent(q));
+    const js = await r.json();
+    items = (js.features||[]).map(f => {
+      const {l1,l2} = photonLabel(f);
+      return {l1, l2, lat:f.geometry.coordinates[1], lng:f.geometry.coordinates[0]};
+    });
+  }catch{}
+  if(!items.length){
+    try{
+      const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=6&q="+encodeURIComponent(q));
+      const js = await r.json();
+      items = js.map(x => {
+        const parts = x.display_name.split(",");
+        return {l1: parts.slice(0,2).join(",").trim(), l2: parts.slice(2,5).join(",").trim(), lat:+x.lat, lng:+x.lon};
+      });
+    }catch{}
+  }
+  if(seq !== suggSeq) return; // stale response
+  renderSuggestions(items);
+}
+function renderSuggestions(items){
+  suggItems = items; suggHi = -1;
+  if(!items.length){ suggList.classList.remove("open"); suggList.innerHTML=""; return; }
+  suggList.innerHTML = items.map((it,i)=>
+    '<div class="sugg" data-i="'+i+'"><span>'+it.l1.replace(/</g,"&lt;")+'</span>'+
+    (it.l2?'<span class="s2">'+it.l2.replace(/</g,"&lt;")+'</span>':'')+'</div>').join("");
+  suggList.classList.add("open");
+  suggList.querySelectorAll(".sugg").forEach(el => {
+    el.onmousedown = e => { e.preventDefault(); pickSuggestion(+el.dataset.i); };
+  });
+}
+function pickSuggestion(i){
+  const it = suggItems[i]; if(!it) return;
+  addrInput.value = it.l1 + (it.l2? ", "+it.l2 : "");
+  lastAddress = it.l1;
+  syncTitle();
+  suggList.classList.remove("open");
+  initMap();
+  map.setView([it.lat, it.lng], 19);
+  toast(it.l1);
+  addrInput.blur();
+}
+addrInput.addEventListener("input", () => {
+  const q = addrInput.value.trim();
+  clearTimeout(suggTimer);
+  if(q.length < 3){ suggList.classList.remove("open"); return; }
+  suggTimer = setTimeout(()=>fetchSuggestions(q), 250);
+});
+addrInput.addEventListener("keydown", e => {
+  const open = suggList.classList.contains("open");
+  if(e.key==="ArrowDown" && open){
+    e.preventDefault(); suggHi = Math.min(suggHi+1, suggItems.length-1); hiSugg();
+  } else if(e.key==="ArrowUp" && open){
+    e.preventDefault(); suggHi = Math.max(suggHi-1, 0); hiSugg();
+  } else if(e.key==="Enter"){
+    e.preventDefault();
+    if(open && suggItems.length) pickSuggestion(suggHi>=0 ? suggHi : 0);
+    else searchAddress();
+  } else if(e.key==="Escape"){
+    suggList.classList.remove("open");
+  }
+});
+function hiSugg(){
+  suggList.querySelectorAll(".sugg").forEach((el,i)=>el.classList.toggle("hi", i===suggHi));
+}
+addrInput.addEventListener("blur", () => setTimeout(()=>suggList.classList.remove("open"), 150));
+
+async function searchAddress(){
+  const q = addrInput.value.trim();
+  if(!q) return;
+  suggList.classList.remove("open");
+  try{
+    const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q="+encodeURIComponent(q));
+    const js = await r.json();
+    if(!js.length){ toast("No results — try the suggestions while typing"); return; }
+    initMap();
+    map.setView([+js[0].lat, +js[0].lon], 19);
+    lastAddress = js[0].display_name.split(",").slice(0,2).join(",").trim();
+    syncTitle();
+    toast(js[0].display_name.split(",").slice(0,3).join(","));
+  }catch{ toast("Search failed — check connection"); }
+}
+document.getElementById("addrGo").onclick = searchAddress;
+
+// ================= PDF load / render =================
+document.getElementById("openBtn").onclick = () => document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange = e => { if(e.target.files[0]) loadFile(e.target.files[0]); };
+wrap.addEventListener("dragover", e => { e.preventDefault(); wrap.classList.add("dragover"); });
+wrap.addEventListener("dragleave", () => wrap.classList.remove("dragover"));
+wrap.addEventListener("drop", e => {
+  e.preventDefault(); wrap.classList.remove("dragover");
+  const f = e.dataTransfer.files[0];
+  if(!f) return;
+  if(f.type === "application/pdf") loadFile(f);
+  else if(f.name.endsWith(".json")){
+    fileHandle = null;
+    const it = e.dataTransfer.items && e.dataTransfer.items[0];
+    if(it && it.getAsFileSystemHandle) it.getAsFileSystemHandle().then(h=>{ fileHandle=h; }).catch(()=>{});
+    loadProjectFile(f);
+  }
+});
+
+async function loadFile(file){
+  const buf = await file.arrayBuffer();
+  await loadPdfBytes(buf, file.name);
+  toast(file.name+" · "+pageCount+" page"+(pageCount>1?"s":""));
+}
+async function loadPdfBytes(buf, name){
+  baseCache.clear(); hiCanvas.style.display="none";
+  pdfData = buf.slice(0); // keep a copy — pdf.js transfers the buffer to its worker
+  pdfDoc = await pdfjsLib.getDocument({data:buf}).promise;
+  pdfName = name;
+  pageCount = pdfDoc.numPages; pageNum = 1;
+  document.getElementById("dropHint").style.display = "none";
+  stage.style.display = "block";
+  await fitPage();
+  syncTitle();
+  refreshAll();
+  if(mode!=="pdf") setMode("pdf");
+}
+function bufToB64(buf){
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  for(let i=0;i<bytes.length;i+=32768) bin += String.fromCharCode.apply(null, bytes.subarray(i, i+32768));
+  return btoa(bin);
+}
+function b64ToBuf(b64){
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
+// Two-layer renderer:
+//  - base: whole page at a capped resolution, rendered ONCE per page, instantly rescaled by CSS on zoom
+//  - hi:   only the visible window, rendered at full zoom quality after the view settles
+async function renderPage(){
+  if(!pdfDoc) return;
+  const page = await pdfDoc.getPage(pageNum);
+  const vp1 = page.getViewport({scale:1});
+  const cssW = vp1.width*zoom, cssH = vp1.height*zoom;
+  pdfCanvas.style.width = cssW+"px"; pdfCanvas.style.height = cssH+"px";
+  overlay.width = Math.floor(cssW*dpr); overlay.height = Math.floor(cssH*dpr);
+  overlay.style.width = cssW+"px"; overlay.style.height = cssH+"px";
+  hiCanvas.style.display = "none";
+  let base = baseCache.get(pageNum);
+  if(!base){
+    if(baseBusy){ baseQueued = true; }
+    else{
+      baseBusy = true;
+      const bscale = Math.min(3, (BASE_MAX*dpr)/Math.max(vp1.width, vp1.height));
+      const bvp = page.getViewport({scale:bscale});
+      const c = document.createElement("canvas");
+      c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
+      const bctx = c.getContext("2d");
+      bctx.fillStyle = "#fff"; bctx.fillRect(0,0,c.width,c.height);
+      await page.render({canvasContext:bctx, viewport:bvp}).promise;
+      base = {canvas:c, scale:bscale};
+      baseCache.set(pageNum, base);
+      if(baseCache.size > 4) baseCache.delete(baseCache.keys().next().value);
+      baseBusy = false;
+      if(baseQueued){ baseQueued = false; renderPage(); return; }
+    }
+  }
+  if(base){
+    if(pdfCanvas.width !== base.canvas.width || pdfCanvas.height !== base.canvas.height){
+      pdfCanvas.width = base.canvas.width; pdfCanvas.height = base.canvas.height;
+    }
+    pdfCanvas.getContext("2d").drawImage(base.canvas, 0, 0);
+  }
+  drawOverlay();
+  scheduleHi(60);
+}
+function scheduleHi(delay=120){
+  clearTimeout(hiTimer);
+  hiTimer = setTimeout(updateHi, delay);
+}
+async function updateHi(){
+  if(!pdfDoc || mode!=="pdf" || wz){ return; }
+  const base = baseCache.get(pageNum);
+  const page = await pdfDoc.getPage(pageNum);
+  const vp1 = page.getViewport({scale:1});
+  if(base && zoom*dpr <= base.scale + 0.01){ hiCanvas.style.display="none"; return; }
+  const pad = 250;
+  const W = vp1.width*zoom, H = vp1.height*zoom;
+  let x = Math.max(0, wrap.scrollLeft - stage.offsetLeft - pad);
+  let y = Math.max(0, wrap.scrollTop  - stage.offsetTop  - pad);
+  let w = Math.min(wrap.clientWidth + pad*2, W - x);
+  let h = Math.min(wrap.clientHeight + pad*2, H - y);
+  if(w<=0 || h<=0){ hiCanvas.style.display="none"; return; }
+  const pw = Math.floor(w*dpr), ph = Math.floor(h*dpr);
+  if(pw*ph > 24e6){ hiCanvas.style.display="none"; return; }
+  if(hiTask){ try{ hiTask.cancel(); }catch{} hiTask = null; }
+  hiCanvas.width = pw; hiCanvas.height = ph;
+  hiCanvas.style.left = x+"px"; hiCanvas.style.top = y+"px";
+  hiCanvas.style.width = w+"px"; hiCanvas.style.height = h+"px";
+  hictx.fillStyle = "#fff"; hictx.fillRect(0,0,pw,ph);
+  const rvp = page.getViewport({scale:zoom});
+  hiTask = page.render({canvasContext:hictx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
+  try{
+    await hiTask.promise;
+    hiCanvas.style.display = "block";
+  }catch(e){ /* cancelled mid-flight — a newer render took over */ }
+  hiTask = null;
+}
+wrap.addEventListener("scroll", ()=>scheduleHi(110), {passive:true});
+async function fitPage(){
+  const page = await pdfDoc.getPage(pageNum);
+  const vp = page.getViewport({scale:1});
+  zoom = Math.min((wrap.clientWidth-40)/vp.width, (wrap.clientHeight-40)/vp.height);
+  zoom = Math.max(0.2, Math.min(zoom, 6));
+  await renderPage(); updateBar();
+}
+
+// ================= overlay drawing (PDF) =================
+function pdfToScreen(p){ return {x:p.x*zoom*dpr, y:p.y*zoom*dpr}; }
+// Committed shapes render once into an offscreen cache; per-frame work is a
+// single blit plus only what's actually moving (ghost / dragged shape).
+const staticCanvas = document.createElement("canvas");
+let dctx = octx, staticDirty = true, staticExclude = null, rafPending = false;
+function markStatic(){ staticDirty = true; }
+function requestDraw(){
+  if(rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(()=>{ rafPending = false; drawOverlay(); });
+}
+function rebuildStatic(lw){
+  staticCanvas.width = overlay.width; staticCanvas.height = overlay.height;
+  dctx = staticCanvas.getContext("2d");
+  for(const m of measurements){
+    if(m.src!=="pdf" || m.page !== pageNum) continue;
+    if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
+    if(staticExclude === m.id) continue;
+    drawMeasure(m, m.id===selectedId, lw);
+  }
+  dctx = octx; staticDirty = false;
+}
+function drawOverlay(){
+  const lw = Math.max(1.5, 2*dpr);
+  if(staticDirty || staticCanvas.width!==overlay.width || staticCanvas.height!==overlay.height)
+    rebuildStatic(lw);
+  octx.clearRect(0,0,overlay.width,overlay.height);
+  octx.drawImage(staticCanvas,0,0);
+  if(editDrag && editDrag.m.src==="pdf") drawMeasure(editDrag.m, true, lw);
+  if(drawing && drawing.src!=="map" && drawing.pts.length){
+    const ghost = {type:drawing.type, pts: mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts,
+                   color: drawing.color || COLORS[drawing.type], page:pageNum, src:"pdf"};
+    drawMeasure(ghost, true, lw, true);
+  }
+}
+function drawMeasure(m, hot, lw, ghost){
+  const pts = m.pts.map(pdfToScreen);
+  dctx.lineWidth = hot? lw*1.3 : lw;
+  dctx.strokeStyle = m.color; dctx.fillStyle = m.color;
+  dctx.setLineDash(ghost ? [6*dpr,4*dpr] : []);
+  if(m.type==="count"){
+    pts.forEach((p,idx)=>{
+      dctx.beginPath(); dctx.arc(p.x,p.y,7*dpr,0,7); dctx.globalAlpha=.25; dctx.fill();
+      dctx.globalAlpha=1; dctx.stroke();
+      dctx.font = "bold "+(9*dpr)+"px ui-monospace,Menlo,monospace";
+      dctx.textAlign="center"; dctx.textBaseline="middle";
+      dctx.fillText(idx+1, p.x, p.y);
+      dctx.textAlign="start"; dctx.textBaseline="alphabetic";
+    });
+  } else {
+    if(pts.length>1){
+      dctx.beginPath(); dctx.moveTo(pts[0].x,pts[0].y);
+      for(let i=1;i<pts.length;i++) dctx.lineTo(pts[i].x,pts[i].y);
+      if(m.type==="area" && !ghost) dctx.closePath();
+      if(m.type==="area"){ dctx.globalAlpha = .18; dctx.fill(); dctx.globalAlpha = 1; }
+      dctx.stroke();
+    }
+    pts.forEach((p,i)=>{
+      const isSel = selVertex && selVertex.mId===m.id && selVertex.idx===i;
+      dctx.beginPath(); dctx.arc(p.x,p.y,(isSel?5.5:hot?4.2:2.6)*dpr,0,7);
+      dctx.fillStyle = "#fff"; dctx.fill();
+      dctx.strokeStyle = isSel ? "#ffb224" : m.color;
+      dctx.lineWidth = (isSel?2.4:1.4)*dpr; dctx.stroke();
+      dctx.strokeStyle = m.color; dctx.lineWidth = lw;
+    });
+    if(!ghost && pts.length>1){
+      const mid = pts[Math.floor(pts.length/2)] || pts[0];
+      const v = measureValue(m);
+      const txt = v==null ? "—" : m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
+      dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
+      const w = dctx.measureText(txt).width;
+      dctx.fillStyle = "rgba(20,22,26,.85)";
+      dctx.fillRect(mid.x+6*dpr, mid.y-16*dpr, w+10*dpr, 16*dpr);
+      dctx.fillStyle = m.color;
+      dctx.fillText(txt, mid.x+11*dpr, mid.y-4.5*dpr);
+    }
+  }
+  dctx.setLineDash([]);
+}
+
+// ================= PDF mouse & touch =================
+function evtPdf(e){
+  const r = overlay.getBoundingClientRect();
+  return {x:(e.clientX-r.left)/zoom, y:(e.clientY-r.top)/zoom};
+}
+function snap(p){
+  if(!shiftDown || !drawing || !drawing.pts.length) return p;
+  const a = drawing.pts[drawing.pts.length-1];
+  return Math.abs(p.x-a.x) > Math.abs(p.y-a.y) ? {x:p.x,y:a.y} : {x:a.x,y:p.y};
+}
+function hitTest(p){
+  const vt = 9/zoom, st = 6/zoom;
+  for(const m of [...measurements].reverse()){
+    if(m.src!=="pdf" || m.page!==pageNum) continue;
+    if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
+    for(let i=m.pts.length-1;i>=0;i--){
+      if(dist(p, m.pts[i]) < vt) return {kind: m.type==="count"?"dot":"vertex", m, idx:i};
+    }
+    if(m.type==="area" && m.pts.length>2 &&
+       (pointInPoly(p, m.pts) || distToPath(p, m.pts, true) < st)) return {kind:"body", m};
+    if(m.type==="line" && m.pts.length>1 && distToPath(p, m.pts, false) < st) return {kind:"body", m};
+  }
+  return null;
+}
+overlay.addEventListener("mousedown", e => {
+  if(e.button===0 && tool==="select" && !spaceDown){
+    const hit = hitTest(evtPdf(e));
+    if(hit){
+      selectedId = hit.m.id;
+      selVertex = hit.kind==="body" ? null : {mId:hit.m.id, idx:hit.idx};
+      editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start:evtPdf(e),
+                  orig: hit.m.pts.map(q=>({...q})), pre:snapshot(), moved:false};
+      staticExclude = hit.m.id; markStatic();
+      renderList(); drawOverlay();
+      e.preventDefault(); return;
+    }
+    if(selectedId!=null || selVertex){ selectedId=null; selVertex=null; markStatic(); renderList(); drawOverlay(); }
+  }
+  if(tool==="select" || e.button===1 || spaceDown){
+    panning = true; panStart = {x:e.clientX, y:e.clientY, l:wrap.scrollLeft, t:wrap.scrollTop};
+    overlay.style.cursor = "grabbing"; e.preventDefault();
+  }
+});
+overlay.addEventListener("contextmenu", e => {
+  if(tool!=="select") return;
+  const hit = hitTest(evtPdf(e));
+  if(hit && hit.kind!=="body"){ e.preventDefault(); deleteVertex(hit.m, hit.idx); }
+});
+window.addEventListener("mousemove", e => {
+  if(editDrag){
+    const p = evtPdf(e);
+    const dx = p.x - editDrag.start.x, dy = p.y - editDrag.start.y;
+    if(editDrag.kind==="body"){
+      editDrag.m.pts = editDrag.orig.map(q => ({x:q.x+dx, y:q.y+dy}));
+    } else {
+      editDrag.m.pts[editDrag.idx] = {x:editDrag.orig[editDrag.idx].x+dx, y:editDrag.orig[editDrag.idx].y+dy};
+    }
+    editDrag.moved = true; requestDraw();
+    const v = measureValue(editDrag.m);
+    document.getElementById("liveVal").textContent =
+      v==null ? "" : editDrag.m.type==="line" ? v.toFixed(2)+" LF" :
+      editDrag.m.type==="area" ? v.toFixed(1)+" SF" : v+" EA";
+    return;
+  }
+  if(panning){
+    wrap.scrollLeft = panStart.l - (e.clientX-panStart.x);
+    wrap.scrollTop  = panStart.t - (e.clientY-panStart.y);
+  }
+});
+window.addEventListener("mouseup", () => {
+  if(editDrag){
+    const {moved, pre} = editDrag;
+    editDrag = null; staticExclude = null; markStatic();
+    if(moved){ commitHistory(pre); refreshAll(); }
+    else drawOverlay();
+  }
+  if(panning){ panning=false; overlay.style.cursor = tool==="select" ? "grab" : "crosshair"; }
+});
+overlay.addEventListener("mousemove", e => {
+  mousePdf = evtPdf(e);
+  updateLive();
+  if(drawing && drawing.src!=="map") requestDraw();
+});
+overlay.addEventListener("click", e => {
+  if(panning || tool==="select" || spaceDown || pinchActive) return;
+  if(e.detail > 1) return; // second click of a double-click — dblclick handler finishes the shape
+  const p = snap(evtPdf(e));
+  if(tool==="count"){
+    pushHistory();
+    let m = drawing;
+    if(!m){
+      m = {id:nextId++, src:"pdf", type:"count", page:pageNum, pts:[], name:newName("count"), color:newColor("count"), cat:activeCatId};
+      measurements.push(m); drawing = m; selectedId = m.id;
+    }
+    m.pts.push(p); refreshAll(); return;
+  }
+  if(tool==="calibrate"){
+    if(!drawing) drawing = {src:"pdf", type:"calibrate", pts:[], color:COLORS.calibrate};
+    drawing.pts.push(p);
+    if(drawing.pts.length===2){ calibPts = drawing.pts; drawing = null; openModal("calibBack","calFt"); updateFab(); }
+    drawOverlay(); updateFab(); return;
+  }
+  if(tool==="line" || tool==="area"){
+    if(!drawing) drawing = {src:"pdf", type:tool, pts:[], color:newColor(tool)};
+    drawing.pts.push(p); drawOverlay(); updateFab(); updateLive();
+  }
+});
+overlay.addEventListener("dblclick", e => { e.preventDefault(); finishDrawing(); });
+
+// touch: pinch zoom on PDF (two fingers), CSS preview then commit
+let pinchActive=false, pinch0=null;
+overlay.addEventListener("touchstart", e => {
+  if(e.touches.length===2){
+    pinchActive = true;
+    const [a,b] = e.touches;
+    pinch0 = { d: Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY), zoom, sl:wrap.scrollLeft, st:wrap.scrollTop };
+    e.preventDefault();
+  }
+}, {passive:false});
+overlay.addEventListener("touchmove", e => {
+  if(pinchActive && e.touches.length===2){
+    const [a,b] = e.touches;
+    const d = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+    const k = Math.max(0.4, Math.min(2.5, d/pinch0.d));
+    stage.style.transform = "scale("+k+")";
+    e.preventDefault();
+  }
+}, {passive:false});
+overlay.addEventListener("touchend", e => {
+  if(pinchActive && e.touches.length<2){
+    const k = parseFloat((stage.style.transform.match(/scale\(([\d.]+)\)/)||[])[1]||1);
+    stage.style.transform = "";
+    zoom = Math.max(0.2, Math.min(6, pinch0.zoom * k));
+    renderPage(); updateBar();
+    setTimeout(()=>{ pinchActive=false; }, 120);
+  }
+});
+
+// ================= finish / keyboard =================
+function finishDrawing(){
+  if(!drawing) return;
+  if(drawing.type==="count"){ drawing=null; refreshAll(); return; }
+  if(drawing.type==="calibrate"){ drawing=null; drawOverlay(); updateFab(); return; }
+  // safety: drop stray duplicate trailing points (max 2) from double-click races
+  const pts = drawing.pts;
+  const near = (a,b) => drawing.src==="map" ? havFt(a,b) < 1.5 : dist(a,b) < 4/zoom;
+  let pops = 0;
+  while(pts.length>1 && pops<2 && near(pts[pts.length-1], pts[pts.length-2])){ pts.pop(); pops++; }
+  const need = drawing.type==="area" ? 3 : 2;
+  if(pts.length >= need){
+    pushHistory();
+    const m = {
+      id: nextId++, src: drawing.src, type: drawing.type, pts: drawing.pts,
+      color: drawing.color, cat: activeCatId, name: newName(drawing.type)
+    };
+    if(drawing.src==="pdf") m.page = pageNum;
+    measurements.push(m); selectedId = m.id;
+  }
+  drawing = null; refreshAll();
+}
+function cancelDrawing(){
+  if(drawing && drawing.type==="count"){ finishDrawing(); return; }
+  drawing = null;
+  drawOverlay(); drawTemp(); updateFab(); updateLive();
+}
+function undoPoint(){
+  if(!drawing || !drawing.pts.length) return;
+  if(drawing.type==="count"){ pushHistory(); drawing.pts.pop(); refreshAll(); return; }
+  drawing.pts.pop();
+  if(!drawing.pts.length) drawing = null;
+  drawOverlay(); drawTemp(); updateFab(); updateLive();
+}
+document.getElementById("fabDone").onclick = finishDrawing;
+document.getElementById("fabCancel").onclick = cancelDrawing;
+document.getElementById("fabUndo").onclick = undoPoint;
+function updateFab(){
+  document.getElementById("fab").classList.toggle("show", !!drawing && drawing.pts && drawing.pts.length>0);
+}
+
+window.addEventListener("keydown", e => {
+  if(["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+  const _mb = document.querySelector(".modalBack.open");
+  if(_mb){ // a dialog is open — only Escape (via its cancel button) belongs to us here
+    if(e.key==="Escape"){
+      const c = _mb.querySelector("#calCancel,#cusCancel,#catCancel,#clearCancel,#saveCancel,#newCancel,#verClose,#ceCancel");
+      if(c) c.click(); else _mb.classList.remove("open");
+    }
+    return;
+  }
+  if(e.key==="Shift") shiftDown = true;
+  if(e.key===" "){ spaceDown = true; e.preventDefault(); }
+  if(e.key==="Enter") finishDrawing();
+  if(e.key==="Escape"){
+    if(drawing) cancelDrawing();
+    else if(selectedId!=null || selVertex){
+      selectedId=null; selVertex=null; markStatic(); renderList(); drawOverlay();
+      if(mode==="map") redrawMapLayers();
+    }
+  }
+  if(e.key==="Backspace"){
+    if(drawing){ undoPoint(); return; }
+    if(selVertex){
+      const m = measurements.find(x=>x.id===selVertex.mId);
+      if(m) deleteVertex(m, selVertex.idx);
+      return;
+    }
+  }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="z"){
+    e.preventDefault();
+    if(e.shiftKey) window.__redo(); else window.__undo();
+    return;
+  }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="y"){
+    e.preventDefault(); window.__redo(); return;
+  }
+  const map_ = {v:"select", c:"calibrate", l:"line", a:"area", k:"count"};
+  if(map_[e.key.toLowerCase()] && !e.metaKey && !e.ctrlKey){
+    if(e.key.toLowerCase()==="c" && mode==="map") return;
+    setTool(map_[e.key.toLowerCase()]);
+  }
+  if(e.key.toLowerCase()==="p" && !e.metaKey && !e.ctrlKey && pdfDoc && mode==="pdf") togglePageLock();
+  if(e.key==="Delete"){
+    if(selVertex){
+      const m = measurements.find(x=>x.id===selVertex.mId);
+      if(m) deleteVertex(m, selVertex.idx);
+      return;
+    }
+    if(selectedId!=null){
+      pushHistory();
+      measurements = measurements.filter(m=>m.id!==selectedId); selectedId=null; refreshAll();
+      toast("Measurement deleted");
+    }
+    return;
+  }
+  if(!e.metaKey && !e.ctrlKey && !e.altKey){
+    const k = e.key;
+    if((k==="f"||k==="F") && mode==="pdf" && pdfDoc){ fitPage(); }
+    if(k==="ArrowLeft" && mode==="pdf") document.getElementById("prevPg").click();
+    if(k==="ArrowRight" && mode==="pdf") document.getElementById("nextPg").click();
+    if((k==="+"||k==="=") && mode==="pdf") document.getElementById("zoomIn").click();
+    if(k==="-" && mode==="pdf") document.getElementById("zoomOut").click();
+  }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="s"){
+    e.preventDefault();
+    if(e.shiftKey) doSave(true); else doSave(false);
+    return;
+  }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="e"){
+    e.preventDefault(); document.getElementById("exportBtn").click(); return;
+  }
+  if((e.metaKey||e.ctrlKey) && e.shiftKey && e.key.toLowerCase()==="c"){
+    e.preventDefault(); document.getElementById("copyBtn").click(); return;
+  }
+});
+window.addEventListener("keyup", e => {
+  if(e.key==="Shift") shiftDown=false;
+  if(e.key===" ") spaceDown=false;
+});
+
+// ctrl/cmd wheel zoom (PDF)
+// smooth zoom: scale with CSS while the gesture runs, re-render once it settles
+let wz = null; // {base, target, clientX, clientY, cx, cy, timer}
+function commitWheelZoom(){
+  if(!wz) return;
+  const {base, target, clientX, clientY, cx, cy} = wz;
+  wz = null;
+  stage.style.transform = ""; stage.style.transformOrigin = "";
+  zoom = target;
+  const k = target/base;
+  renderPage().then(()=>{
+    const r = wrap.getBoundingClientRect();
+    wrap.scrollLeft = cx*k-(clientX-r.left);
+    wrap.scrollTop  = cy*k-(clientY-r.top);
+  });
+  updateBar();
+}
+wrap.addEventListener("wheel", e => {
+  if(!(e.ctrlKey||e.metaKey) || !pdfDoc) return;
+  e.preventDefault();
+  const r = wrap.getBoundingClientRect();
+  if(!wz){
+    const sr = stage.getBoundingClientRect();
+    wz = {
+      base: zoom, target: zoom,
+      clientX: e.clientX, clientY: e.clientY,
+      cx: e.clientX-r.left+wrap.scrollLeft, cy: e.clientY-r.top+wrap.scrollTop,
+      ox: e.clientX-sr.left, oy: e.clientY-sr.top,
+      timer: null
+    };
+  }
+  wz.clientX = e.clientX; wz.clientY = e.clientY;
+  // small trackpad deltas and big mouse-wheel notches both feel right with an exponential
+  const step = e.deltaMode===1 ? e.deltaY*18 : e.deltaY;
+  wz.target = Math.max(0.2, Math.min(6, wz.target * Math.exp(-step*0.0022)));
+  stage.style.transformOrigin = wz.ox+"px "+wz.oy+"px";
+  stage.style.transform = "scale("+(wz.target/wz.base)+")";
+  document.getElementById("zoomInfo").textContent = Math.round(wz.target*100)+"%";
+  clearTimeout(wz.timer);
+  wz.timer = setTimeout(commitWheelZoom, 140);
+}, {passive:false});
+
+// ================= tools / topbar =================
+function setTool(t){
+  tool = t;
+  if(drawing && drawing.type!=="count") drawing = null;
+  document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active", b.dataset.tool===t));
+  const _tn = document.getElementById("toolName"); if(_tn) _tn.textContent = t.toUpperCase();
+  overlay.style.cursor = t==="select" ? "grab" : "crosshair";
+  overlay.style.touchAction = t==="select" ? "auto" : "none";
+  if(map) map.getContainer().style.cursor = t==="select" ? "" : "crosshair";
+  drawOverlay(); drawTemp(); updateFab(); updateLive();
+}
+document.querySelectorAll(".tool").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+
+function togglePageLock(){
+  pageLocked = !pageLocked;
+  const b = document.getElementById("lockPg");
+  b.textContent = pageLocked ? "🔒" : "🔓";
+  b.classList.toggle("locked", pageLocked);
+  document.getElementById("prevPg").disabled = pageLocked;
+  document.getElementById("nextPg").disabled = pageLocked;
+  toast(pageLocked ? "Page locked" : "Page unlocked");
+}
+document.getElementById("lockPg").onclick = togglePageLock;
+document.getElementById("prevPg").onclick = () => { if(!pageLocked && pageNum>1){ pageNum--; drawing=null; renderPage(); refreshAll(); } };
+document.getElementById("nextPg").onclick = () => { if(!pageLocked && pageNum<pageCount){ pageNum++; drawing=null; renderPage(); refreshAll(); } };
+document.getElementById("zoomIn").onclick = () => { zoom=Math.min(6,zoom*1.2); renderPage(); updateBar(); };
+document.getElementById("zoomOut").onclick = () => { zoom=Math.max(0.2,zoom/1.2); renderPage(); updateBar(); };
+document.getElementById("zoomFit").onclick = () => pdfDoc && fitPage();
+
+// mobile list drawer
+document.getElementById("listToggle").onclick = () => document.getElementById("side").classList.toggle("open");
+document.getElementById("closeSide").onclick = () => document.getElementById("side").classList.remove("open");
+
+// ================= scale =================
+function applyScale(fpu, label){
+  ftPerUnit[pageNum] = fpu; defaultFtPerUnit = fpu;
+  scaleLabels[pageNum] = label; scaleLabel = label;
+  refreshAll();
+  toast("Scale set: "+label);
+}
+// scale menu is built in the v1.9 popover wiring below
+
+// ================= modals =================
+function openModal(id, focusId){
+  document.getElementById(id).classList.add("open");
+  const f = document.getElementById(focusId); f.value=""; f.focus();
+}
+function openModal2(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".modalBack").forEach(mb => {
+  mb.addEventListener("mousedown", e => { if(e.target===mb) mb.classList.remove("open"); });
+});
+document.getElementById("calCancel").onclick = () => { closeModal("calibBack"); calibPts=null; drawOverlay(); };
+document.getElementById("calApply").onclick = () => {
+  const ft = parseFloat(document.getElementById("calFt").value)||0;
+  const inch = parseFloat(document.getElementById("calIn").value)||0;
+  const real = ft + inch/12;
+  if(real<=0 || !calibPts){ closeModal("calibBack"); return; }
+  const d = dist(calibPts[0], calibPts[1]);
+  const fpu = real/d;
+  calibPts = null; closeModal("calibBack");
+  applyScale(fpu, 'CAL · 1" = '+(fpu*72).toFixed(2)+"'");
+  setTool("line");
+};
+document.getElementById("calibBack").addEventListener("keydown", e => {
+  if(e.key==="Enter") document.getElementById("calApply").click();
+  if(e.key==="Escape") document.getElementById("calCancel").click();
+});
+document.querySelectorAll("#customBack .exgrid button").forEach(b => {
+  b.onclick = () => {
+    document.getElementById("cusPaper").value = b.dataset.p;
+    document.getElementById("cusFt").value = b.dataset.f;
+    document.getElementById("cusIn").value = b.dataset.i;
+  };
+});
+document.getElementById("cusCancel").onclick = () => closeModal("customBack");
+document.getElementById("cusApply").onclick = () => {
+  const paper = parseFloat(document.getElementById("cusPaper").value)||0;
+  const ft = parseFloat(document.getElementById("cusFt").value)||0;
+  const inch = parseFloat(document.getElementById("cusIn").value)||0;
+  const real = ft + inch/12;
+  if(paper<=0 || real<=0){ toast("Enter paper inches and a real length"); return; }
+  closeModal("customBack");
+  applyScale(real/(paper*72), fracLabel(paper)+" = "+(inch? ft+"'-"+inch+'"' : ft+"'"));
+};
+document.getElementById("customBack").addEventListener("keydown", e => {
+  if(e.key==="Enter") document.getElementById("cusApply").click();
+  if(e.key==="Escape") closeModal("customBack");
+});
+document.getElementById("catCancel").onclick = () => closeModal("catBack");
+document.getElementById("catApply").onclick = createCategoryFromModal;
+document.getElementById("catBack").addEventListener("keydown", e => {
+  if(e.key==="Enter") createCategoryFromModal();
+  if(e.key==="Escape") closeModal("catBack");
+});
+document.getElementById("clearCancel").onclick = () => closeModal("clearBack");
+document.getElementById("clearApply").onclick = () => {
+  closeModal("clearBack");
+  pushHistory();
+  measurements=[]; selectedId=null; drawing=null; refreshAll();
+  toast("All measurements deleted");
+};
+document.getElementById("clearBack").addEventListener("keydown", e => {
+  if(e.key==="Escape") closeModal("clearBack");
+});
+
+// ================= side panel =================
+document.getElementById("filterSel").onchange = renderList;
+function refreshAll(){ markStatic(); updateBar(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateFab(); updateLive(); if(typeof scheduleAutosave==="function") scheduleAutosave(); }
+function updateBar(){
+  document.getElementById("pageInfo").textContent = pdfDoc ? pageNum+" / "+pageCount : "– / –";
+  document.getElementById("zoomInfo").textContent = Math.round(zoom*100)+"%";
+  const chip = document.getElementById("scaleChip");
+  const has = getFPU()!=null;
+  chip.classList.toggle("unset", !has);
+  let _lbl = scaleLabels[pageNum] ?? scaleLabel;
+  if(has && (!_lbl || _lbl==="NOT SET")) _lbl = '1" = '+(getFPU()*72).toFixed(2)+"'";
+  document.getElementById("scaleVal").textContent = has ? _lbl : "NOT SET";
+}
+function catSubtotal(items, cat){
+  const t = {line:0, area:0, count:0};
+  for(const {m,v} of items){ if(v!=null) t[m.type]+=v; }
+  const parts = [];
+  if(t.area) parts.push(t.area.toFixed(0)+" SF");
+  if(t.line) parts.push(t.line.toFixed(1)+" LF");
+  if(t.count) parts.push(t.count+" EA");
+  const cy = catCY(cat, t.area);
+  if(cy) parts.push(cy.withWaste.toFixed(1)+" CY");
+  return parts.join(" · ") || "—";
+}
+function filterLabel(){
+  const filt = document.getElementById("filterSel").value;
+  const q = document.getElementById("measSearch").value.trim();
+  const parts = [];
+  if(filt==="page") parts.push("Page "+pageNum+" only");
+  if(filt==="map") parts.push("Map only");
+  if(q) parts.push('search "'+q+'"');
+  return parts.join(", ");
+}
+function visibleMeasurements(){
+  const filt = document.getElementById("filterSel").value;
+  const q = document.getElementById("measSearch").value.trim().toLowerCase();
+  return [...measurements].reverse().filter(m => {
+    if(filt==="page" && !(m.src==="pdf" && m.page===pageNum)) return false;
+    if(filt==="map" && m.src!=="map") return false;
+    if(q){
+      const c = catOf(m.cat);
+      if(!(m.name.toLowerCase().includes(q) || (c && c.name.toLowerCase().includes(q)))) return false;
+    }
+    return true;
+  });
+}
+function esc2(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+function renderList(){
+  const el = document.getElementById("measList");
+  const visible = visibleMeasurements();
+  if(selectedId!=null){
+    const sm = measurements.find(x=>x.id===selectedId);
+    if(sm) collapsedCats.delete(sm.cat||"");
+  }
+  const groups = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
+  for(const m of visible){
+    const g = groups.find(g => (g.cat? g.cat.id : "") === (m.cat||""));
+    (g || groups[groups.length-1]).items.push({m, v:measureValue(m)});
+  }
+  const TYPE_ORDER = [["area","AREAS"],["line","LINEAR"],["count","COUNTS"]];
+  let html = "";
+  for(const g of groups){
+    if(!g.items.length) continue;
+    const key = g.cat ? g.cat.id : "";
+    const isCol = collapsedCats.has(key);
+    const isHid = hiddenCats.has(key);
+    if(g.cat || categories.length){
+      html += '<div class="catHead'+(isChildCat(g.cat)?" child":"")+'" data-key="'+key+'" style="color:'+(g.cat?g.cat.color:"var(--faint)")+'">'+
+        '<span class="cname"><button class="catTog" title="Collapse / expand">'+(isCol?"▸":"▾")+'</button>'+
+        '<span class="cdot" style="background:'+(g.cat?g.cat.color:"var(--faint)")+'"></span>'+
+        (g.cat? esc2(g.cat.name) : "Uncategorized")+
+        (g.cat? '<button class="catEdit" title="Edit category — name, color, depth, notes">✎</button>' : '')+
+        '<button class="catEye'+(isHid?" off":"")+'" title="Show / hide on the plan and map">'+(isHid?"🙈":"👁")+'</button></span>'+
+        '<span class="csub">'+catSubtotal(g.items, g.cat)+'</span></div>';
+    }
+    if(isCol) continue;
+    const typesPresent = new Set(g.items.map(x=>x.m.type));
+    for(const [t,label] of TYPE_ORDER){
+      const sub = g.items.filter(x=>x.m.type===t);
+      if(!sub.length) continue;
+      if(typesPresent.size > 1){
+        let tot=0; for(const {v} of sub) if(v!=null) tot+=v;
+        html += '<div class="typeHead"><span>'+label+'</span><b>'+
+          (t==="count"? tot+" EA" : t==="line"? tot.toFixed(1)+" LF" : tot.toFixed(0)+" SF")+'</b></div>';
+      }
+      for(const {m,v} of sub) html += itemHTML(m, v, isChildCat(g.cat));
+    }
+  }
+  el.innerHTML = html;
+  const selEl = el.querySelector(".mitem.sel");
+  if(selEl) selEl.scrollIntoView({block:"nearest"});
+}
+document.getElementById("measSearch").addEventListener("input", renderList);
+function itemHTML(m, v, child){
+  const perim = measurePerim(m);
+  const qty = v==null ? "needs scale" : m.type==="count" ? v+" EA" : m.type==="line" ? v.toFixed(2)+" LF" : v.toFixed(1)+" SF";
+  const loc = m.src==="map" ? "map" : "p."+m.page;
+  const catOpts = '<option value="">— no cat —</option>'+
+    orderedCats().map(c=>'<option value="'+c.id+'"'+(m.cat===c.id?" selected":"")+'>'+
+      (isChildCat(c)? "· ":"")+esc2(c.name)+'</option>').join("");
+  return '<div class="mitem'+(m.id===selectedId?" sel":"")+(hiddenItems.has(m.id)?" hid":"")+'"'+(child?' style="margin-left:14px"':'')+' data-id="'+m.id+'">'+
+    '<div class="row1"><button class="swatch" title="Change color" style="background:'+m.color+'"></button>'+
+    '<input class="name" value="'+esc2(m.name)+'">'+
+    '<button class="del" title="Delete">✕</button></div>'+
+    '<div class="row2"><span>'+loc+' · '+unitOf(m.type)+
+    (perim!=null?' <span class="sub">perim '+perim.toFixed(1)+' LF</span>':'')+
+    '</span><span style="display:flex;gap:6px;align-items:center">'+
+    '<button class="iEye'+(hiddenItems.has(m.id)?" off":"")+'" title="Hide / show this measurement on the plan and map">'+(hiddenItems.has(m.id)?"🙈":"👁")+'</button>'+
+    '<select class="catSel" title="Move to category">'+catOpts+'</select>'+
+    '<span class="qty">'+qty+'</span></span></div></div>';
+}
+// One delegated listener for the whole list — far faster than per-item handlers
+(function(){
+  const el = document.getElementById("measList");
+  const mOf = t => { const it = t.closest(".mitem"); return it ? measurements.find(x=>x.id===+it.dataset.id) : null; };
+  el.addEventListener("click", e => {
+    const head = e.target.closest(".catHead");
+    if(head){
+      const key = head.dataset.key;
+      const cat = key ? catOf(key) : null;
+      if(e.target.closest(".catTog")){
+        collapsedCats.has(key) ? collapsedCats.delete(key) : collapsedCats.add(key);
+        renderList(); return;
+      }
+      if(e.target.closest(".catEye")){
+        if(e.altKey){
+          // solo: show only this category (alt-click again to show all)
+          const allKeys = [...orderedCats().map(c=>c.id), ""];
+          const others = allKeys.filter(k=>k!==key);
+          const isSolo = !hiddenCats.has(key) && others.every(k=>hiddenCats.has(k));
+          if(isSolo) hiddenCats.clear();
+          else hiddenCats = new Set(others);
+        } else {
+          hiddenCats.has(key) ? hiddenCats.delete(key) : hiddenCats.add(key);
+        }
+        markStatic(); renderList(); drawOverlay(); redrawMapLayers(); return;
+      }
+      if(cat && (e.target.closest(".catEdit") || e.target.closest(".cname"))) openCatEditor(cat);
+      return;
+    }
+    const m = mOf(e.target); if(!m) return;
+    if(e.target.closest(".del")){
+      pushHistory();
+      measurements = measurements.filter(x=>x.id!==m.id);
+      if(selectedId===m.id) selectedId=null;
+      if(drawing===m) drawing=null;
+      refreshAll(); return;
+    }
+    if(e.target.closest(".swatch")){
+      pushHistory();
+      const i = PALETTE.indexOf(m.color);
+      m.color = PALETTE[(i+1) % PALETTE.length];
+      refreshAll(); return;
+    }
+    if(e.target.closest(".iEye")){
+      hiddenItems.has(m.id) ? hiddenItems.delete(m.id) : hiddenItems.add(m.id);
+      markStatic(); renderList(); drawOverlay(); redrawMapLayers(); return;
+    }
+    if(e.target.closest(".name,.catSel")) return;
+    selectedId = m.id;
+    if(m.src==="map"){
+      setMode("map");
+      if(m.pts.length){
+        if(m.type==="count" || m.pts.length===1) map.setView(m.pts[0], Math.max(map.getZoom(),18));
+        else map.fitBounds(L.latLngBounds(m.pts).pad(0.3));
+      }
+    } else {
+      if(mode!=="pdf") setMode("pdf");
+      if(m.page!==pageNum){
+        if(pageLocked){ toast("Page is locked — item is on p."+m.page); refreshAll(); return; }
+        pageNum=m.page; renderPage();
+      }
+    }
+    refreshAll();
+  });
+  el.addEventListener("change", e => {
+    const m = mOf(e.target); if(!m) return;
+    if(e.target.classList.contains("name")){
+      pushHistory(); m.name = e.target.value; renderTotals();
+      if(typeof scheduleAutosave==="function") scheduleAutosave();
+      markStatic(); drawOverlay();
+    } else if(e.target.classList.contains("catSel")){
+      pushHistory(); m.cat = e.target.value;
+      const c = catOf(m.cat); if(c) m.color = c.color;
+      refreshAll();
+    }
+  });
+})();
+function renderTotals(){
+  const t = {line:0, area:0, count:0}; let pending=false;
+  for(const m of measurements){
+    const v = measureValue(m);
+    if(v==null){ pending=true; continue; }
+    t[m.type]+=v;
+  }
+  let cyTotal = 0;
+  for(const c of categories){
+    if(!(c.depth>0)) continue;
+    let sf = 0;
+    for(const m of measurements){
+      if(m.cat!==c.id || m.type!=="area") continue;
+      const v = measureValue(m); if(v!=null) sf += v;
+    }
+    const cy = catCY(c, sf); if(cy) cyTotal += cy.withWaste;
+  }
+  document.getElementById("totals").innerHTML =
+    '<div class="trow"><span>Total linear</span><b>'+t.line.toFixed(2)+' LF</b></div>'+
+    '<div class="trow"><span>Total area</span><b>'+t.area.toFixed(1)+' SF</b></div>'+
+    '<div class="trow"><span>Total count</span><b>'+t.count+' EA</b></div>'+
+    (cyTotal>0?'<div class="trow"><span>Material volume</span><b>'+cyTotal.toFixed(1)+' CY</b></div>':'')+
+    (pending?'<div class="trow" style="color:#ff7a6b">Some items need scale</div>':'');
+}
+function updateLive(){
+  const live = document.getElementById("liveVal");
+  const fabVal = document.getElementById("fabVal");
+  let txt = "";
+  if(drawing){
+    if(drawing.src==="map"){
+      const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
+      if(drawing.type==="line" && pts.length>1) txt = geoPathFt(pts).toFixed(1)+" LF";
+      else if(drawing.type==="area" && pts.length>2) txt = geoAreaSF(pts).toFixed(0)+" SF";
+      else if(drawing.type==="count") txt = drawing.pts.length+" EA";
+    } else {
+      const fpu = getFPU();
+      const pts = mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts;
+      if(drawing.type==="calibrate" || drawing.type==="line"){
+        txt = fpu!=null && pts.length>1 ? fmtLen(pathLen(pts)*fpu)
+          : drawing.type==="calibrate" ? "pick 2 points on a known dimension" : "scale not set";
+      } else if(drawing.type==="area"){
+        txt = fpu!=null && pts.length>2 ? (polyArea(pts)*fpu*fpu).toFixed(1)+" SF" : (fpu==null?"scale not set":"");
+      } else if(drawing.type==="count"){
+        txt = drawing.pts.length+" EA";
+      }
+    }
+  }
+  live.textContent = txt;
+  fabVal.textContent = txt.split(" (")[0];
+}
+
+// ================= print report =================
+function drawMeasureOn(ctx, m, sc){
+  const pts = m.pts.map(p=>({x:p.x*sc, y:p.y*sc}));
+  ctx.lineWidth = 2.4; ctx.strokeStyle = m.color; ctx.fillStyle = m.color;
+  if(m.type==="count"){
+    pts.forEach((p,i)=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,9,0,7); ctx.globalAlpha=.3; ctx.fill();
+      ctx.globalAlpha=1; ctx.stroke();
+      ctx.font="bold 10px monospace"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(i+1, p.x, p.y);
+      ctx.textAlign="start"; ctx.textBaseline="alphabetic";
+    });
+    return;
+  }
+  if(pts.length>1){
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+    if(m.type==="area"){ ctx.closePath(); ctx.globalAlpha=.16; ctx.fill(); ctx.globalAlpha=1; }
+    ctx.stroke();
+  }
+  for(const p of pts){
+    ctx.beginPath(); ctx.arc(p.x,p.y,3,0,7);
+    ctx.fillStyle="#fff"; ctx.fill(); ctx.fillStyle=m.color; ctx.stroke();
+  }
+  const v = measureValue(m);
+  if(v!=null && pts.length>1){
+    const mid = pts[Math.floor(pts.length/2)];
+    const lbl = m.name+" — "+(m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF");
+    ctx.font="11px monospace";
+    const w = ctx.measureText(lbl).width;
+    ctx.fillStyle="rgba(255,255,255,.88)";
+    ctx.fillRect(mid.x+5, mid.y-15, w+8, 15);
+    ctx.fillStyle=m.color;
+    ctx.fillText(lbl, mid.x+9, mid.y-4);
+  }
+}
+async function pageSnapshot(pageNo){
+  const page = await pdfDoc.getPage(pageNo);
+  const sc = 1.5;
+  const vp = page.getViewport({scale:sc});
+  const c = document.createElement("canvas");
+  c.width = vp.width; c.height = vp.height;
+  const ctx = c.getContext("2d");
+  await page.render({canvasContext:ctx, viewport:vp}).promise;
+  for(const m of measurements){
+    if(m.src!=="pdf" || m.page!==pageNo) continue;
+    if(hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) continue;
+    drawMeasureOn(ctx, m, sc);
+  }
+  return c.toDataURL("image/jpeg", 0.82);
+}
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+document.getElementById("printBtn").onclick = async () => {
+  if(!measurements.length){ toast("Nothing to print"); return; }
+  toast("Building report…");
+  const title = defaultProjectName();
+  let body = '<h1>'+esc(title)+'</h1>'+
+    '<div class="meta">Plan Takeoff report · '+new Date().toLocaleDateString()+
+    (pdfName? ' · '+esc(pdfName):'')+'</div>';
+  // tables per category
+  const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
+  for(const m of measurements){
+    const b = buckets.find(b => (b.cat? b.cat.id : "") === (m.cat||""));
+    (b || buckets[buckets.length-1]).items.push(m);
+  }
+  for(const b of buckets){
+    if(!b.items.length) continue;
+    const sub = {area:0, line:0, count:0};
+    let rows = "";
+    for(const m of b.items){
+      const v = measureValue(m), p = measurePerim(m);
+      if(v!=null) sub[m.type]+=v;
+      rows += '<tr><td>'+esc(m.name)+'</td><td>'+(m.src==="map"?"Map":"Page "+m.page)+'</td>'+
+        '<td class="r">'+(v==null?"—": m.type==="count"? v+" EA" : m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF")+'</td>'+
+        '<td class="r">'+(p!=null? p.toFixed(1)+" LF":"")+'</td></tr>';
+    }
+    const cy = catCY(b.cat, sub.area);
+    const tParts = [];
+    if(sub.area) tParts.push(sub.area.toFixed(0)+" SF");
+    if(sub.line) tParts.push(sub.line.toFixed(1)+" LF");
+    if(sub.count) tParts.push(sub.count+" EA");
+    body += '<h2><span class="dot" style="background:'+(b.cat?b.cat.color:"#999")+'"></span>'+
+      esc(b.cat? catLabel(b.cat) : "Uncategorized")+'</h2>'+
+      '<table><tr><th>Item</th><th>Location</th><th class="r">Quantity</th><th class="r">Perimeter</th></tr>'+rows+'</table>'+
+      '<div class="sub">Total: '+tParts.join(" · ")+
+      (cy? ' &nbsp;·&nbsp; Material @ '+b.cat.depth+'&quot; depth: '+cy.base.toFixed(2)+' CY'+
+        (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+cy.withWaste.toFixed(2)+' CY)':''):'')+'</div>'+
+      (b.cat && b.cat.notes? '<div class="notes">Notes: '+esc(b.cat.notes)+'</div>':'');
+  }
+  // page snapshots
+  if(pdfDoc){
+    const pages = [...new Set(measurements.filter(m=>m.src==="pdf").map(m=>m.page))].sort((a,b)=>a-b);
+    for(const pg of pages){
+      try{
+        const img = await pageSnapshot(pg);
+        body += '<div class="pagebreak"></div><h2>Plan — Page '+pg+'</h2><img class="plan" src="'+img+'">';
+      }catch{}
+    }
+  }
+  if(measurements.some(m=>m.src==="map"))
+    body += '<div class="notes" style="margin-top:14px">Map measurements are listed in the tables above (satellite view lives in the app).</div>';
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>'+
+    'body{font:13px/1.5 -apple-system,Segoe UI,sans-serif;color:#1c1f24;margin:36px;}'+
+    'h1{font-size:22px;margin:0 0 2px;} .meta{color:#777;font-size:11px;margin-bottom:18px;}'+
+    'h2{font-size:14px;margin:20px 0 6px;display:flex;align-items:center;gap:7px;}'+
+    '.dot{width:10px;height:10px;border-radius:50%;display:inline-block;}'+
+    'table{border-collapse:collapse;width:100%;font-size:12px;}'+
+    'th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;} .r{text-align:right;}'+
+    'th{background:#f1f1f1;} .sub{font-family:monospace;font-size:11.5px;margin:6px 0 2px;font-weight:600;}'+
+    '.notes{font-size:11.5px;color:#555;margin:2px 0 8px;}'+
+    'img.plan{width:100%;border:1px solid #ccc;margin-top:6px;}'+
+    '.pagebreak{page-break-before:always;}'+
+    '@media print{body{margin:12mm;}}'+
+    '</style></head><body>'+body+'</body></html>';
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(f);
+  f.contentDocument.open(); f.contentDocument.write(html); f.contentDocument.close();
+  setTimeout(()=>{
+    f.contentWindow.focus(); f.contentWindow.print();
+    setTimeout(()=>f.remove(), 60000);
+  }, 400);
+};
+
+// ================= export / copy / save =================
+document.getElementById("exportBtn").onclick = () => {
+  if(!measurements.length){ toast("Nothing to export"); return; }
+  let csv = "Category,Name,Type,Source,Page,Quantity,Unit,Perimeter LF\n";
+  for(const m of measurements){
+    const v = measureValue(m), p = measurePerim(m);
+    const c = catOf(m.cat);
+    csv += '"'+(c?c.name.replace(/"/g,'""'):"")+'","'+m.name.replace(/"/g,'""')+'",'+m.type+','+
+      (m.src==="map"?"map":"pdf")+','+(m.src==="map"?"":m.page)+','+
+      (v==null?"":m.type==="count"?v:v.toFixed(2))+','+unitOf(m.type)+','+
+      (p!=null?p.toFixed(2):"")+"\n";
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
+  a.download = slug(defaultProjectName())+"-takeoff.csv";
+  a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById("copyBtn").onclick = async () => {
+  const pool = visibleMeasurements();
+  if(!pool.length){ toast("Nothing to copy with the current filter"); return; }
+  const fl = filterLabel();
+  let txt = "TAKEOFF QUANTITIES — "+defaultProjectName()+(fl? " ("+fl+")":"")+"\n\n";
+  const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
+  for(const m of pool){
+    const v = measureValue(m); if(v==null) continue;
+    const b = buckets.find(b => (b.cat? b.cat.id : "") === (m.cat||""));
+    (b || buckets[buckets.length-1]).items.push({m,v});
+  }
+  const grand = {line:0, area:0, count:0};
+  const ORDER = [["area","AREAS"],["line","LINEAR"],["count","COUNTS"]];
+  for(const b of buckets){
+    if(!b.items.length) continue;
+    txt += (b.cat ? catLabel(b.cat).toUpperCase() : "GENERAL")+"\n";
+    const typesPresent = new Set(b.items.map(x=>x.m.type));
+    const sub = {line:0, area:0, count:0};
+    for(const [t,label] of ORDER){
+      const rows = b.items.filter(x=>x.m.type===t);
+      if(!rows.length) continue;
+      if(typesPresent.size > 1) txt += label+"\n";
+      let tTot = 0;
+      for(const {m,v} of rows){
+        sub[t]+=v; grand[t]+=v; tTot+=v;
+        const p = measurePerim(m);
+        if(t==="area") txt += "- "+m.name+": "+v.toFixed(0)+" SF"+(p?" (perimeter "+p.toFixed(0)+" LF)":"")+"\n";
+        else if(t==="line") txt += "- "+m.name+": "+v.toFixed(1)+" LF\n";
+        else txt += "- "+m.name+": "+v+" EA\n";
+      }
+      if(typesPresent.size > 1){
+        txt += "Subtotal "+label.toLowerCase()+": "+
+          (t==="count" ? tTot+" EA" : t==="line" ? tTot.toFixed(1)+" LF" : tTot.toFixed(0)+" SF")+"\n";
+      }
+    }
+    const parts = [];
+    if(sub.area) parts.push(sub.area.toFixed(0)+" SF");
+    if(sub.line) parts.push(sub.line.toFixed(1)+" LF");
+    if(sub.count) parts.push(sub.count+" EA");
+    txt += "Category total: "+parts.join(" · ")+"\n";
+    const cy = catCY(b.cat, sub.area);
+    if(cy){
+      txt += 'Material @ '+b.cat.depth+'" depth: '+cy.base.toFixed(2)+" CY"+
+        (b.cat.waste>0 ? " · +"+b.cat.waste+"% waste = "+cy.withWaste.toFixed(2)+" CY" : "")+"\n";
+    }
+    if(b.cat && b.cat.notes) txt += "Notes: "+b.cat.notes+"\n";
+    txt += "\n";
+  }
+  txt += "GRAND TOTALS: "+grand.area.toFixed(0)+" SF · "+grand.line.toFixed(1)+" LF · "+grand.count+" EA\n";
+  try{ await navigator.clipboard.writeText(txt); toast("Copied"+(fl? " ("+fl+")":"")+" — paste into LMN"); }
+  catch{ toast("Copy blocked by browser — use Export CSV"); }
+};
+function defaultProjectName(){
+  return projectName || lastAddress || pdfName.replace(/\.pdf$/i,"") || "Takeoff "+new Date().toLocaleDateString();
+}
+function slug(s){ return s.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").slice(0,60) || "takeoff"; }
+function serializeProject(){
+  return {v:4, projectName, pdfName, ftPerUnit, defaultFtPerUnit, scaleLabels, measurements, nextId, counters, categories, activeCatId, nextCatId, versions};
+}
+function applyProject(data){
+  projectName = data.projectName||"";
+  ftPerUnit = data.ftPerUnit||{}; defaultFtPerUnit = data.defaultFtPerUnit??null;
+  scaleLabels = data.scaleLabels||{};
+  scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
+  measurements = (data.measurements||[]).map(m => ({src:"pdf", ...m}));
+  nextId = data.nextId||measurements.length+1;
+  Object.assign(counters, data.counters||{});
+  categories = data.categories||[];
+  activeCatId = data.activeCatId||"";
+  nextCatId = data.nextCatId||categories.length+1;
+  versions = data.versions||[];
+  refreshCatSelect();
+  syncTitle();
+  refreshAll();
+}
+let lastIncludePdf = true;
+function buildProjectData(){
+  const data = serializeProject();
+  if(pdfData && lastIncludePdf){
+    try{ data.pdfB64 = bufToB64(pdfData); }catch{ toast("PDF too large to embed — saved without it"); }
+  }
+  return data;
+}
+async function writeToHandle(h, data){
+  const w = await h.createWritable();
+  await w.write(new Blob([JSON.stringify(data)], {type:"application/json"}));
+  await w.close();
+}
+function afterSave(label){
+  window.__isDirty = false; syncTitle();
+  toast(label);
+  if(pendingNew){ pendingNew = false; setTimeout(resetProject, 250); }
+}
+async function doSave(asNew){
+  // real Save: write straight back to the file we opened, no dialog
+  if(!asNew && fileHandle){
+    try{
+      if(fileHandle.queryPermission && (await fileHandle.queryPermission({mode:"readwrite"}))!=="granted"){
+        if((await fileHandle.requestPermission({mode:"readwrite"}))!=="granted") throw new Error("no-perm");
+      }
+      await writeToHandle(fileHandle, buildProjectData());
+      afterSave("Saved — "+(fileHandle.name||projectName));
+      return;
+    }catch(e){ /* handle gone or denied — fall through to Save As */ }
+  }
+  document.getElementById("saveBack").classList.add("open");
+  const f = document.getElementById("projName");
+  f.value = defaultProjectName(); f.focus(); f.select();
+  document.getElementById("savePdfInc").checked = lastIncludePdf && !!pdfData;
+}
+document.getElementById("saveProj").onclick = () => doSave(false);
+document.getElementById("saveAsBtn").onclick = () => doSave(true);
+document.getElementById("saveCancel").onclick = () => { pendingNew = false; closeModal("saveBack"); };
+document.getElementById("saveApply").onclick = async () => {
+  projectName = document.getElementById("projName").value.trim() || defaultProjectName();
+  lastIncludePdf = document.getElementById("savePdfInc").checked;
+  closeModal("saveBack");
+  const data = buildProjectData();
+  const fname = slug(projectName)+"-project.json";
+  if(window.showSaveFilePicker){
+    try{
+      const h = await showSaveFilePicker({
+        suggestedName: fname,
+        types:[{description:"Plan Takeoff project", accept:{"application/json":[".json"]}}]
+      });
+      await writeToHandle(h, data);
+      fileHandle = h;
+      afterSave('Saved "'+projectName+'" — ⌘S now saves here directly');
+      return;
+    }catch(e){
+      if(e && e.name==="AbortError"){ pendingNew = false; return; }
+      /* no user gesture / unsupported — fall back to download */
+    }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  a.download = fname;
+  a.click(); URL.revokeObjectURL(a.href);
+  afterSave('Saved "'+projectName+'"');
+};
+document.getElementById("saveBack").addEventListener("keydown", e => {
+  if(e.key==="Enter") document.getElementById("saveApply").click();
+  if(e.key==="Escape") closeModal("saveBack");
+});
+document.getElementById("loadProj").onclick = async () => {
+  if(window.showOpenFilePicker){
+    try{
+      const [h] = await showOpenFilePicker({types:[{description:"Plan Takeoff project", accept:{"application/json":[".json"]}}]});
+      const f = await h.getFile();
+      await loadProjectFile(f);
+      fileHandle = h;
+      return;
+    }catch(e){ if(e && e.name==="AbortError") return; }
+  }
+  document.getElementById("projInput").click();
+};
+document.getElementById("projInput").onchange = e => {
+  if(e.target.files[0]){ fileHandle = null; loadProjectFile(e.target.files[0]); }
+};
+async function loadProjectFile(f){
+  try{
+    const data = JSON.parse(await f.text());
+    pushHistory();
+    applyProject(data);
+    if(data.pdfB64){
+      try{
+        await loadPdfBytes(b64ToBuf(data.pdfB64), data.pdfName||"plan.pdf");
+        setMode("pdf");
+        toast("Project loaded — PDF included");
+      }catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
+    } else {
+      toast("Project loaded"+(data.pdfName?" — open "+data.pdfName+" to see plan markups":""));
+    }
+    window.__isDirty = false; // freshly opened from disk = nothing unsaved yet
+  }catch{ toast("Couldn't read that project file"); }
+}
+document.getElementById("clearBtn").onclick = () => {
+  if(measurements.length) openModal2("clearBack");
+};
+
+// ================= category editor =================
+let editCatId = null, ceColor = null, ceDelArmed = false;
+function catCY(c, sf){
+  if(!c || !(c.depth>0) || !(sf>0)) return null;
+  const base = sf * c.depth / 12 / 27;
+  const w = c.waste>0 ? base*(1+c.waste/100) : base;
+  return {base, withWaste:w};
+}
+function openCatEditor(c){
+  editCatId = c.id; ceColor = c.color; ceDelArmed = false;
+  document.getElementById("ceName").value = c.name;
+  document.getElementById("ceDepth").value = c.depth>0 ? c.depth : "";
+  document.getElementById("ceWaste").value = c.waste>0 ? c.waste : "";
+  document.getElementById("ceNotes").value = c.notes || "";
+  const hasKids = categories.some(x=>x.parent===c.id);
+  const ps = document.getElementById("ceParent");
+  ps.innerHTML = '<option value="">— top level —</option>' +
+    categories.filter(x => x.id!==c.id && !isChildCat(x))
+      .map(x=>'<option value="'+x.id+'"'+(c.parent===x.id?" selected":"")+'>'+esc2(x.name)+'</option>').join("");
+  ps.disabled = hasKids;
+  ps.title = hasKids ? "This category has sub-categories, so it stays top level" : "Nest this category under another one";
+  document.getElementById("ceDelete").textContent = "Delete category";
+  const row = document.getElementById("ceColors");
+  row.innerHTML = PALETTE.map(col =>
+    '<button class="sw'+(col===ceColor?" on":"")+'" data-c="'+col+'" style="background:'+col+'"></button>').join("");
+  row.querySelectorAll(".sw").forEach(b => b.onclick = () => {
+    ceColor = b.dataset.c;
+    row.querySelectorAll(".sw").forEach(x=>x.classList.toggle("on", x===b));
+  });
+  openModal2("catEditBack");
+  document.getElementById("ceName").focus();
+}
+document.getElementById("ceCancel").onclick = () => closeModal("catEditBack");
+document.getElementById("ceSave").onclick = () => {
+  const c = catOf(editCatId); if(!c){ closeModal("catEditBack"); return; }
+  const name = document.getElementById("ceName").value.trim();
+  if(!name){ toast("Category needs a name"); return; }
+  pushHistory();
+  c.name = name;
+  const psv = document.getElementById("ceParent");
+  if(!psv.disabled) c.parent = psv.value || "";
+  c.depth = parseFloat(document.getElementById("ceDepth").value)||0;
+  c.waste = parseFloat(document.getElementById("ceWaste").value)||0;
+  c.notes = document.getElementById("ceNotes").value.trim();
+  if(ceColor && ceColor!==c.color){
+    c.color = ceColor;
+    for(const m of measurements) if(m.cat===c.id) m.color = ceColor;
+  }
+  closeModal("catEditBack");
+  refreshCatSelect(); refreshAll();
+  toast('"'+c.name+'" updated');
+};
+document.getElementById("ceDelete").onclick = () => {
+  if(!ceDelArmed){
+    ceDelArmed = true;
+    document.getElementById("ceDelete").textContent = "Click again to confirm";
+    return;
+  }
+  const c = catOf(editCatId); if(!c){ closeModal("catEditBack"); return; }
+  pushHistory();
+  for(const m of measurements) if(m.cat===c.id) m.cat = "";
+  categories = categories.filter(x=>x.id!==c.id);
+  for(const cc of categories) if(cc.parent===c.id) cc.parent = "";
+  if(activeCatId===c.id) activeCatId = "";
+  closeModal("catEditBack");
+  refreshCatSelect(); refreshAll();
+  toast('Category deleted — its measurements moved to Uncategorized');
+};
+document.getElementById("catEditBack").addEventListener("keydown", e => {
+  if(e.key==="Escape") closeModal("catEditBack");
+  if(e.key==="Enter" && e.target.tagName!=="TEXTAREA") document.getElementById("ceSave").click();
+});
+
+// ================= project title & new project =================
+const projTitle = document.getElementById("projTitle");
+function syncTitle(){
+  projTitle.value = projectName;
+  projTitle.placeholder = lastAddress || (pdfName ? pdfName.replace(/\.pdf$/i,"") : "Untitled project");
+}
+projTitle.addEventListener("input", () => {
+  projectName = projTitle.value.trim();
+  if(typeof scheduleAutosave==="function") scheduleAutosave();
+});
+let pendingNew = false;
+function resetProject(){
+  pushHistory(); // one undo step can bring the measurements back
+  measurements=[]; categories=[]; activeCatId=""; nextCatId=1; nextId=1;
+  counters.line=1; counters.area=1; counters.count=1;
+  projectName=""; lastAddress="";
+  ftPerUnit={}; defaultFtPerUnit=null; scaleLabels={}; scaleLabel="NOT SET";
+  selectedId=null; selVertex=null; drawing=null; calibPts=null;
+  pdfDoc=null; pdfName=""; pageCount=0; pageNum=1; pdfData=null;
+  fileHandle=null; versions=[];
+  baseCache.clear(); hiCanvas.style.display="none";
+  collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
+  document.getElementById("measSearch").value="";
+  document.getElementById("filterSel").value="all";
+  stage.style.display="none";
+  document.getElementById("dropHint").style.display="flex";
+  if(pageLocked) togglePageLock();
+  refreshCatSelect(); syncTitle(); refreshAll();
+  storeDel(AS_KEY);
+  window.__isDirty=false;
+  toast("New project started");
+}
+function askNewProject(){
+  if(measurements.length || categories.length || pdfDoc) openModal2("newBack");
+  else resetProject();
+}
+window.__newProject = askNewProject;
+document.getElementById("newBtn").onclick = askNewProject;
+document.getElementById("newCancel").onclick = () => closeModal("newBack");
+document.getElementById("newGo").onclick = () => { closeModal("newBack"); resetProject(); };
+document.getElementById("newSaveFirst").onclick = () => {
+  closeModal("newBack");
+  pendingNew = true;
+  document.getElementById("saveProj").click();
+};
+document.getElementById("newBack").addEventListener("keydown", e => {
+  if(e.key==="Escape") closeModal("newBack");
+});
+
+// ================= autosave & close protection =================
+const AS_KEY = "plantakeoff_autosave_v1";
+function storeSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch{ return false; } }
+function storeGet(k){ try{ return localStorage.getItem(k); }catch{ return null; } }
+function storeDel(k){ try{ localStorage.removeItem(k); }catch{} }
+
+let autosaveTimer = null;
+window.__isDirty = false;
+function scheduleAutosave(){
+  window.__isDirty = true;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(()=>{
+    const hasScale = defaultFtPerUnit!=null || Object.keys(ftPerUnit).length>0;
+    if(!measurements.length && !categories.length && !hasScale && !versions.length) storeDel(AS_KEY);
+    else storeSet(AS_KEY, JSON.stringify(serializeProject()));
+  }, 800);
+}
+// hooks used by the desktop app's close dialog
+window.__measCount = () => measurements.length;
+window.__saveProjectNow = () => doSave(false);
+window.__saveAs = () => doSave(true);
+
+// mark exports as "saved" too
+document.getElementById("exportBtn").addEventListener("click", () => { window.__isDirty = false; });
+
+// warn the browser tab before closing with unsaved work (desktop app handles its own dialog)
+const IS_DESKTOP_APP = /Electron/i.test(navigator.userAgent);
+window.addEventListener("beforeunload", e => {
+  // flush the latest state no matter what
+  clearTimeout(autosaveTimer);
+  if(measurements.length || categories.length) storeSet(AS_KEY, JSON.stringify(serializeProject()));
+  if(!IS_DESKTOP_APP && window.__isDirty && measurements.length){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+// offer recovery on startup
+(function(){
+  const raw = storeGet(AS_KEY);
+  if(!raw) return;
+  try{
+    const d = JSON.parse(raw);
+    const count = (d.measurements||[]).length;
+    const hasScale = d.defaultFtPerUnit!=null || Object.keys(d.ftPerUnit||{}).length>0;
+    if(!count && !(d.categories||[]).length && !hasScale) return;
+    const bits = [];
+    if(count) bits.push(count+" measurement"+(count>1?"s":""));
+    if((d.categories||[]).length) bits.push((d.categories||[]).length+" categories");
+    if(hasScale) bits.push("scale");
+    document.getElementById("restoreInfo").textContent =
+      bits.join(" · ")+(d.projectName? ' · "'+d.projectName+'"' : "");
+    document.getElementById("restoreBar").classList.add("show");
+    document.getElementById("restoreYes").onclick = () => {
+      applyProject(d);
+      document.getElementById("restoreBar").classList.remove("show");
+      toast("Work restored"+(d.pdfName? " — open "+d.pdfName+" to see plan markups" : ""));
+    };
+    document.getElementById("restoreNo").onclick = () => {
+      document.getElementById("restoreBar").classList.remove("show");
+    };
+  }catch{}
+})();
+
+// ================= themes =================
+const THEME_KEY = "plantakeoff_theme", PDFINV_KEY = "plantakeoff_pdfinv";
+function applyTheme(t){
+  document.body.dataset.theme = t;
+  document.getElementById("themeBtn").textContent = t==="light" ? "🌙" : "☀️";
+  document.getElementById("themeBtn").title = t==="light" ? "Switch to dark mode" : "Switch to light mode";
+  storeSet(THEME_KEY, t);
+}
+document.getElementById("themeBtn").onclick = () =>
+  applyTheme(document.body.dataset.theme==="light" ? "dark" : "light");
+function applyPdfInvert(on, persist){
+  pdfCanvas.classList.toggle("inverted", on);
+  hiCanvas.classList.toggle("inverted", on);
+  const b = document.getElementById("pdfInvert");
+  b.classList.toggle("locked", on);
+  b.title = on ? "Plan is inverted — click for original colors" : "Invert plan colors (dark plan)";
+  if(persist) storeSet(PDFINV_KEY, on ? "1" : "0");
+}
+document.getElementById("pdfInvert").onclick = () =>
+  applyPdfInvert(!pdfCanvas.classList.contains("inverted"), true);
+// theme drives the plan too, unless the user has manually overridden with 🌓
+const _applyThemeBase = applyTheme;
+applyTheme = function(t){
+  _applyThemeBase(t);
+  const st = storeGet(PDFINV_KEY);
+  if(st!=="1" && st!=="0") applyPdfInvert(t==="dark", false);
+};
+applyTheme(storeGet(THEME_KEY)==="dark" ? "dark" : "light");
+const _pdfInvSt = storeGet(PDFINV_KEY);
+if(_pdfInvSt==="1") applyPdfInvert(true, false);
+else if(_pdfInvSt==="0") applyPdfInvert(false, false);
+
+// ================= versions =================
+let verDelArm = null;
+function verSnap(){
+  return JSON.parse(JSON.stringify({measurements, categories, counters, nextId, nextCatId, activeCatId, ftPerUnit, defaultFtPerUnit, scaleLabels}));
+}
+function renderVersions(){
+  const el = document.getElementById("verList");
+  if(!versions.length){
+    el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No versions yet — name one above and hit Save version.</div>';
+    return;
+  }
+  el.innerHTML = [...versions].reverse().map(v =>
+    '<div class="vrow" data-vid="'+v.id+'"><div class="vmeta">'+
+    '<div class="vn">'+esc2(v.name)+'</div>'+
+    '<div class="vd">'+new Date(v.ts).toLocaleString()+' · '+(v.snap.measurements||[]).length+' items</div></div>'+
+    '<button class="btn" data-act="restore">Restore</button>'+
+    '<button class="btn danger" data-act="del">'+(verDelArm===v.id?"Sure?":"✕")+'</button></div>').join("");
+}
+document.getElementById("verBtn").onclick = () => {
+  verDelArm = null; renderVersions();
+  document.getElementById("verName").value = "";
+  openModal2("verBack");
+};
+document.getElementById("verClose").onclick = () => closeModal("verBack");
+document.getElementById("verSave").onclick = () => {
+  const name = document.getElementById("verName").value.trim() || ("Version "+(versions.length+1));
+  versions.push({id:Date.now(), name, ts:new Date().toISOString(), snap:verSnap()});
+  if(versions.length>25) versions.shift();
+  document.getElementById("verName").value = "";
+  verDelArm = null; renderVersions();
+  if(typeof scheduleAutosave==="function") scheduleAutosave();
+  window.__isDirty = true;
+  toast('Version "'+name+'" saved — write it to disk with ⌘S');
+};
+document.getElementById("verList").addEventListener("click", e => {
+  const row = e.target.closest(".vrow"); if(!row) return;
+  const v = versions.find(x=>x.id===+row.dataset.vid); if(!v) return;
+  const act = e.target.dataset && e.target.dataset.act;
+  if(act==="restore"){
+    pushHistory();
+    const p = JSON.parse(JSON.stringify(v.snap));
+    measurements = p.measurements||[]; categories = p.categories||[];
+    Object.assign(counters, p.counters||{});
+    nextId = p.nextId||measurements.length+1; nextCatId = p.nextCatId||categories.length+1;
+    activeCatId = p.activeCatId||"";
+    ftPerUnit = p.ftPerUnit||{}; defaultFtPerUnit = p.defaultFtPerUnit??null;
+    scaleLabels = p.scaleLabels||{};
+    scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
+    refreshCatSelect(); refreshAll();
+    closeModal("verBack");
+    toast('Restored "'+v.name+'" — ⌘Z undoes this');
+  } else if(act==="del"){
+    if(verDelArm!==v.id){ verDelArm = v.id; renderVersions(); return; }
+    versions = versions.filter(x=>x.id!==v.id);
+    verDelArm = null; renderVersions();
+    if(typeof scheduleAutosave==="function") scheduleAutosave();
+  }
+});
+document.getElementById("verBack").addEventListener("keydown", e => {
+  if(e.key==="Escape") closeModal("verBack");
+  if(e.key==="Enter" && e.target.id==="verName") document.getElementById("verSave").click();
+});
+
+// ================= historical imagery (Esri Wayback) =================
+let wbList = null, wbLayer = null, wbIdx = -1;
+async function loadWayback(){
+  if(wbList) return wbList;
+  const r = await fetch("https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json");
+  const js = await r.json();
+  wbList = Object.entries(js).map(([num, v]) => {
+    const t = (v.itemTitle||"").match(/(\d{4}-\d{2}-\d{2})/);
+    return {num:+num, date: t ? t[1] : String(num), url: v.itemURL};
+  }).filter(x=>x.url).sort((a,b)=> b.date.localeCompare(a.date));
+  return wbList;
+}
+let wbSeason = "all", wbCur = [];
+function seasonOf(date){
+  const mo = +date.slice(5,7);
+  if(mo===12 || mo<=2) return "win";
+  if(mo<=5) return "spr";
+  if(mo<=8) return "sum";
+  return "fal";
+}
+function wbRefilter(){
+  wbCur = wbSeason==="all" ? wbList : wbList.filter(x=>seasonOf(x.date)===wbSeason);
+  const sel = document.getElementById("histSel");
+  sel.innerHTML = wbCur.map(x=>'<option value="'+x.num+'">'+x.date+'</option>').join("");
+  return wbCur.length;
+}
+function wbApply(i){
+  if(!wbCur || !wbCur[i]) return;
+  wbIdx = i;
+  const it = wbCur[i];
+  if(wbLayer) map.removeLayer(wbLayer);
+  if(map.hasLayer(currentBase)) map.removeLayer(currentBase);
+  wbLayer = L.tileLayer(
+    it.url.replace("{level}","{z}").replace("{row}","{y}").replace("{col}","{x}"),
+    {maxZoom:22, maxNativeZoom:19, attribution:"Wayback imagery © Esri, Maxar"});
+  wbLayer.addTo(map);
+  document.getElementById("histSel").value = String(it.num);
+  document.getElementById("histOlder").disabled = i >= wbCur.length-1;
+  document.getElementById("histNewer").disabled = i <= 0;
+}
+function wbExit(){
+  if(wbLayer){ map.removeLayer(wbLayer); wbLayer = null; }
+  if(map && !map.hasLayer(currentBase)) currentBase.addTo(map);
+  wbIdx = -1;
+  document.getElementById("histPill").classList.remove("show");
+  document.getElementById("histBtn").classList.remove("on");
+}
+document.getElementById("histBtn").onclick = async () => {
+  initMap();
+  if(document.getElementById("histPill").classList.contains("show")){ wbExit(); return; }
+  toast("Loading imagery dates…");
+  try{ await loadWayback(); }
+  catch(e){ toast("Couldn't load historical imagery — check connection"); return; }
+  wbRefilter();
+  document.getElementById("histPill").classList.add("show");
+  document.getElementById("histBtn").classList.add("on");
+  wbApply(0);
+  toast(wbList.length+" imagery dates — pick a season, ◀ goes back in time");
+};
+document.getElementById("histSel").onchange = e => {
+  const i = wbCur.findIndex(x=>String(x.num)===e.target.value);
+  if(i>=0) wbApply(i);
+};
+document.getElementById("histSeason").onchange = e => {
+  wbSeason = e.target.value;
+  const n = wbRefilter();
+  if(!n){
+    toast("No "+e.target.options[e.target.selectedIndex].text.replace(/[^A-Za-z ()-]/g,"").trim()+" captures in the archive — showing all");
+    wbSeason = "all"; e.target.value = "all"; wbRefilter();
+  }
+  wbApply(0);
+};
+document.getElementById("histOlder").onclick = () => wbApply(wbIdx+1);
+document.getElementById("histNewer").onclick = () => wbApply(wbIdx-1);
+document.getElementById("histLive").onclick = wbExit;
+(function(){
+  const bs = document.getElementById("baseSwitch");
+  const prev = bs.onchange;
+  bs.onchange = e => { if(wbLayer) wbExit(); if(prev) prev.call(bs, e); };
+})();
+
+// ================= v1.9 popovers & scale menu =================
+function closePops(){
+  document.querySelectorAll(".pop.open").forEach(p=>p.classList.remove("open"));
+  document.querySelectorAll("[data-pop].on").forEach(b=>b.classList.remove("on"));
+}
+function positionPop(p, b){
+  const r = b.getBoundingClientRect();
+  p.style.visibility = "hidden"; p.classList.add("open");
+  const pw = p.offsetWidth, ph = p.offsetHeight;
+  let x = r.left, y = r.bottom + 6;
+  if(x + pw > innerWidth - 8) x = innerWidth - pw - 8;
+  if(y + ph > innerHeight - 8) y = r.top - ph - 6;
+  p.style.left = Math.max(8,x)+"px"; p.style.top = Math.max(8,y)+"px";
+  p.style.visibility = "";
+}
+document.querySelectorAll("[data-pop]").forEach(b => {
+  b.addEventListener("click", e => {
+    e.stopPropagation();
+    const p = document.getElementById("pop-"+b.dataset.pop);
+    const was = p.classList.contains("open");
+    closePops();
+    if(!was){ positionPop(p,b); b.classList.add("on"); }
+  });
+});
+document.addEventListener("click", e => { if(!e.target.closest(".pop")) closePops(); });
+window.addEventListener("keydown", e => { if(e.key==="Escape") closePops(); }, true);
+document.querySelectorAll(".pop").forEach(p => {
+  p.addEventListener("click", e => { if(e.target.closest(".mi")) setTimeout(closePops, 30); });
+});
+// scale presets
+const SCALE_PRESETS = [
+  ["ARCHITECTURAL", [["1/16\" = 1'-0\"",192],["3/32\" = 1'-0\"",128],["1/8\" = 1'-0\"",96],["3/16\" = 1'-0\"",64],["1/4\" = 1'-0\"",48],["3/8\" = 1'-0\"",32],["1/2\" = 1'-0\"",24],["3/4\" = 1'-0\"",16],["1\" = 1'-0\"",12],["1-1/2\" = 1'-0\"",8],["3\" = 1'-0\"",4]]],
+  ["ENGINEERING", [["1\" = 10'",120],["1\" = 20'",240],["1\" = 30'",360],["1\" = 40'",480],["1\" = 50'",600],["1\" = 60'",720],["1\" = 100'",1200]]]
+];
+(function(){
+  const list = document.getElementById("scaleList");
+  for(const [grp, items] of SCALE_PRESETS){
+    const h = document.createElement("div"); h.className = "ph"; h.textContent = grp;
+    list.appendChild(h);
+    for(const [label, ratio] of items){
+      const b = document.createElement("button");
+      b.className = "mi"; b.textContent = label;
+      b.onclick = () => applyScale(ratio/12/72, label);
+      list.appendChild(b);
+    }
+  }
+})();
+document.getElementById("scCustom").onclick = () => openModal("customBack","cusPaper");
+document.getElementById("scCalib").onclick = () => {
+  if(mode!=="pdf"){ toast("Calibration is for the plan — switch to Plan mode"); return; }
+  setTool("calibrate");
+  toast("Click 2 points of a known dimension on the plan");
+};
+
+// ================= cloud projects (Supabase — free, private, password login) =================
+const CLOUD_CFG_KEY="plantakeoff_cloud", CLOUD_SES_KEY="plantakeoff_cloud_session";
+// To bake the connection in permanently, fill these two and the setup screen never shows:
+const CLOUD_URL="https://nbzwnzluooynezbhsune.supabase.co", CLOUD_KEY="sb_publishable_ioIKqaNCBo5hYj1CFMyaTg_FImDtBUb";
+const IS_WEB = location.protocol.indexOf("http")===0 && !IS_DESKTOP_APP;
+let cloudSes = null; try{ cloudSes = JSON.parse(storeGet(CLOUD_SES_KEY)||"null"); }catch{}
+function cloudCfg(){
+  if(CLOUD_URL && CLOUD_KEY) return {url:CLOUD_URL, key:CLOUD_KEY};
+  try{ return JSON.parse(storeGet(CLOUD_CFG_KEY)||"null"); }catch{ return null; }
+}
+async function cloudFetch(path, opts, retry){
+  const cfg = cloudCfg(); if(!cfg) throw new Error("no-config");
+  opts = opts || {};
+  const h = Object.assign({}, opts.headers||{});
+  h.apikey = cfg.key;
+  if(cloudSes) h.Authorization = "Bearer "+cloudSes.access_token;
+  const r = await fetch(cfg.url+path, Object.assign({}, opts, {headers:h}));
+  if(r.status===401 && retry!==false && cloudSes && cloudSes.refresh_token){
+    if(await cloudRefresh()) return cloudFetch(path, opts, false);
+  }
+  return r;
+}
+async function cloudRefresh(){
+  try{
+    const cfg = cloudCfg();
+    const r = await fetch(cfg.url+"/auth/v1/token?grant_type=refresh_token",
+      {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
+       body:JSON.stringify({refresh_token:cloudSes.refresh_token})});
+    if(!r.ok) throw 0;
+    const js = await r.json();
+    cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
+    storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
+    return true;
+  }catch{ cloudSes=null; storeDel(CLOUD_SES_KEY); updateGate(); return false; }
+}
+async function cloudLogin(email, pass){
+  const cfg = cloudCfg();
+  const r = await fetch(cfg.url+"/auth/v1/token?grant_type=password",
+    {method:"POST", headers:{apikey:cfg.key,"Content-Type":"application/json"},
+     body:JSON.stringify({email:email, password:pass})});
+  const js = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(js.error_description||js.msg||"Wrong email or password");
+  cloudSes = {access_token:js.access_token, refresh_token:js.refresh_token};
+  storeSet(CLOUD_SES_KEY, JSON.stringify(cloudSes));
+}
+// ---- gate ----
+const gate = document.getElementById("loginGate");
+let gateNext = null;
+function updateGate(force){
+  const cfg = cloudCfg();
+  const show = force===true || force==="setup" || (IS_WEB && (!cfg || !cloudSes));
+  gate.classList.toggle("show", show);
+  if(!show) return;
+  document.getElementById("gClose").style.display = IS_WEB ? "none" : "";
+  const setup = !cfg || force==="setup";
+  document.getElementById("gSetup").style.display = setup ? "" : "none";
+  document.getElementById("gLogin").style.display = setup ? "none" : "";
+  if(setup){
+    if(cfg){ document.getElementById("gUrl").value = cfg.url; document.getElementById("gKey").value = cfg.key; }
+    document.getElementById("gUrl").focus();
+  } else {
+    document.getElementById(document.getElementById("gEmail").value ? "gPass" : "gEmail").focus();
+  }
+}
+document.getElementById("gSetupGo").onclick = () => {
+  const url = document.getElementById("gUrl").value.trim().replace(/\/+$/,"");
+  const key = document.getElementById("gKey").value.trim();
+  if(url.indexOf("https://")!==0 || url.indexOf(".supabase.co")<0 || key.length<30){
+    toast("Check the URL and key — copy them exactly from Supabase"); return;
+  }
+  storeSet(CLOUD_CFG_KEY, JSON.stringify({url:url, key:key}));
+  updateGate(true);
+};
+async function gateLoginGo(){
+  const em = document.getElementById("gEmail").value.trim();
+  const pw = document.getElementById("gPass").value;
+  const err = document.getElementById("gErr");
+  if(!em || !pw){ err.textContent = "Enter email and password"; err.style.display=""; return; }
+  const b = document.getElementById("gGo");
+  b.disabled = true; b.textContent = "Logging in…"; err.style.display = "none";
+  try{
+    await cloudLogin(em, pw);
+    gate.classList.remove("show");
+    toast("Logged in");
+    if(gateNext){ gateNext = null; openCloud(); }
+  }catch(e){ err.textContent = e.message || "Login failed"; err.style.display = ""; }
+  b.disabled = false; b.textContent = "Log in";
+}
+document.getElementById("gGo").onclick = gateLoginGo;
+gate.addEventListener("keydown", e => {
+  if(e.key!=="Enter") return;
+  if(document.getElementById("gLogin").style.display!=="none") gateLoginGo();
+  else document.getElementById("gSetupGo").click();
+});
+document.getElementById("gClose").onclick = () => { if(!IS_WEB) gate.classList.remove("show"); };
+// ---- cloud modal ----
+let cloudArm = null;
+function fmtSize(n){ return n>1e6 ? (n/1e6).toFixed(1)+" MB" : Math.round(n/1e3)+" KB"; }
+async function renderCloudList(){
+  const el = document.getElementById("cloudList");
+  el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">Loading…</div>';
+  try{
+    const r = await cloudFetch("/storage/v1/object/list/projects",
+      {method:"POST", headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({prefix:"", limit:100, sortBy:{column:"updated_at", order:"desc"}})});
+    if(!r.ok) throw 0;
+    const items = (await r.json()).filter(x => x.name && x.name!==".emptyFolderPlaceholder");
+    if(!items.length){
+      el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No cloud projects yet — save one above.</div>';
+      return;
+    }
+    el.innerHTML = items.map(x =>
+      '<div class="vrow" data-n="'+esc2(x.name)+'"><div class="vmeta">'+
+      '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
+      '<div class="vd">'+(x.updated_at ? new Date(x.updated_at).toLocaleString() : "")+
+      (x.metadata && x.metadata.size ? " · "+fmtSize(x.metadata.size) : "")+'</div></div>'+
+      '<button class="btn" data-act="open">Open</button>'+
+      '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>').join("");
+  }catch{
+    el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Couldn&#39;t load — check connection and login.</div>';
+  }
+}
+function openCloud(){
+  if(!cloudCfg()){ gateNext = true; updateGate("setup"); return; }
+  if(!cloudSes){ gateNext = true; updateGate(true); return; }
+  cloudArm = null;
+  document.getElementById("cloudName").value = defaultProjectName();
+  openModal2("cloudBack");
+  renderCloudList();
+}
+document.getElementById("cloudBtn").onclick = openCloud;
+document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
+document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
+document.getElementById("cloudSignout").onclick = () => {
+  cloudSes = null; storeDel(CLOUD_SES_KEY);
+  closeModal("cloudBack"); toast("Signed out");
+  updateGate();
+};
+document.getElementById("cloudSaveBtn").onclick = async () => {
+  if(!measurements.length && !pdfDoc && !categories.length){ toast("Nothing to save yet"); return; }
+  projectName = document.getElementById("cloudName").value.trim() || defaultProjectName();
+  syncTitle();
+  const b = document.getElementById("cloudSaveBtn");
+  b.disabled = true; b.textContent = "Saving…";
+  try{
+    const data = serializeProject();
+    if(pdfData){ try{ data.pdfB64 = bufToB64(pdfData); }catch{} }
+    const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(slug(projectName)+".json"),
+      {method:"POST", headers:{"Content-Type":"application/json","x-upsert":"true"},
+       body:JSON.stringify(data)});
+    if(!r.ok) throw 0;
+    window.__isDirty = false;
+    toast("Saved to cloud"+(pdfData ? " — PDF included" : ""));
+    renderCloudList();
+  }catch{ toast("Cloud save failed — check connection"); }
+  b.disabled = false; b.textContent = "Save to cloud";
+};
+document.getElementById("cloudList").addEventListener("click", async e => {
+  const row = e.target.closest(".vrow"); if(!row) return;
+  const name = row.dataset.n;
+  const act = e.target.dataset && e.target.dataset.act;
+  if(act==="open"){
+    toast("Opening…");
+    try{
+      const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(name));
+      if(!r.ok) throw 0;
+      const blob = await r.blob();
+      fileHandle = null;
+      closeModal("cloudBack");
+      await loadProjectFile(blob);
+    }catch{ toast("Could not open that project"); }
+  } else if(act==="del"){
+    if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
+    try{
+      const r = await cloudFetch("/storage/v1/object/projects/"+encodeURIComponent(name), {method:"DELETE"});
+      if(!r.ok) throw 0;
+      cloudArm = null; renderCloudList(); toast("Deleted from cloud");
+    }catch{ toast("Delete failed"); }
+  }
+});
+document.getElementById("cloudBack").addEventListener("keydown", e => {
+  if(e.key==="Escape") closeModal("cloudBack");
+  if(e.key==="Enter" && e.target.id==="cloudName") document.getElementById("cloudSaveBtn").click();
+});
+updateGate();
+
+setTool("select");
+refreshCatSelect();
+syncTitle();
+</script>
+</body>
+</html>
