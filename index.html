@@ -2952,8 +2952,8 @@ async function gateLoginGo(){
     storeSet(PW_KEY, btoa(pw));
     gate.classList.remove("show");
     toast("Welcome");
-    cloudEnsure(); // connect the cloud quietly in the background
-    if(gateNext){ gateNext = null; openCloud(); }
+    gateNext = null;
+    if(cloudCfg()) openCloud(); // show all saved jobs right after unlocking
   } else {
     err.textContent = "Wrong password"; err.style.display = "";
   }
