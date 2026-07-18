@@ -1795,7 +1795,7 @@ function applyScale(fpu, label){
   refreshAll();
   toast("Scale set: "+label);
 }
-// scale menu is built in the v1.9 popover wiring below
+// scale menu is built in the v2.0 popover wiring below
 
 // ================= modals =================
 function openModal(id, focusId){
@@ -2787,7 +2787,7 @@ document.getElementById("histLive").onclick = wbExit;
   bs.onchange = e => { if(wbLayer) wbExit(); if(prev) prev.call(bs, e); };
 })();
 
-// ================= v1.9 popovers & scale menu =================
+// ================= v2.0 popovers & scale menu =================
 function closePops(){
   document.querySelectorAll(".pop.open").forEach(p=>p.classList.remove("open"));
   document.querySelectorAll("[data-pop].on").forEach(b=>b.classList.remove("on"));
@@ -2959,7 +2959,7 @@ gate.addEventListener("keydown", e => {
 document.getElementById("gClose").onclick = () => gate.classList.remove("show");
 
 // ---- cloud modal ----
-let cloudArm = null;
+let cloudArm = null, cloudRen = null;
 function fmtSize(n){ return n>1e6 ? (n/1e6).toFixed(1)+" MB" : Math.round(n/1e3)+" KB"; }
 async function renderCloudList(){
   const el = document.getElementById("cloudList");
@@ -2982,13 +2982,21 @@ async function renderCloudList(){
       el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No cloud projects yet — save one above.</div>';
       return;
     }
-    el.innerHTML = items.map(x =>
-      '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'"><div class="vmeta">'+
+    el.innerHTML = items.map(x => {
+      if(cloudRen===x.name){
+        return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'">'+
+          '<input class="rnIn" value="'+esc2(x.name.replace(/\.json$/,""))+'" style="flex:1;min-width:0">'+
+          '<button class="btn primary" data-act="rensave">Save</button>'+
+          '<button class="btn" data-act="rencancel">✕</button></div>';
+      }
+      return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'"><div class="vmeta">'+
       '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
       '<div class="vd">'+(x.updated ? new Date(x.updated).toLocaleString() : "")+
       (x.size ? " · "+fmtSize(x.size) : "")+'</div></div>'+
       '<button class="btn" data-act="open">☁️ Open</button>'+
-      '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>').join("");
+      '<button class="btn" data-act="ren" title="Rename">✏️</button>'+
+      '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>';
+    }).join("");
   }catch{
     el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Could not load — check connection (or the access code in Settings).</div>';
   }
@@ -3008,11 +3016,16 @@ async function ghShaOf(fname){
   return null;
 }
 let lastPdfUp = {file:"", bytes:0}; // skip re-uploading an unchanged plan
+let loadedPdfRef = null; // remembers which cloud PDF belongs to the opened project
 async function ghSave(quiet){
   const data = serializeProject();
   const fbase = slug(defaultProjectName());
   const fname = fbase+".json";
   let pdfErr = false;
+  // opened from cloud without downloading the plan again? keep the link alive
+  if(!pdfData && loadedPdfRef && loadedPdfRef.base===fbase && loadedPdfRef.ref){
+    data.pdfRef = loadedPdfRef.ref;
+  }
   // the plan PDF travels as its own file next to the project — big plans fit this way
   if(pdfData && pdfData.byteLength < 70e6){
     data.pdfRef = fbase+".pdf";
@@ -3095,6 +3108,7 @@ document.getElementById("cloudList").addEventListener("click", async e => {
         try{ await loadPdfBytes(b64ToBuf(d.pdfB64), d.pdfName||"plan.pdf"); setMode("pdf"); toast("Project loaded — PDF included"); }
         catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
       } else if(d.pdfRef){
+        loadedPdfRef = {ref:d.pdfRef, base:name.replace(/\.json$/,"")};
         toast("Loading plan PDF…");
         try{
           const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
@@ -3110,6 +3124,62 @@ document.getElementById("cloudList").addEventListener("click", async e => {
       }
       window.__isDirty = false;
     }catch{ toast("Could not open that project"); }
+  } else if(act==="ren"){
+    cloudRen = name; cloudArm = null;
+    renderCloudList().then(()=>{
+      const inp = document.querySelector("#cloudList .rnIn");
+      if(inp){ inp.focus(); inp.select(); }
+    });
+  } else if(act==="rencancel"){
+    cloudRen = null; renderCloudList();
+  } else if(act==="rensave"){
+    const inp = row.querySelector(".rnIn");
+    const typed = (inp && inp.value || "").trim();
+    const newBase = slug(typed);
+    if(!newBase){ toast("Type a name"); return; }
+    const newJson = newBase+".json";
+    if(newJson===name){ cloudRen = null; renderCloudList(); return; }
+    toast("Renaming…");
+    try{
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {headers:{Accept:"application/vnd.github.raw"}});
+      if(!r.ok) throw 0;
+      const d = JSON.parse(await r.text());
+      if(d.pdfRef){
+        try{
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+            {headers:{Accept:"application/vnd.github.raw"}});
+          if(pr.ok){
+            const pbuf = await pr.arrayBuffer();
+            const npdf = newBase+".pdf";
+            const ps = await ghShaOf(npdf);
+            const pb = {message:"save: "+npdf, content:bufToB64(pbuf)};
+            if(ps) pb.sha = ps;
+            const pput = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(npdf)),
+              {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(pb)});
+            if(pput.ok){
+              const osha = await ghShaOf(d.pdfRef);
+              if(osha) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+                {method:"DELETE", headers:{"Content-Type":"application/json"},
+                 body:JSON.stringify({message:"delete: "+d.pdfRef, sha:osha})});
+              d.pdfRef = npdf;
+            }
+          }
+        }catch{}
+      }
+      d.projectName = typed;
+      const jsha = await ghShaOf(newJson);
+      const body = {message:"save: "+newJson, content:txtToB64(JSON.stringify(d))};
+      if(jsha) body.sha = jsha;
+      const rput = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(newJson)),
+        {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+      if(!rput.ok) throw 0;
+      const osha2 = await ghShaOf(name);
+      if(osha2) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {method:"DELETE", headers:{"Content-Type":"application/json"},
+         body:JSON.stringify({message:"delete: "+name, sha:osha2})});
+      cloudRen = null; renderCloudList(); toast('Renamed to "'+typed+'"');
+    }catch{ toast("Rename failed"); }
   } else if(act==="del"){
     if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
     try{
@@ -3129,6 +3199,11 @@ document.getElementById("cloudList").addEventListener("click", async e => {
 document.getElementById("cloudBack").addEventListener("keydown", e => {
   if(e.key==="Escape") closeModal("cloudBack");
   if(e.key==="Enter" && e.target.id==="cloudName") document.getElementById("cloudSaveBtn").click();
+  if(e.key==="Enter" && e.target.classList && e.target.classList.contains("rnIn")){
+    const row = e.target.closest(".vrow");
+    const b = row && row.querySelector('[data-act="rensave"]');
+    if(b) b.click();
+  }
 });
 document.getElementById("setTheme").onclick = () => document.getElementById("themeBtn").click();
 document.getElementById("setInvert").onclick = () => document.getElementById("pdfInvert").click();
