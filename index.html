@@ -3031,13 +3031,15 @@ async function ghSave(quiet){
   // opened from cloud without downloading the plan again? keep the link alive
   if(!pdfData && loadedPdfRef && loadedPdfRef.base===fbase && loadedPdfRef.ref){
     data.pdfRef = loadedPdfRef.ref;
+    if(loadedPdfRef.parts) data.pdfParts = loadedPdfRef.parts;
   }
-  // the plan PDF travels as its own file next to the project — big plans fit this way
-  if(pdfData && pdfData.byteLength < 70e6){
+  // the plan PDF travels as its own file(s) — big plans get split into parts automatically
+  const PART = 3e7;
+  if(pdfData && pdfData.byteLength < 6e7){
     data.pdfRef = fbase+".pdf";
     if(!(lastPdfUp.file===data.pdfRef && lastPdfUp.bytes===pdfData.byteLength)){
       try{
-        if(!quiet) toast("Uploading plan PDF…");
+        if(!quiet) toast("Uploading plan PDF ("+(pdfData.byteLength/1e6).toFixed(0)+" MB)…");
         const psha = await ghShaOf(data.pdfRef);
         const pb = {message:"save: "+data.pdfRef, content: bufToB64(pdfData)};
         if(psha) pb.sha = psha;
@@ -3046,6 +3048,26 @@ async function ghSave(quiet){
         if(!pr.ok){ delete data.pdfRef; pdfErr = true; }
         else lastPdfUp = {file:fbase+".pdf", bytes:pdfData.byteLength};
       }catch{ delete data.pdfRef; pdfErr = true; }
+    }
+  } else if(pdfData){
+    const n = Math.ceil(pdfData.byteLength / PART);
+    data.pdfRef = fbase+".pdf";
+    data.pdfParts = n;
+    if(!(lastPdfUp.file===data.pdfRef && lastPdfUp.bytes===pdfData.byteLength)){
+      try{
+        for(let i=0;i<n;i++){
+          if(!quiet) toast("Uploading plan PDF — part "+(i+1)+" of "+n+"…");
+          const chunk = pdfData.slice(i*PART, Math.min((i+1)*PART, pdfData.byteLength));
+          const pn = fbase+".pdf.p"+(i+1);
+          const psha = await ghShaOf(pn);
+          const pb = {message:"save: "+pn, content: bufToB64(chunk)};
+          if(psha) pb.sha = psha;
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(pn)),
+            {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(pb)});
+          if(!pr.ok) throw 0;
+        }
+        lastPdfUp = {file:data.pdfRef, bytes:pdfData.byteLength};
+      }catch{ delete data.pdfRef; delete data.pdfParts; pdfErr = true; }
     }
   }
   try{
@@ -3113,6 +3135,25 @@ document.getElementById("cloudList").addEventListener("click", async e => {
       if(d.pdfB64){
         try{ await loadPdfBytes(b64ToBuf(d.pdfB64), d.pdfName||"plan.pdf"); setMode("pdf"); toast("Project loaded — PDF included"); }
         catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
+      } else if(d.pdfRef && d.pdfParts){
+        loadedPdfRef = {ref:d.pdfRef, base:name.replace(/\.json$/,""), parts:d.pdfParts};
+        try{
+          const bufs = [];
+          for(let i=1;i<=d.pdfParts;i++){
+            toast("Loading plan PDF — part "+i+" of "+d.pdfParts+"…");
+            const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef+".p"+i)),
+              {headers:{Accept:"application/vnd.github.raw"}});
+            if(!pr.ok) throw 0;
+            bufs.push(new Uint8Array(await pr.arrayBuffer()));
+          }
+          const total = bufs.reduce((a,b)=>a+b.length,0);
+          const all = new Uint8Array(total);
+          let off = 0; for(const b of bufs){ all.set(b, off); off += b.length; }
+          await loadPdfBytes(all.buffer, d.pdfName||"plan.pdf");
+          setMode("pdf");
+          lastPdfUp = {file:d.pdfRef, bytes:pdfData.byteLength};
+          toast("Project loaded — PDF included");
+        }catch{ toast("Project loaded, but the plan PDF couldn't be fetched"); }
       } else if(d.pdfRef){
         loadedPdfRef = {ref:d.pdfRef, base:name.replace(/\.json$/,"")};
         toast("Loading plan PDF…");
@@ -3195,11 +3236,19 @@ document.getElementById("cloudList").addEventListener("click", async e => {
         {method:"DELETE", headers:{"Content-Type":"application/json"},
          body: JSON.stringify({message:"delete: "+name, sha:fsha})});
       if(!r.ok) throw r.status;
-      const pn = name.replace(/\.json$/,".pdf");
-      const psha = await ghShaOf(pn);
-      if(psha) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(pn)),
-        {method:"DELETE", headers:{"Content-Type":"application/json"},
-         body: JSON.stringify({message:"delete: "+pn, sha:psha})});
+      const base = name.replace(/\.json$/,"");
+      try{
+        const l = await ghFetch(ghRepoPath("/contents/"));
+        if(l.ok){
+          for(const f of await l.json()){
+            if(f.name===base+".pdf" || f.name.indexOf(base+".pdf.p")===0){
+              await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(f.name)),
+                {method:"DELETE", headers:{"Content-Type":"application/json"},
+                 body: JSON.stringify({message:"delete: "+f.name, sha:f.sha})});
+            }
+          }
+        }
+      }catch{}
       cloudArm = null; renderCloudList(); toast("Deleted from cloud");
     }catch{ toast("Delete failed"); }
   }
