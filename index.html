@@ -2894,6 +2894,8 @@ function txtToB64(txt){ return bufToB64(new TextEncoder().encode(txt).buffer); }
 // ---- built-in password gate ----
 const GATE_HASH = "4ac13f470fd73d196dbc4204929e3370fb5fd1ccb61ce1f13e19288105026f0a"; // the password, one-way scrambled
 const GATE_KEY = "plantakeoff_unlock";
+function gateOn(){ try{ return sessionStorage.getItem(GATE_KEY)===GATE_HASH; }catch{ return false; } }
+function gateSet(){ try{ sessionStorage.setItem(GATE_KEY, GATE_HASH); }catch{} }
 async function sha256hex(t){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
@@ -2901,11 +2903,11 @@ async function sha256hex(t){
 const gate = document.getElementById("loginGate");
 let gateNext = null;
 function updateGate(force){
-  const show = force===true || force==="setup" || (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH);
+  const show = force===true || force==="setup" || (IS_WEB && !gateOn());
   gate.classList.toggle("show", show);
   if(!show) return;
-  document.getElementById("gClose").style.display = (IS_WEB && storeGet(GATE_KEY)!==GATE_HASH) ? "none" : "";
-  const setup = force==="setup" || (storeGet(GATE_KEY)===GATE_HASH && !cloudReady() && !ENC_TOKEN);
+  document.getElementById("gClose").style.display = (IS_WEB && !gateOn()) ? "none" : "";
+  const setup = force==="setup" || (gateOn() && !cloudReady() && !ENC_TOKEN);
   document.getElementById("gSetup").style.display = setup ? "" : "none";
   document.getElementById("gLogin").style.display = setup ? "none" : "";
   if(setup) document.getElementById("gKey").focus();
@@ -2934,7 +2936,7 @@ async function gateLoginGo(){
   b.disabled = true; b.textContent = "Checking…"; err.style.display = "none";
   const hex = await sha256hex(pw);
   if(hex === GATE_HASH){
-    storeSet(GATE_KEY, hex);
+    gateSet();
     toast("Welcome");
     if(!cloudReady() && ENC_TOKEN){
       try{ await ghConnect(await decToken(pw)); }catch{}
@@ -3187,10 +3189,12 @@ document.getElementById("cloudList").addEventListener("click", async e => {
   } else if(act==="del"){
     if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
     try{
+      toast("Deleting…");
+      const fsha = (await ghShaOf(name)) || sha;
       const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
         {method:"DELETE", headers:{"Content-Type":"application/json"},
-         body: JSON.stringify({message:"delete: "+name, sha:sha})});
-      if(!r.ok) throw 0;
+         body: JSON.stringify({message:"delete: "+name, sha:fsha})});
+      if(!r.ok) throw r.status;
       const pn = name.replace(/\.json$/,".pdf");
       const psha = await ghShaOf(pn);
       if(psha) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(pn)),
@@ -3224,7 +3228,7 @@ document.getElementById("setDisc").onclick = () => {
 };
 updateGate();
 // always land on the projects list when the storage is already connected
-if(cloudReady() && (!IS_WEB || storeGet(GATE_KEY)===GATE_HASH)) setTimeout(openCloud, 400);
+if(cloudReady() && (!IS_WEB || gateOn())) setTimeout(openCloud, 400);
 
 setTool("select");
 refreshCatSelect();
