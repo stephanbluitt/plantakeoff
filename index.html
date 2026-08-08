@@ -402,7 +402,7 @@
 
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>1.9.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>1.9.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <input type="file" id="fileInput" accept="application/pdf" hidden>
@@ -2596,7 +2596,7 @@ window.addEventListener("beforeunload", e => {
     if(!count && !(d.categories||[]).length && !hasScale) return;
     applyProject(d);
     window.__isDirty = false;
-    toast("Last session restored"+(d.pdfName ? " — reopen the job file to see the plan" : ""));
+    toast("Last session restored"+(d.pdfName ? " — reopen the job from ☁️ to see the plan" : ""));
   }catch{}
 })();
 
@@ -3004,8 +3004,7 @@ async function renderCloudList(){
 }
 async function openCloud(){
   if(!cloudReady()) await autoConnect();
-  // never nag — cloud storage is optional, so just point at Settings and move on
-  if(!cloudReady()){ toast("Cloud storage isn't set up — turn it on in ⚙️ Settings"); return; }
+  if(!cloudReady()){ updateGate("setup"); return; }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
@@ -3094,15 +3093,10 @@ setInterval(() => {
 }, 180000);
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudMenuOpen").onclick = openCloud;
-// hide the cloud controls until storage is actually connected — no dead buttons
+// cloud button always stays available; only the disconnect item is conditional
 function syncCloudUI(){
-  const on = cloudReady();
-  const b = document.getElementById("cloudBtn");
-  if(b) b.style.display = on ? "" : "none";
-  const m = document.getElementById("cloudMenuOpen");
-  if(m) m.style.display = on ? "" : "none";
   const d = document.getElementById("setDisc");
-  if(d) d.style.display = on ? "" : "none";
+  if(d) d.style.display = cloudReady() ? "" : "none";
 }
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudNew").onclick = () => {

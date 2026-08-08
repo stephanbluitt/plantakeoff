@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v1.9.1
+# PLAN TAKEOFF v1.9.2
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · E Landscaping LLC
 
@@ -17,9 +17,9 @@ Measure construction plans and real properties, get instant quantities for estim
 
 ## Using it
 
-Open the page and start measuring — nothing to sign into, nothing to set up. Projects save and open as local files, so a dropped connection never blocks a takeoff.
+Open the page and start measuring — nothing to sign into. Cloud projects connect on their own and the projects list opens a moment after load.
 
-Cloud storage is optional. When it's connected the ☁️ button appears and the projects list opens on load; when it isn't, the app simply doesn't mention it.
+Local project files work the same as always, so a dropped connection never blocks a takeoff.
 
 ## Tech
 
