@@ -402,7 +402,7 @@
 
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>1.9.2</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>1.9.3</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <input type="file" id="fileInput" accept="application/pdf" hidden>
@@ -2830,9 +2830,30 @@ document.getElementById("scCalib").onclick = () => {
   toast("Click 2 points of a known dimension on the plan");
 };
 
-// ================= cloud projects (private GitHub repo — one shared access code) =================
-const GH_REPO_NAME = "plantakeoff-projects";
-// storage access code, locked with the app password (useless without it — safe in public files)
+// ================= cloud projects (private GitHub repo) =================
+//
+// ╔═ CLOUD SETUP — fill this in once and it never asks again, on any device ═══╗
+// ║                                                                           ║
+// ║  GH_OWNER_FIXED  your GitHub username                                     ║
+// ║  GH_REPO_NAME    the repo where the project .json files and PDFs live      ║
+// ║                  ← CHECK THIS. If your storage repo has a different name,  ║
+// ║                    put the real name here or nothing will load.           ║
+// ║                                                                           ║
+// ║  Then ONE of these two (either works, you only need one):                  ║
+// ║                                                                           ║
+// ║  AUTO_PW       your old app password — unlocks the code already encrypted  ║
+// ║                in this file. Easiest: nothing to look up.                 ║
+// ║                                                                           ║
+// ║  BUILTIN_CODE  an encoded access code. To make one: open the app,          ║
+// ║                F12 → Console → run  __encodeCode("ghp_yourcode")           ║
+// ║                and paste what it prints below.                            ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+const GH_OWNER_FIXED = "stephanbluitt";
+const GH_REPO_NAME   = "plantakeoff-projects";
+const AUTO_PW        = "";
+const BUILTIN_CODE   = "";
+
+// access code encrypted with the old app password (unlocked by AUTO_PW above)
 const ENC_TOKEN = "Kuabzy0cEAn5FHhFiNikv8H5dGVrlOxwCbt3qv10wdqU1O1+2a7soN9BqXmIPI2qfSo6sAAmik6EQQoZgBvJ/1Puufs=";
 async function decToken(pw){
   const enc = new TextEncoder();
@@ -2858,6 +2879,15 @@ function ghFetch(path, opts){
 function ghRepoPath(rest){ return "/repos/"+storeGet(GH_OWNER_KEY)+"/"+GH_REPO_NAME+rest; }
 async function ghConnect(token){
   storeSet(TOKEN_KEY, token);
+  // known owner + repo: go straight at it (works with fine-grained tokens too)
+  if(GH_OWNER_FIXED){
+    const r = await ghFetch("/repos/"+GH_OWNER_FIXED+"/"+GH_REPO_NAME);
+    if(r.ok){ storeSet(GH_OWNER_KEY, GH_OWNER_FIXED); return true; }
+    storeDel(TOKEN_KEY);
+    throw new Error(r.status===404
+      ? "Can't find "+GH_OWNER_FIXED+"/"+GH_REPO_NAME+" — check GH_REPO_NAME matches your storage repo, and that the code has access to it"
+      : "That code isn't valid or has expired");
+  }
   const u = await ghFetch("/user");
   if(!u.ok){ storeDel(TOKEN_KEY); throw new Error("That code isn't valid — copy the whole ghp_… code"); }
   const login = (await u.json()).login;
@@ -2885,24 +2915,6 @@ async function ghConnect(token){
 function txtToB64(txt){ return bufToB64(new TextEncoder().encode(txt).buffer); }
 
 // ---- storage setup (no password) ----
-//
-// ┌─ PASTE YOUR CODE HERE AND IT NEVER ASKS AGAIN, ON ANY DEVICE ──────────────┐
-// │ 1. Open the app, press F12 → Console tab                                   │
-// │ 2. Run:   __encodeCode("ghp_yourcodehere")                                 │
-// │ 3. Copy what it prints, paste it between the quotes on BUILTIN_CODE below  │
-// │ 4. Upload the file. Done — every device connects on its own.               │
-// │                                                                            │
-// │ It's encoded, not plain text, so GitHub's secret scanner won't auto-revoke │
-// │ it the way it kills a bare ghp_ string in a public repo. Encoded is NOT    │
-// │ secret though — on a public page anyone can reverse it. Use a fine-grained │
-// │ token limited to plantakeoff-projects only, so that's all it can ever open.│
-// └────────────────────────────────────────────────────────────────────────────┘
-const BUILTIN_CODE = "";
-
-// Alternative: your old app password here instead — decrypts the code that's
-// already embedded in this file. Same trade-off as above.
-const AUTO_PW = "";
-
 const CODE_KEY = "plantakeoff";
 function xorCode(s){
   let o = "";
