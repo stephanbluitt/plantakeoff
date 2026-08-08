@@ -17,9 +17,9 @@ Measure construction plans and real properties, get instant quantities for estim
 
 ## Using it
 
-Open the page and start measuring — nothing to sign into. Cloud projects connect automatically; the projects list opens a moment after load.
+Open the page and start measuring — nothing to sign into, nothing to set up. Projects save and open as local files, so a dropped connection never blocks a takeoff.
 
-The app also works fully offline against local project files, so a dropped connection never blocks a takeoff.
+Cloud storage is optional. When it's connected the ☁️ button appears and the projects list opens on load; when it isn't, the app simply doesn't mention it.
 
 ## Tech
 

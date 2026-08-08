@@ -2596,7 +2596,7 @@ window.addEventListener("beforeunload", e => {
     if(!count && !(d.categories||[]).length && !hasScale) return;
     applyProject(d);
     window.__isDirty = false;
-    toast("Last session restored"+(d.pdfName ? " — reopen the job from ☁️ to see the plan" : ""));
+    toast("Last session restored"+(d.pdfName ? " — reopen the job file to see the plan" : ""));
   }catch{}
 })();
 
@@ -2928,6 +2928,7 @@ document.getElementById("gSetupGo").onclick = async () => {
     await ghConnect(tok);
     gate.classList.remove("show");
     toast("Storage connected");
+    syncCloudUI();
     openCloud();
   }catch(e){ err.textContent = e.message || "Couldn't connect"; err.style.display = ""; }
   b.disabled = false; b.textContent = "Connect";
@@ -3003,7 +3004,8 @@ async function renderCloudList(){
 }
 async function openCloud(){
   if(!cloudReady()) await autoConnect();
-  if(!cloudReady()){ updateGate("setup"); return; }
+  // never nag — cloud storage is optional, so just point at Settings and move on
+  if(!cloudReady()){ toast("Cloud storage isn't set up — turn it on in ⚙️ Settings"); return; }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
@@ -3092,6 +3094,16 @@ setInterval(() => {
 }, 180000);
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudMenuOpen").onclick = openCloud;
+// hide the cloud controls until storage is actually connected — no dead buttons
+function syncCloudUI(){
+  const on = cloudReady();
+  const b = document.getElementById("cloudBtn");
+  if(b) b.style.display = on ? "" : "none";
+  const m = document.getElementById("cloudMenuOpen");
+  if(m) m.style.display = on ? "" : "none";
+  const d = document.getElementById("setDisc");
+  if(d) d.style.display = on ? "" : "none";
+}
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudNew").onclick = () => {
   closeModal("cloudBack");
@@ -3268,13 +3280,16 @@ document.getElementById("setHelp").onclick = () => {
 document.getElementById("setCode").onclick = () => updateGate("setup");
 document.getElementById("setDisc").onclick = () => {
   storeDel(TOKEN_KEY); storeDel(GH_OWNER_KEY);
+  syncCloudUI();
   toast("Storage disconnected on this device");
 };
-// no login gate — the app opens straight into the workspace
+// no login gate, no setup prompt — the app opens straight into the workspace
 updateGate(false);
-// always land on the projects list when the storage is already connected
+syncCloudUI();
+// cloud is optional: connect quietly in the background if it's already set up
 (async () => {
   if(!cloudReady()) await autoConnect();
+  syncCloudUI();
   if(cloudReady()) setTimeout(openCloud, 400);
 })();
 
