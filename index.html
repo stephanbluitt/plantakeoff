@@ -322,7 +322,7 @@
   #loginGate{position:fixed; inset:0; display:none; align-items:center; justify-content:center;
     background:var(--bg); z-index:6000; padding:16px;}
   #loginGate.show{display:flex;}
-  #loginGate input[type=text]{flex:1; min-width:0;}
+  #loginGate input[type=email],#loginGate input[type=password]{flex:1; min-width:0;}
   #cloudList .vrow button{flex:none;}
   #loginGate input, #cloudBack input{font-size:16px;}
   @media (max-width:700px){
@@ -402,7 +402,7 @@
 
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>1.9.3</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>1.9</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <input type="file" id="fileInput" accept="application/pdf" hidden>
@@ -723,16 +723,23 @@
   </div>
 </div>
 
-<!-- storage setup (no password — only opens when cloud storage isn't connected yet) -->
+<!-- login gate -->
 <div id="loginGate">
   <div class="modal" style="width:380px;max-width:92vw;position:relative">
-    <button id="gClose" class="btn" style="position:absolute;top:10px;right:10px">✕</button>
+    <button id="gClose" class="btn" style="position:absolute;top:10px;right:10px;display:none">✕</button>
     <h3 style="font-size:16px">PLAN<span style="color:var(--amber)">TAKEOFF</span></h3>
-    <div id="gSetup">
+    <div id="gSetup" style="display:none">
       <p>One-time setup — paste the storage access code (the ghp_… code from GitHub).</p>
       <div class="frow"><label for="gKey">Access code</label><input type="text" id="gKey" placeholder="ghp_…"></div>
       <div id="gSetErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
       <div class="actions"><button class="btn primary" id="gSetupGo">Connect</button></div>
+    </div>
+    <div id="gLogin" style="display:none">
+      <p>Private tool — enter the password.</p>
+      <div class="frow" style="display:none"><label for="gEmail">Email</label><input type="email" id="gEmail" autocomplete="username"></div>
+      <div class="frow"><label for="gPass">Password</label><input type="password" id="gPass" autocomplete="current-password"></div>
+      <div id="gErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
+      <div class="actions"><button class="btn primary" id="gGo" style="width:100%">Unlock</button></div>
     </div>
   </div>
 </div>
@@ -2830,30 +2837,9 @@ document.getElementById("scCalib").onclick = () => {
   toast("Click 2 points of a known dimension on the plan");
 };
 
-// ================= cloud projects (private GitHub repo) =================
-//
-// ╔═ CLOUD SETUP — fill this in once and it never asks again, on any device ═══╗
-// ║                                                                           ║
-// ║  GH_OWNER_FIXED  your GitHub username                                     ║
-// ║  GH_REPO_NAME    the repo where the project .json files and PDFs live      ║
-// ║                  ← CHECK THIS. If your storage repo has a different name,  ║
-// ║                    put the real name here or nothing will load.           ║
-// ║                                                                           ║
-// ║  Then ONE of these two (either works, you only need one):                  ║
-// ║                                                                           ║
-// ║  AUTO_PW       your old app password — unlocks the code already encrypted  ║
-// ║                in this file. Easiest: nothing to look up.                 ║
-// ║                                                                           ║
-// ║  BUILTIN_CODE  an encoded access code. To make one: open the app,          ║
-// ║                F12 → Console → run  __encodeCode("ghp_yourcode")           ║
-// ║                and paste what it prints below.                            ║
-// ╚═══════════════════════════════════════════════════════════════════════════╝
-const GH_OWNER_FIXED = "stephanbluitt";
-const GH_REPO_NAME   = "plantakeoff-projects";
-const AUTO_PW        = "";
-const BUILTIN_CODE   = "";
-
-// access code encrypted with the old app password (unlocked by AUTO_PW above)
+// ================= cloud projects (private GitHub repo — one shared access code) =================
+const GH_REPO_NAME = "plantakeoff-projects";
+// storage access code, locked with the app password (useless without it — safe in public files)
 const ENC_TOKEN = "Kuabzy0cEAn5FHhFiNikv8H5dGVrlOxwCbt3qv10wdqU1O1+2a7soN9BqXmIPI2qfSo6sAAmik6EQQoZgBvJ/1Puufs=";
 async function decToken(pw){
   const enc = new TextEncoder();
@@ -2879,15 +2865,6 @@ function ghFetch(path, opts){
 function ghRepoPath(rest){ return "/repos/"+storeGet(GH_OWNER_KEY)+"/"+GH_REPO_NAME+rest; }
 async function ghConnect(token){
   storeSet(TOKEN_KEY, token);
-  // known owner + repo: go straight at it (works with fine-grained tokens too)
-  if(GH_OWNER_FIXED){
-    const r = await ghFetch("/repos/"+GH_OWNER_FIXED+"/"+GH_REPO_NAME);
-    if(r.ok){ storeSet(GH_OWNER_KEY, GH_OWNER_FIXED); return true; }
-    storeDel(TOKEN_KEY);
-    throw new Error(r.status===404
-      ? "Can't find "+GH_OWNER_FIXED+"/"+GH_REPO_NAME+" — check GH_REPO_NAME matches your storage repo, and that the code has access to it"
-      : "That code isn't valid or has expired");
-  }
   const u = await ghFetch("/user");
   if(!u.ok){ storeDel(TOKEN_KEY); throw new Error("That code isn't valid — copy the whole ghp_… code"); }
   const login = (await u.json()).login;
@@ -2914,21 +2891,27 @@ async function ghConnect(token){
 }
 function txtToB64(txt){ return bufToB64(new TextEncoder().encode(txt).buffer); }
 
-// ---- storage setup (no password) ----
-const CODE_KEY = "plantakeoff";
-function xorCode(s){
-  let o = "";
-  for(let i=0;i<s.length;i++) o += String.fromCharCode(s.charCodeAt(i) ^ CODE_KEY.charCodeAt(i % CODE_KEY.length));
-  return o;
+// ---- built-in password gate ----
+const GATE_HASH = "4ac13f470fd73d196dbc4204929e3370fb5fd1ccb61ce1f13e19288105026f0a"; // the password, one-way scrambled
+const GATE_KEY = "plantakeoff_unlock";
+function gateOn(){ try{ return sessionStorage.getItem(GATE_KEY)===GATE_HASH; }catch{ return false; } }
+function gateSet(){ try{ sessionStorage.setItem(GATE_KEY, GATE_HASH); }catch{} }
+async function sha256hex(t){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
 }
-window.__encodeCode = t => btoa(xorCode(String(t).trim()));
-function decodeCode(s){ try{ return xorCode(atob(s)); }catch{ return ""; } }
-
 const gate = document.getElementById("loginGate");
+let gateNext = null;
 function updateGate(force){
-  const show = force===true || force==="setup";
+  const show = force===true || force==="setup" || (IS_WEB && !gateOn());
   gate.classList.toggle("show", show);
-  if(show) document.getElementById("gKey").focus();
+  if(!show) return;
+  document.getElementById("gClose").style.display = (IS_WEB && !gateOn()) ? "none" : "";
+  const setup = force==="setup" || (gateOn() && !cloudReady() && !ENC_TOKEN);
+  document.getElementById("gSetup").style.display = setup ? "" : "none";
+  document.getElementById("gLogin").style.display = setup ? "none" : "";
+  if(setup) document.getElementById("gKey").focus();
+  else document.getElementById("gPass").focus();
 }
 document.getElementById("gSetupGo").onclick = async () => {
   const tok = document.getElementById("gKey").value.trim();
@@ -2940,28 +2923,38 @@ document.getElementById("gSetupGo").onclick = async () => {
     await ghConnect(tok);
     gate.classList.remove("show");
     toast("Storage connected");
-    syncCloudUI();
+    gateNext = null;
     openCloud();
   }catch(e){ err.textContent = e.message || "Couldn't connect"; err.style.display = ""; }
   b.disabled = false; b.textContent = "Connect";
 };
+async function gateLoginGo(){
+  const pw = document.getElementById("gPass").value;
+  const err = document.getElementById("gErr");
+  if(!pw){ err.textContent = "Enter the password"; err.style.display=""; return; }
+  const b = document.getElementById("gGo");
+  b.disabled = true; b.textContent = "Checking…"; err.style.display = "none";
+  const hex = await sha256hex(pw);
+  if(hex === GATE_HASH){
+    gateSet();
+    toast("Welcome");
+    if(!cloudReady() && ENC_TOKEN){
+      try{ await ghConnect(await decToken(pw)); }catch{}
+    }
+    if(!cloudReady()){ updateGate("setup"); }
+    else { gate.classList.remove("show"); openCloud(); }
+  } else {
+    err.textContent = "Wrong password"; err.style.display = "";
+  }
+  b.disabled = false; b.textContent = "Unlock";
+}
+document.getElementById("gGo").onclick = gateLoginGo;
 gate.addEventListener("keydown", e => {
-  if(e.key==="Enter") document.getElementById("gSetupGo").click();
-  if(e.key==="Escape") gate.classList.remove("show");
+  if(e.key!=="Enter") return;
+  if(document.getElementById("gLogin").style.display!=="none") gateLoginGo();
+  else document.getElementById("gSetupGo").click();
 });
 document.getElementById("gClose").onclick = () => gate.classList.remove("show");
-// silent auto-connect — built-in code first, then the embedded/password route
-async function autoConnect(){
-  if(cloudReady()) return true;
-  if(BUILTIN_CODE){
-    const t = decodeCode(BUILTIN_CODE);
-    if(t){ try{ await ghConnect(t); }catch{} }
-  }
-  if(!cloudReady() && AUTO_PW && ENC_TOKEN){
-    try{ await ghConnect(await decToken(AUTO_PW)); }catch{}
-  }
-  return cloudReady();
-}
 
 // ---- cloud modal ----
 let cloudArm = null, cloudRen = null;
@@ -3014,9 +3007,8 @@ async function renderCloudList(){
     el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Could not load — check connection (or the access code in ⚙️ Settings).</div>';
   }
 }
-async function openCloud(){
-  if(!cloudReady()) await autoConnect();
-  if(!cloudReady()){ updateGate("setup"); return; }
+function openCloud(){
+  if(!cloudReady()){ gateNext = true; updateGate(ENC_TOKEN ? true : "setup"); return; }
   cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
   openModal2("cloudBack");
@@ -3105,11 +3097,6 @@ setInterval(() => {
 }, 180000);
 document.getElementById("cloudBtn").onclick = openCloud;
 document.getElementById("cloudMenuOpen").onclick = openCloud;
-// cloud button always stays available; only the disconnect item is conditional
-function syncCloudUI(){
-  const d = document.getElementById("setDisc");
-  if(d) d.style.display = cloudReady() ? "" : "none";
-}
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudNew").onclick = () => {
   closeModal("cloudBack");
@@ -3286,18 +3273,11 @@ document.getElementById("setHelp").onclick = () => {
 document.getElementById("setCode").onclick = () => updateGate("setup");
 document.getElementById("setDisc").onclick = () => {
   storeDel(TOKEN_KEY); storeDel(GH_OWNER_KEY);
-  syncCloudUI();
   toast("Storage disconnected on this device");
 };
-// no login gate, no setup prompt — the app opens straight into the workspace
-updateGate(false);
-syncCloudUI();
-// cloud is optional: connect quietly in the background if it's already set up
-(async () => {
-  if(!cloudReady()) await autoConnect();
-  syncCloudUI();
-  if(cloudReady()) setTimeout(openCloud, 400);
-})();
+updateGate();
+// always land on the projects list when the storage is already connected
+if(cloudReady() && (!IS_WEB || gateOn())) setTimeout(openCloud, 400);
 
 setTool("select");
 refreshCatSelect();
