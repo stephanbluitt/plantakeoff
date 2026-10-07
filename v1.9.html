@@ -373,35 +373,9 @@
     border:3px solid var(--amber); box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
   .cntIcon{width:20px; height:20px; border-radius:50%; color:#fff; font:bold 10px/20px ui-monospace,monospace;
     text-align:center; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
-  /* ================= plans (several PDFs per project) ================= */
-  #docChip{gap:5px; flex:none;}
-  #docChip #docName{font-size:11.5px; font-weight:600; color:var(--ink); white-space:nowrap;
-    overflow:hidden; text-overflow:ellipsis; max-width:190px;}
-  #docChip .chev{font-size:9px; color:var(--faint);}
-  #pop-docs{min-width:300px; max-width:min(440px,94vw); max-height:60vh; overflow-y:auto;}
-  .drow{display:flex; align-items:center; gap:2px; border-radius:9px; padding:2px; margin-bottom:2px;}
-  .drow.cur{background:var(--panel2);}
-  .drow .dmain{flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:1px;
-    background:none; border:none; padding:6px 8px; border-radius:7px; cursor:pointer; text-align:left; color:var(--ink);}
-  .drow .dmain:hover{background:var(--well);}
-  .drow .dn{font-size:12.5px; font-weight:600; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .drow.cur .dn{color:var(--amber);}
-  .drow .dm{font-size:10.5px; color:var(--faint); font-family:var(--mono);}
-  .dbtn{flex:none; background:none; border:none; color:var(--faint); cursor:pointer; padding:6px 7px;
-    border-radius:7px; font-size:12px;}
-  .dbtn:hover{background:var(--well); color:var(--ink);}
-  .dbtn.danger:hover{color:#e5493a;}
-  .drow input.dren{flex:1; min-width:0; font-size:12.5px; padding:6px 8px;}
-  .dempty{color:var(--faint); font-size:12px; padding:8px 10px;}
-  .suggCredit{padding:5px 14px; font-size:10px; color:var(--faint); text-align:right; border-top:1px solid var(--hair);}
-  .cloudMsg{color:var(--faint); font-size:12px; padding:8px 2px;}
-  .cloudMsg.err{color:#e5493a;}
   /* ================= mobile ================= */
   @media (max-width:840px){
-    body{grid-template-rows:auto 1fr; grid-template-columns:minmax(0,1fr); grid-template-areas:"top" "canvas";}
-    #topbar{overflow-x:auto; scrollbar-width:none;}
-    #topbar::-webkit-scrollbar{display:none;}
-    #docChip #docName{max-width:92px;}
+    body{grid-template-rows:auto 1fr; grid-template-columns:1fr; grid-template-areas:"top" "canvas";}
     input,select{font-size:16px;}
     #projTitle{max-width:130px;}
     #modeSeg button{padding:5px 11px;}
@@ -428,10 +402,10 @@
 
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>2.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>1.9</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
-  <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
+  <input type="file" id="fileInput" accept="application/pdf" hidden>
   <input type="file" id="projInput" accept="application/json" hidden>
   <div id="modeSeg">
     <button id="modePdf" class="on">Plan</button>
@@ -453,7 +427,7 @@
 <div class="pop" id="pop-project">
   <button class="mi" id="newBtn">New Project <span class="k">⌘N</span></button>
   <div class="sep"></div>
-  <button class="mi" id="openBtn">Add PDF plans…</button>
+  <button class="mi" id="openBtn">Open PDF…</button>
   <button class="mi" id="cloudMenuOpen">☁️ Cloud projects…</button>
   <button class="mi" id="loadProj">💻 Open from computer…</button>
   <button class="mi" id="saveProj">Save <span class="k">⌘S</span></button>
@@ -466,9 +440,6 @@
   <button class="mi" id="copyBtn">Copy for LMN <span class="k">⇧⌘C</span></button>
   <button class="mi" id="exportBtn">Export CSV <span class="k">⌘E</span></button>
   <button class="mi" id="printBtn">Print report…</button>
-  <div class="sep"></div>
-  <button class="mi" id="markBtn">⬇ Marked-up PDF</button>
-  <button class="mi" id="markAllBtn" style="display:none">⬇ Marked-up PDF — all plans</button>
 </div>
 <div class="pop" id="pop-help" style="min-width:300px">
   <div class="ph">TOOLS</div>
@@ -482,14 +453,12 @@
   <div class="ph">VIEW</div>
   <div class="hrow"><span>Fit page · zoom</span><b>F · + −</b></div>
   <div class="hrow"><span>Pages · lock page</span><b>← → · P</b></div>
-  <div class="hrow"><span>Switch plans · add PDFs</span><b>📄 bottom bar</b></div>
   <div class="hrow"><span>Hide category / item</span><b>👁 in list</b></div>
   <div class="hrow"><span>Show ONLY one category</span><b>Alt + 👁</b></div>
   <div class="ph">PROJECT</div>
   <div class="hrow"><span>Undo · Redo</span><b>⌘Z · ⇧⌘Z</b></div>
   <div class="hrow"><span>Save · Save As</span><b>⌘S · ⇧⌘S</b></div>
   <div class="hrow"><span>Copy for LMN · CSV</span><b>⇧⌘C · ⌘E</b></div>
-  <div class="hrow"><span>Plan with your markups</span><b>⤴ Marked-up PDF</b></div>
 </div>
 <div class="pop" id="pop-scale">
   <div class="ph">SET SCALE</div>
@@ -498,16 +467,10 @@
   <div class="sep"></div>
   <div id="scaleList"></div>
 </div>
-<div class="pop" id="pop-docs">
-  <div class="ph">PLANS IN THIS PROJECT</div>
-  <div id="docList"></div>
-  <div class="sep"></div>
-  <button class="mi" id="docAdd">＋ Add PDF plans…</button>
-</div>
 
 <div id="canvasWrap">
   <div id="dropHint">
-    <div class="big" id="hintBig">Drop PDF plans here (several at once is fine), or add them from the menu</div>
+    <div class="big">Drop a PDF plan here, or open one from the menu</div>
     <div>Or switch to <b>Map</b> to measure any property from satellite</div>
     <div>Finish shapes with <kbd>double-click</kbd> / <kbd>Enter</kbd> · <kbd>⌘Z</kbd> undo · <kbd>⌘S</kbd> save</div>
     <div>Select tool: click a shape to edit — drag corners, drag inside to move, right-click a point to delete</div>
@@ -572,8 +535,6 @@
 
 <!-- floating plan controls -->
 <div class="pill pdfOnly" id="navPill">
-  <button class="pbtn" id="docChip" data-pop="docs" title="Plans in this project" style="display:none">📄 <span id="docName">Plans</span><span class="chev">▾</span></button>
-  <div class="pdiv" id="docDiv" style="display:none"></div>
   <button class="pbtn" id="prevPg" title="Previous page (←)">‹</button>
   <div id="pageInfo">– / –</div>
   <button class="pbtn" id="nextPg" title="Next page (→)">›</button>
@@ -662,7 +623,7 @@
     <h3>Save project</h3>
     <p>Name this project — it's used for the file name and report headers.</p>
     <div class="frow"><label for="projName">Project name</label><input type="text" id="projName" placeholder="e.g. 24 Elm St driveway"></div>
-    <div class="frow" id="savePdfRow"><label></label><label style="width:auto;display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="savePdfInc" checked> Include the plan PDFs inside the project file</label></div>
+    <div class="frow" id="savePdfRow"><label></label><label style="width:auto;display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="savePdfInc" checked> Include the PDF inside the project file</label></div>
     <div class="actions">
       <button class="btn" id="saveCancel">Cancel</button>
       <button class="btn primary" id="saveApply">Save</button>
@@ -749,37 +710,15 @@
 <div class="modalBack" id="cloudBack">
   <div class="modal" style="width:440px;max-width:94vw">
     <h3>☁️ Cloud projects</h3>
-    <p>Your shared jobs, newest first — every save includes the plan PDFs automatically.</p>
+    <p>Your shared jobs, newest first — every save includes the plan PDF automatically.</p>
     <div class="frow"><label for="cloudName">Name</label><input type="text" id="cloudName" placeholder="Project name">
       <button class="btn primary" id="cloudSaveBtn" style="flex:none">Save to cloud</button></div>
-    <div style="display:flex;gap:8px;align-items:center;margin:0 0 8px">
-      <input type="search" id="cloudSearch" placeholder="🔍 Search projects…" autocomplete="off" style="flex:1;min-width:0">
-      <span id="cloudCount" style="font-family:var(--mono);font-size:10.5px;color:var(--faint);white-space:nowrap"></span>
-    </div>
     <div id="cloudList" style="max-height:42vh;overflow-y:auto;margin:2px 0 10px"></div>
     <div class="actions">
       <button class="btn" id="cloudSignout">Sign out</button>
       <button class="btn" id="cloudSettings">Settings</button>
       <button class="btn" id="cloudNew">🆕 New project</button>
       <button class="btn primary" id="cloudClose">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Google address search key -->
-<div class="modalBack" id="gkeyBack">
-  <div class="modal" style="width:430px">
-    <h3>🔎 Google address search</h3>
-    <p>Optional. Paste a Google Maps API key and the map search uses Google Places — the same results as Google Maps.
-      Without a key the built-in search (Esri) is used. The key is kept in your private cloud storage, so every computer picks it up.</p>
-    <div class="frow"><label for="gkeyIn">API key</label><input type="text" id="gkeyIn" placeholder="AIza…" autocomplete="off" spellcheck="false"></div>
-    <div id="gkeyMsg" style="font-size:12px;margin:0 0 12px;display:none"></div>
-    <div class="actions" style="justify-content:space-between">
-      <button class="btn danger" id="gkeyClear">Remove key</button>
-      <span style="display:flex;gap:8px">
-        <button class="btn" id="gkeyCancel">Cancel</button>
-        <button class="btn primary" id="gkeySave">Save &amp; test</button>
-      </span>
     </div>
   </div>
 </div>
@@ -809,8 +748,6 @@
   <button class="mi" id="setTheme">🌙 Dark / light mode</button>
   <button class="mi" id="setInvert">🌓 Invert plan colors</button>
   <button class="mi" id="setHelp">⌨️ Tools &amp; shortcuts</button>
-  <div class="ph">SEARCH</div>
-  <button class="mi" id="setGkey">🔎 Google address search…</button>
   <div class="ph">STORAGE</div>
   <button class="mi" id="setCode">🔑 Storage access code…</button>
   <button class="mi" id="setDisc">⛔ Disconnect storage on this device</button>
@@ -829,20 +766,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 // ================= state =================
 let mode = "pdf";
-// pdfDoc / pdfName / pageCount always describe the plan that's on screen right now
 let pdfDoc = null, pdfName = "", pageNum = 1, pageCount = 0, zoom = 1, rendering = false, renderQueued = false;
-let docs = [];               // the project's plans, in order: {id, name, pages}
-let curDocId = "", nextDocNum = 1;
-const docStore = new Map();  // plan id -> {data, pdf, ref, parts, refBytes} — PDF bytes & pdf.js handles, never in undo
-let needFit = false;
 let tool = "select";
-// scales are per plan + page ("d1:3"); docScale = last scale set on each plan, used for its other pages
-let ftPerUnit = {}, docScale = {}, scaleLabel = "NOT SET", scaleLabels = {};
-let measurements = [];       // pdf: {id,src:'pdf',type,doc,page,pts:{x,y},name,color,cat} | map: {id,src:'map',type,pts:{lat,lng},...}
+let ftPerUnit = {}, defaultFtPerUnit = null, scaleLabel = "NOT SET", scaleLabels = {};
+let measurements = [];       // pdf: {id,src:'pdf',type,page,pts:{x,y},name,color,cat} | map: {id,src:'map',type,pts:{lat,lng},...}
 let categories = [], activeCatId = "", nextCatId = 1;
 let drawing = null, mousePdf = null, selectedId = null, calibPts = null;
 let editDrag = null, selVertex = null;
 let collapsedCats = new Set(), hiddenCats = new Set(), hiddenItems = new Set();
+let pdfData = null; // raw bytes of the loaded PDF (for embedding in project files)
 let fileHandle = null;   // File System Access handle — lets Save write back to the opened file
 let versions = [];       // named snapshots stored inside the project file
 let nextId = 1, pageLocked = false;
@@ -865,8 +797,7 @@ const dpr = window.devicePixelRatio || 1;
 let shiftDown=false, spaceDown=false, panning=false, panStart=null;
 
 // ================= helpers =================
-const PK = (pg=pageNum, doc=curDocId) => doc+":"+pg;
-const getFPU = (pg=pageNum, doc=curDocId) => ftPerUnit[PK(pg,doc)] ?? (docScale[doc] ? docScale[doc].fpu : null);
+const getFPU = (pg=pageNum) => ftPerUnit[pg] ?? defaultFtPerUnit;
 function ftIn(ft){
   const f = Math.floor(ft); let i = Math.round((ft-f)*12);
   if(i===12) return (f+1)+"'-0\"";
@@ -922,14 +853,14 @@ function measureValue(m){
   if(m.src==="map"){
     return m.type==="line" ? geoPathFt(m.pts) : geoAreaSF(m.pts);
   }
-  const fpu = getFPU(m.page, m.doc);
+  const fpu = getFPU(m.page);
   if(fpu == null) return null;
   return m.type==="line" ? pathLen(m.pts)*fpu : polyArea(m.pts)*fpu*fpu;
 }
 function measurePerim(m){
   if(m.type!=="area" || m.pts.length<3) return null;
   if(m.src==="map") return geoPathFt([...m.pts, m.pts[0]]);
-  const fpu = getFPU(m.page, m.doc);
+  const fpu = getFPU(m.page);
   return fpu==null ? null : pathLen([...m.pts, m.pts[0]])*fpu;
 }
 function unitOf(t){ return t==="line"?"LF":t==="area"?"SF":"EA"; }
@@ -993,8 +924,7 @@ function newColor(type){
 // ================= undo / redo history =================
 let undoStack = [], redoStack = [];
 function snapshot(){
-  return JSON.stringify({measurements, categories, activeCatId, counters, nextId, nextCatId,
-    docs, ftPerUnit, docScale, scaleLabels});
+  return JSON.stringify({measurements, categories, activeCatId, counters, nextId, nextCatId});
 }
 function pushHistory(){
   undoStack.push(snapshot());
@@ -1007,11 +937,8 @@ function restoreSnapshot(snap){
   measurements = d.measurements; categories = d.categories;
   activeCatId = d.activeCatId; Object.assign(counters, d.counters);
   nextId = d.nextId; nextCatId = d.nextCatId;
-  if(d.docs) docs = d.docs;
-  if(d.ftPerUnit){ ftPerUnit = d.ftPerUnit; docScale = d.docScale||{}; scaleLabels = d.scaleLabels||{}; }
   drawing = null; selectedId = null;
   refreshCatSelect(); refreshAll();
-  syncDocView();
 }
 window.__undo = () => {
   const ae = document.activeElement;
@@ -1067,7 +994,7 @@ function setMode(m){
     initMap();
     setTimeout(()=>{ map.invalidateSize(); redrawMapLayers(); }, 60);
   } else {
-    if(needFit && pdfDoc) fitPage(); else drawOverlay();
+    drawOverlay();
   }
   updateFab(); updateLive();
 }
@@ -1224,112 +1151,27 @@ function drawTemp(){
     L.circleMarker(p, {radius:4, color:"#fff", weight:1.5, fillColor:drawing.color, fillOpacity:1}).addTo(tempGroup);
 }
 
-// ---- address / place search ----
-// Google Places when a key is saved (⚙️ → Google address search): the same results as Google Maps.
-// Otherwise Esri's World Geocoder (no key needed, strong US address + business data), then OpenStreetMap.
-// Pasting coordinates ("40.94, -73.87") or a Google Maps link also works.
+// ---- address search with live suggestions (Photon: typo-tolerant, free) ----
 const addrInput = document.getElementById("addrInput");
 const suggList = document.getElementById("suggList");
-let suggItems = [], suggHi = -1, suggTimer = null, suggSeq = 0, searchPin = null;
-const ESRI_GC = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/";
-const GKEY_KEY = "plantakeoff_gkey";
-let gKey = storeGet(GKEY_KEY) || "", gLib = null, gLoadP = null, gLoadedKey = "", gBroken = false, gTok = null;
-window.gm_authFailure = () => { gBroken = true; };   // Google calls this when it rejects the key
+let suggItems = [], suggHi = -1, suggTimer = null, suggSeq = 0;
 
-function searchCenter(){ return map ? map.getCenter() : {lat:40.94, lng:-73.87}; }
-function parseLatLng(q){
-  const m = q.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/) ||               // Google Maps place link
-            q.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) ||                              // Google Maps view link
-            q.match(/[?&](?:q|ll|query|center)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/i) ||
-            q.match(/^\s*(-?\d{1,2}\.\d+)\s*[,\s]\s*(-?\d{1,3}\.\d+)\s*$/);        // plain "40.94, -73.87"
-  if(!m) return null;
-  const lat = +m[1], lng = +m[2];
-  return (Math.abs(lat)<=90 && Math.abs(lng)<=180) ? {lat, lng} : null;
-}
-
-// --- Google Places (optional) ---
-function gLoad(){
-  if(gLib) return Promise.resolve(gLib);
-  if(gLoadedKey && gLoadedKey!==gKey) return Promise.reject(new Error("reload the page to use the new key"));
-  if(!gLoadP){
-    gLoadedKey = gKey;
-    gLoadP = new Promise((res, rej) => {
-      window.__ptGmReady = res;
-      const sc = document.createElement("script");
-      sc.src = "https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(gKey)+
-        "&v=weekly&loading=async&libraries=places&callback=__ptGmReady";
-      sc.async = true;
-      sc.onerror = () => { sc.remove(); rej(new Error("couldn't reach Google")); };
-      document.head.appendChild(sc);
-    }).then(() => google.maps.importLibrary("places"))
-      .then(lib => (gLib = lib))
-      .catch(e => { gLoadP = null; throw e; });
-  }
-  return gLoadP;
-}
-async function googleSuggest(q){
-  const {AutocompleteSuggestion, AutocompleteSessionToken} = await gLoad();
-  if(!gTok) gTok = new AutocompleteSessionToken();
-  const c = searchCenter();
-  const res = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-    input:q, sessionToken:gTok, locationBias:{center:{lat:c.lat, lng:c.lng}, radius:50000}
-  });
-  return (res.suggestions||[]).filter(x => x.placePrediction).map(x => {
-    const p = x.placePrediction;
-    return {l1: p.mainText ? p.mainText.text : p.text.text,
-            l2: p.secondaryText ? p.secondaryText.text : "", src:"google", pred:p};
-  });
-}
-async function googleLocate(it){
-  const place = it.pred.toPlace();
-  await place.fetchFields({fields:["location","viewport","formattedAddress"]});
-  gTok = null;   // picking a result closes Google's billing session
-  const v = place.viewport;
-  return {lat:place.location.lat(), lng:place.location.lng(), label:place.formattedAddress,
-    bounds: v ? [[v.getSouthWest().lat(), v.getSouthWest().lng()], [v.getNorthEast().lat(), v.getNorthEast().lng()]] : null};
-}
-
-// --- Esri World Geocoder (default, no key) ---
-function esriLoc(){ const c = searchCenter(); return "&location="+c.lng.toFixed(5)+","+c.lat.toFixed(5); }
-async function esriSuggest(q){
-  const r = await fetch(ESRI_GC+"suggest?f=json&maxSuggestions=6"+esriLoc()+"&text="+encodeURIComponent(q));
-  const js = await r.json();
-  if(js.error) throw new Error(js.error.message||"esri");
-  return (js.suggestions||[]).filter(x => !x.isCollection).map(x => {
-    const parts = x.text.split(",").map(t => t.trim()).filter(Boolean);
-    if(parts.length>1 && /^(USA|United States)$/i.test(parts[parts.length-1])) parts.pop();
-    return {l1:parts[0]||x.text, l2:parts.slice(1).join(", "), src:"esri", text:x.text, key:x.magicKey};
-  });
-}
-async function esriLocate(text, magicKey){
-  const r = await fetch(ESRI_GC+"findAddressCandidates?f=json&maxLocations=1&outFields=Addr_type"+esriLoc()+
-    "&SingleLine="+encodeURIComponent(text)+(magicKey ? "&magicKey="+encodeURIComponent(magicKey) : ""));
-  const js = await r.json();
-  const cd = js.candidates && js.candidates[0];
-  if(!cd || !cd.location) return null;
-  const e = cd.extent;
-  return {lat:cd.location.y, lng:cd.location.x, label:cd.address,
-    bounds: e ? [[e.ymin, e.xmin], [e.ymax, e.xmax]] : null};
-}
-
-// --- OpenStreetMap (last resort) ---
 function photonLabel(p){
   const a = p.properties;
   const l1 = [a.housenumber, a.street || a.name].filter(Boolean).join(" ") || a.name || "";
   const l2 = [a.city || a.county, a.state, a.postcode].filter(Boolean).join(", ");
   return {l1: l1 || l2, l2: l1 ? l2 : (a.country||"")};
 }
-async function osmSuggest(q){
+async function fetchSuggestions(q){
+  const seq = ++suggSeq;
   let items = [];
   try{
-    const c = searchCenter();
+    const c = map ? map.getCenter() : {lat:40.94, lng:-73.87};
     const r = await fetch("https://photon.komoot.io/api/?limit=6&lat="+c.lat+"&lon="+c.lng+"&q="+encodeURIComponent(q));
     const js = await r.json();
     items = (js.features||[]).map(f => {
       const {l1,l2} = photonLabel(f);
-      const ex = f.properties && f.properties.extent;   // [west, north, east, south]
-      return {l1, l2, src:"osm", lat:f.geometry.coordinates[1], lng:f.geometry.coordinates[0],
-        bounds: ex ? [[ex[3], ex[0]], [ex[1], ex[2]]] : null};
+      return {l1, l2, lat:f.geometry.coordinates[1], lng:f.geometry.coordinates[0]};
     });
   }catch{}
   if(!items.length){
@@ -1338,69 +1180,34 @@ async function osmSuggest(q){
       const js = await r.json();
       items = js.map(x => {
         const parts = x.display_name.split(",");
-        const bb = x.boundingbox;                      // [south, north, west, east]
-        return {l1: parts.slice(0,2).join(",").trim(), l2: parts.slice(2,5).join(",").trim(), src:"osm",
-          lat:+x.lat, lng:+x.lon, bounds: bb ? [[+bb[0], +bb[2]], [+bb[1], +bb[3]]] : null};
+        return {l1: parts.slice(0,2).join(",").trim(), l2: parts.slice(2,5).join(",").trim(), lat:+x.lat, lng:+x.lon};
       });
     }catch{}
   }
-  return items;
-}
-
-async function getSuggestions(q){
-  const ll = parseLatLng(q);
-  if(ll) return [{l1:"📍 "+ll.lat.toFixed(6)+", "+ll.lng.toFixed(6), l2:"Go to these coordinates", src:"ll", lat:ll.lat, lng:ll.lng}];
-  if(gKey && !gBroken){
-    try{ const g = await googleSuggest(q); if(g.length) return g; }catch{ /* fall back to Esri */ }
-  }
-  try{ const e = await esriSuggest(q); if(e.length) return e; }catch{}
-  return osmSuggest(q);
-}
-async function fetchSuggestions(q){
-  const seq = ++suggSeq;
-  let items = [];
-  try{ items = await getSuggestions(q); }catch{}
   if(seq !== suggSeq) return; // stale response
   renderSuggestions(items);
 }
 function renderSuggestions(items){
   suggItems = items; suggHi = -1;
   if(!items.length){ suggList.classList.remove("open"); suggList.innerHTML=""; return; }
-  const src = items[0].src;
-  const credit = src==="google" ? "Google Maps" : src==="esri" ? "Search by Esri" : src==="osm" ? "© OpenStreetMap" : "";
   suggList.innerHTML = items.map((it,i)=>
     '<div class="sugg" data-i="'+i+'"><span>'+it.l1.replace(/</g,"&lt;")+'</span>'+
-    (it.l2?'<span class="s2">'+it.l2.replace(/</g,"&lt;")+'</span>':'')+'</div>').join("")+
-    (credit ? '<div class="suggCredit">'+credit+'</div>' : '');
+    (it.l2?'<span class="s2">'+it.l2.replace(/</g,"&lt;")+'</span>':'')+'</div>').join("");
   suggList.classList.add("open");
   suggList.querySelectorAll(".sugg").forEach(el => {
     el.onmousedown = e => { e.preventDefault(); pickSuggestion(+el.dataset.i); };
   });
 }
-async function pickSuggestion(i){
+function pickSuggestion(i){
   const it = suggItems[i]; if(!it) return;
-  addrInput.value = it.src==="ll" ? it.lat.toFixed(6)+", "+it.lng.toFixed(6) : it.l1 + (it.l2? ", "+it.l2 : "");
+  addrInput.value = it.l1 + (it.l2? ", "+it.l2 : "");
+  lastAddress = it.l1;
+  syncTitle();
   suggList.classList.remove("open");
-  addrInput.blur();
-  let loc = null;
-  try{
-    if(it.src==="google") loc = await googleLocate(it);
-    else if(it.src==="esri") loc = await esriLocate(it.text, it.key);
-    else loc = {lat:it.lat, lng:it.lng, bounds:it.bounds||null};
-  }catch{}
-  if(!loc){ toast("Couldn't pin that result — try another suggestion"); return; }
-  if(it.src!=="ll"){ lastAddress = it.l1; syncTitle(); }
-  goToPlace(loc, it.src==="ll" ? "📍 "+it.lat.toFixed(5)+", "+it.lng.toFixed(5) : it.l1);
-}
-function goToPlace(loc, label){
   initMap();
-  const b = loc.bounds;
-  const wide = b && havFt({lat:b[0][0], lng:b[0][1]}, {lat:b[1][0], lng:b[1][1]}) > 2600;   // a town or area, not a lot
-  if(wide) map.fitBounds(b, {maxZoom:19}); else map.setView([loc.lat, loc.lng], 19);
-  if(searchPin) searchPin.remove();
-  searchPin = L.circleMarker([loc.lat, loc.lng], {radius:6, weight:2, color:"#fff", fillColor:"#e5493a",
-    fillOpacity:1, interactive:false}).addTo(map);
-  if(label) toast(label);
+  map.setView([it.lat, it.lng], 19);
+  toast(it.l1);
+  addrInput.blur();
 }
 addrInput.addEventListener("input", () => {
   const q = addrInput.value.trim();
@@ -1416,9 +1223,8 @@ addrInput.addEventListener("keydown", e => {
     e.preventDefault(); suggHi = Math.max(suggHi-1, 0); hiSugg();
   } else if(e.key==="Enter"){
     e.preventDefault();
-    clearTimeout(suggTimer);
     if(open && suggItems.length) pickSuggestion(suggHi>=0 ? suggHi : 0);
-    else { suggSeq++; searchAddress(); }
+    else searchAddress();
   } else if(e.key==="Escape"){
     suggList.classList.remove("open");
   }
@@ -1432,38 +1238,30 @@ async function searchAddress(){
   const q = addrInput.value.trim();
   if(!q) return;
   suggList.classList.remove("open");
-  const ll = parseLatLng(q);
-  if(ll){ addrInput.blur(); goToPlace(ll, "📍 "+ll.lat.toFixed(5)+", "+ll.lng.toFixed(5)); return; }
-  let items = [];
-  try{ items = await getSuggestions(q); }catch{}
-  if(items.length){ suggItems = items; await pickSuggestion(0); return; }
   try{
-    const loc = await esriLocate(q);
-    if(loc){
-      addrInput.blur(); lastAddress = String(loc.label||q).split(",")[0]; syncTitle();
-      goToPlace(loc, loc.label||q); return;
-    }
-  }catch{}
-  toast("No results — check the spelling, or pick from the suggestions while typing");
+    const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q="+encodeURIComponent(q));
+    const js = await r.json();
+    if(!js.length){ toast("No results — try the suggestions while typing"); return; }
+    initMap();
+    map.setView([+js[0].lat, +js[0].lon], 19);
+    lastAddress = js[0].display_name.split(",").slice(0,2).join(",").trim();
+    syncTitle();
+    toast(js[0].display_name.split(",").slice(0,3).join(","));
+  }catch{ toast("Search failed — check connection"); }
 }
 document.getElementById("addrGo").onclick = searchAddress;
 
-// ================= PDF plans — several per project =================
+// ================= PDF load / render =================
 document.getElementById("openBtn").onclick = () => document.getElementById("fileInput").click();
-document.getElementById("fileInput").onchange = e => {
-  const files = [...e.target.files];
-  e.target.value = "";   // so the same file can be picked again later
-  if(files.length) addPdfFiles(files);
-};
+document.getElementById("fileInput").onchange = e => { if(e.target.files[0]) loadFile(e.target.files[0]); };
 wrap.addEventListener("dragover", e => { e.preventDefault(); wrap.classList.add("dragover"); });
 wrap.addEventListener("dragleave", () => wrap.classList.remove("dragover"));
 wrap.addEventListener("drop", e => {
   e.preventDefault(); wrap.classList.remove("dragover");
-  const files = [...e.dataTransfer.files];
-  const pdfs = files.filter(f => f.type==="application/pdf" || /\.pdf$/i.test(f.name));
-  if(pdfs.length){ addPdfFiles(pdfs); return; }
-  const f = files[0];
-  if(f && f.name.endsWith(".json")){
+  const f = e.dataTransfer.files[0];
+  if(!f) return;
+  if(f.type === "application/pdf") loadFile(f);
+  else if(f.name.endsWith(".json")){
     fileHandle = null;
     const it = e.dataTransfer.items && e.dataTransfer.items[0];
     if(it && it.getAsFileSystemHandle) it.getAsFileSystemHandle().then(h=>{ fileHandle=h; }).catch(()=>{});
@@ -1471,213 +1269,23 @@ wrap.addEventListener("drop", e => {
   }
 });
 
-function docMeta(id){ return docs.find(d => d.id===id) || null; }
-function docStoreOf(id){ let st = docStore.get(id); if(!st){ st = {}; docStore.set(id, st); } return st; }
-function docReady(id){ const st = docStore.get(id); return !!(st && (st.pdf || st.data)); }
-function shortName(n, max){
-  n = String(n||"").replace(/\.pdf$/i, ""); max = max || 18;
-  return n.length>max ? n.slice(0, max-1)+"…" : n;
+async function loadFile(file){
+  const buf = await file.arrayBuffer();
+  await loadPdfBytes(buf, file.name);
+  toast(file.name+" · "+pageCount+" page"+(pageCount>1?"s":""));
 }
-function locLabel(m, long){
-  if(m.src==="map") return long ? "Map" : "map";
-  const d = docMeta(m.doc);
-  if(!d) return (long ? "Removed plan · p." : "removed p.")+m.page;
-  if(docs.length<=1) return (long ? "Page " : "p.")+m.page;
-  return shortName(d.name, long ? 40 : 12)+(long ? " · p." : " p.")+m.page;
-}
-const bkey = () => curDocId+":"+pageNum;
-
-// Bring a plan's PDF into memory (already here, or from the cloud) and open it in pdf.js — once per plan.
-function ensureDoc(id, progress){
-  const st = docStoreOf(id);
-  if(st.pdf) return Promise.resolve(st);
-  if(!st.p){
-    st.p = (async () => {
-      if(!st.data){
-        if(!st.ref || !cloudReady()) throw new Error("missing");
-        st.data = await ghFetchPdf(st.ref, st.parts, progress);
-        st.refBytes = st.data.byteLength;
-      }
-      st.pdf = await pdfjsLib.getDocument({data: st.data.slice(0)}).promise;  // pdf.js keeps the copy
-      const d = docMeta(id); if(d) d.pages = st.pdf.numPages;
-      return st;
-    })();
-    st.p.catch(() => { st.p = null; });
-  }
-  return st.p;
-}
-async function addPdfFiles(files){
-  const added = [];
-  for(const f of files){
-    const id = "d"+(nextDocNum++);
-    try{
-      const st = docStoreOf(id);
-      st.data = await f.arrayBuffer();
-      await ensureDoc(id);
-      added.push({id, name:f.name, pages:st.pdf.numPages});
-    }catch{
-      docStore.delete(id);
-      toast("Couldn't open "+f.name+" — is it a PDF?");
-    }
-  }
-  if(!added.length) return;
-  pushHistory();
-  docs.push(...added);
-  await showDoc(added[0].id, 1, {focus:true});
-  const pg = added.reduce((a, d) => a+d.pages, 0);
-  toast(added.length===1 ? added[0].name+" · "+pg+" page"+(pg>1?"s":"")
-    : "Added "+added.length+" plans · "+pg+" pages — switch plans with 📄 in the bottom bar");
-}
-let showSeq = 0;
-async function showDoc(id, page, opts){
-  opts = opts || {};
-  const d = docMeta(id); if(!d) return false;
-  const seq = ++showSeq;
-  if(id!==curDocId){ drawing = null; selVertex = null; }
-  curDocId = id;
-  if(opts.focus && mode!=="pdf") setMode("pdf");
-  let st;
-  try{ st = await ensureDoc(id, opts.progress ? (t => toast(t)) : null); }
-  catch(err){
-    if(seq!==showSeq) return false;
-    pdfDoc = null; pdfName = d.name; pageCount = 0; pageNum = 1;
-    stage.style.display = "none"; hiCanvas.style.display = "none";
-    document.getElementById("dropHint").style.display = "flex";
-    refreshAll();
-    toast(err && err.message==="missing"
-      ? '"'+shortName(d.name, 30)+'" isn\'t loaded — open the job from ☁️, or add the PDF again'
-      : "Couldn't load "+shortName(d.name, 30)+" — check connection");
-    return false;
-  }
-  if(seq!==showSeq) return false;   // another plan was picked while this one loaded
-  const fresh = pdfDoc!==st.pdf;
-  pdfDoc = st.pdf; pdfName = d.name; pageCount = st.pdf.numPages; d.pages = pageCount;
-  pageNum = Math.max(1, Math.min(page||1, pageCount));
+async function loadPdfBytes(buf, name){
+  baseCache.clear(); hiCanvas.style.display="none";
+  pdfData = buf.slice(0); // keep a copy — pdf.js transfers the buffer to its worker
+  pdfDoc = await pdfjsLib.getDocument({data:buf}).promise;
+  pdfName = name;
+  pageCount = pdfDoc.numPages; pageNum = 1;
   document.getElementById("dropHint").style.display = "none";
   stage.style.display = "block";
-  updateBar(); updateDocUI();
-  if(fresh) await fitPage(); else await renderPage();
+  await fitPage();
+  syncTitle();
   refreshAll();
-  return true;
-}
-function clearPlanView(keepId){
-  showSeq++;
-  pdfDoc = null; pdfName = ""; pageCount = 0; pageNum = 1; curDocId = keepId || "";
-  drawing = null; selVertex = null;
-  stage.style.display = "none"; hiCanvas.style.display = "none";
-  document.getElementById("dropHint").style.display = "flex";
-}
-// after undo / redo: make sure the plan on screen still belongs to the project
-function syncDocView(){
-  if(!docs.length){ if(curDocId || pdfDoc){ clearPlanView(); refreshAll(); } return; }
-  const cur = docMeta(curDocId);
-  if(cur){ if(!pdfDoc && docReady(cur.id)) showDoc(cur.id, pageNum); return; }
-  const next = docs.find(d => docReady(d.id));
-  if(next) showDoc(next.id, 1);
-  else { clearPlanView(docs[0].id); refreshAll(); }
-}
-async function preloadDocs(){
-  for(const d of docs.slice()){ try{ await ensureDoc(d.id); }catch{} }
-  updateDocUI();
-}
-// the first plan names an untitled job — pin that name before the first plan is renamed or removed
-function pinJobName(id){
-  if(!projectName && docs[0] && docs[0].id===id){ projectName = defaultProjectName(); syncTitle(); }
-}
-function removeDoc(id){
-  const d = docMeta(id); if(!d) return;
-  pinJobName(id);
-  pushHistory();
-  const n = measurements.filter(m => m.src==="pdf" && m.doc===id).length;
-  docs = docs.filter(x => x.id!==id);
-  measurements = measurements.filter(m => !(m.src==="pdf" && m.doc===id));
-  if(selectedId!=null && !measurements.some(m => m.id===selectedId)) selectedId = null;
-  if(curDocId===id){
-    const next = docs.find(x => docReady(x.id)) || docs[0];
-    if(next) showDoc(next.id, 1); else clearPlanView();
-  }
-  refreshAll();
-  toast('Removed "'+shortName(d.name, 30)+'"'+(n ? " and its "+n+" measurement"+(n>1?"s":"") : "")+" — ⌘Z brings it back");
-}
-
-// --- plans menu (📄 in the bottom bar) ---
-let docArm = null, docRen = null;
-function renderDocList(){
-  const el = document.getElementById("docList");
-  if(!docs.length){ el.innerHTML = '<div class="dempty">No plans yet — add a PDF below.</div>'; return; }
-  el.innerHTML = docs.map((d, i) => {
-    if(docRen===d.id) return '<div class="drow" data-id="'+d.id+'">'+
-      '<input class="dren" value="'+esc2(d.name.replace(/\.pdf$/i,""))+'">'+
-      '<button class="dbtn" data-act="rensave" title="Save name">✓</button></div>';
-    const n = measurements.filter(m => m.src==="pdf" && m.doc===d.id).length;
-    const pg = d.pages ? d.pages+" pg · " : (docReady(d.id) ? "" : "not loaded · ");
-    return '<div class="drow'+(d.id===curDocId?" cur":"")+'" data-id="'+d.id+'">'+
-      '<button class="dmain" data-act="open" title="'+esc2(d.name)+'">'+
-      '<span class="dn">'+(i+1)+'. '+esc2(shortName(d.name, 60))+'</span>'+
-      '<span class="dm">'+pg+n+' item'+(n===1?"":"s")+'</span></button>'+
-      '<button class="dbtn" data-act="dl" title="Download this plan with your markups">⬇</button>'+
-      '<button class="dbtn" data-act="ren" title="Rename">✎</button>'+
-      '<button class="dbtn danger" data-act="del" title="Remove from this project">'+(docArm===d.id ? "Sure?" : "✕")+'</button></div>';
-  }).join("");
-}
-function commitDocRename(){
-  if(!docRen) return;
-  const d = docMeta(docRen);
-  const inp = document.querySelector("#docList .dren");
-  const v = inp ? inp.value.trim() : "";
-  docRen = null;
-  if(d && v && v!==d.name.replace(/\.pdf$/i,"")){
-    pinJobName(d.id);
-    pushHistory(); d.name = v; refreshAll();
-  }
-  renderDocList();
-}
-document.getElementById("docList").addEventListener("click", e => {
-  e.stopPropagation();   // the list re-renders below; don't let the page treat this as a click outside the menu
-  const row = e.target.closest(".drow"); if(!row) return;
-  const btn = e.target.closest("[data-act]"); if(!btn) return;
-  const id = row.dataset.id, act = btn.dataset.act;
-  if(act==="open"){
-    closePops();
-    if(id===curDocId && pdfDoc) return;
-    if(pageLocked){ toast("Page is locked — press P to unlock it first"); return; }
-    showDoc(id, 1, {focus:true, progress:true});
-  } else if(act==="dl"){
-    closePops(); exportMarked(id);
-  } else if(act==="ren"){
-    if(docRen && docRen!==id) commitDocRename();
-    docRen = id; docArm = null; renderDocList();
-    const inp = document.querySelector("#docList .dren");
-    if(inp){ inp.focus(); inp.select(); }
-  } else if(act==="rensave"){
-    commitDocRename();
-  } else if(act==="del"){
-    if(docArm!==id){ docArm = id; renderDocList(); return; }
-    docArm = null; removeDoc(id); renderDocList();
-  }
-});
-document.getElementById("docList").addEventListener("keydown", e => {
-  if(e.key==="Enter" && e.target.classList.contains("dren")){ e.preventDefault(); commitDocRename(); }
-});
-// Escape cancels a rename (this runs before the "Escape closes menus" handler); closing the menu any other way saves it
-window.addEventListener("keydown", e => { if(e.key==="Escape" && docRen) docRen = null; }, true);
-document.getElementById("docAdd").onclick = () => document.getElementById("fileInput").click();
-function updateDocUI(){
-  const has = docs.length>0;
-  const chip = document.getElementById("docChip");
-  chip.style.display = has ? "" : "none";
-  document.getElementById("docDiv").style.display = has ? "" : "none";
-  const i = docs.findIndex(d => d.id===curDocId);
-  document.getElementById("docName").textContent =
-    i<0 ? "Plans" : (docs.length>1 ? (i+1)+"/"+docs.length+" · " : "")+shortName(docs[i].name, 22);
-  chip.title = i<0 ? "Plans in this project" : docs[i].name+" — switch plans or add more PDFs";
-  document.getElementById("markBtn").textContent = docs.length>1 ? "⬇ Marked-up PDF — this plan" : "⬇ Marked-up PDF";
-  document.getElementById("markAllBtn").style.display = docs.length>1 ? "" : "none";
-  document.getElementById("projTitle").placeholder = lastAddress || (has ? docs[0].name.replace(/\.pdf$/i,"") : "Untitled project");
-  document.getElementById("hintBig").textContent = has && !pdfDoc
-    ? "This job's plan isn't loaded — open it from ☁️ Cloud projects, or drop the PDF here"
-    : "Drop PDF plans here (several at once is fine), or add them from the menu";
-  if(!docRen && document.getElementById("pop-docs").classList.contains("open")) renderDocList();
+  if(mode!=="pdf") setMode("pdf");
 }
 function bufToB64(buf){
   const bytes = new Uint8Array(buf);
@@ -1695,37 +1303,32 @@ function b64ToBuf(b64){
 // Two-layer renderer:
 //  - base: whole page at a capped resolution, rendered ONCE per page, instantly rescaled by CSS on zoom
 //  - hi:   only the visible window, rendered at full zoom quality after the view settles
-let viewGen = 0;   // bumps whenever the visible page changes, so late hi-res renders get dropped
 async function renderPage(){
   if(!pdfDoc) return;
-  const doc = pdfDoc, pg = pageNum, key = bkey();
-  viewGen++;
-  const page = await doc.getPage(pg);
-  if(doc!==pdfDoc || pg!==pageNum) return renderPage();   // the view moved on while the page loaded
+  const page = await pdfDoc.getPage(pageNum);
   const vp1 = page.getViewport({scale:1});
   const cssW = vp1.width*zoom, cssH = vp1.height*zoom;
   pdfCanvas.style.width = cssW+"px"; pdfCanvas.style.height = cssH+"px";
   overlay.width = Math.floor(cssW*dpr); overlay.height = Math.floor(cssH*dpr);
   overlay.style.width = cssW+"px"; overlay.style.height = cssH+"px";
   hiCanvas.style.display = "none";
-  let base = baseCache.get(key);
+  let base = baseCache.get(pageNum);
   if(!base){
     if(baseBusy){ baseQueued = true; }
     else{
       baseBusy = true;
-      try{
-        const bscale = Math.min(3, (BASE_MAX*dpr)/Math.max(vp1.width, vp1.height));
-        const bvp = page.getViewport({scale:bscale});
-        const c = document.createElement("canvas");
-        c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
-        const bctx = c.getContext("2d");
-        bctx.fillStyle = "#fff"; bctx.fillRect(0,0,c.width,c.height);
-        await page.render({canvasContext:bctx, viewport:bvp}).promise;
-        base = {canvas:c, scale:bscale};
-        baseCache.set(key, base);
-        if(baseCache.size > 4) baseCache.delete(baseCache.keys().next().value);
-      } finally { baseBusy = false; }
-      if(baseQueued || key!==bkey()){ baseQueued = false; renderPage(); return; }
+      const bscale = Math.min(3, (BASE_MAX*dpr)/Math.max(vp1.width, vp1.height));
+      const bvp = page.getViewport({scale:bscale});
+      const c = document.createElement("canvas");
+      c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
+      const bctx = c.getContext("2d");
+      bctx.fillStyle = "#fff"; bctx.fillRect(0,0,c.width,c.height);
+      await page.render({canvasContext:bctx, viewport:bvp}).promise;
+      base = {canvas:c, scale:bscale};
+      baseCache.set(pageNum, base);
+      if(baseCache.size > 4) baseCache.delete(baseCache.keys().next().value);
+      baseBusy = false;
+      if(baseQueued){ baseQueued = false; renderPage(); return; }
     }
   }
   if(base){
@@ -1743,10 +1346,8 @@ function scheduleHi(delay=120){
 }
 async function updateHi(){
   if(!pdfDoc || mode!=="pdf" || wz){ return; }
-  const gen = viewGen, doc = pdfDoc, pg = pageNum;
-  const base = baseCache.get(bkey());
-  const page = await doc.getPage(pg);
-  if(gen!==viewGen || doc!==pdfDoc) return;
+  const base = baseCache.get(pageNum);
+  const page = await pdfDoc.getPage(pageNum);
   const vp1 = page.getViewport({scale:1});
   if(base && zoom*dpr <= base.scale + 0.01){ hiCanvas.style.display="none"; return; }
   const pad = 250;
@@ -1764,19 +1365,15 @@ async function updateHi(){
   hiCanvas.style.width = w+"px"; hiCanvas.style.height = h+"px";
   hictx.fillStyle = "#fff"; hictx.fillRect(0,0,pw,ph);
   const rvp = page.getViewport({scale:zoom});
-  const task = page.render({canvasContext:hictx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
-  hiTask = task;
+  hiTask = page.render({canvasContext:hictx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
   try{
-    await task.promise;
-    if(gen===viewGen) hiCanvas.style.display = "block";
+    await hiTask.promise;
+    hiCanvas.style.display = "block";
   }catch(e){ /* cancelled mid-flight — a newer render took over */ }
-  if(hiTask===task) hiTask = null;
+  hiTask = null;
 }
 wrap.addEventListener("scroll", ()=>scheduleHi(110), {passive:true});
 async function fitPage(){
-  if(!pdfDoc) return;
-  if(!wrap.clientWidth){ needFit = true; return; }   // plan view hidden (map mode) — fit once it shows
-  needFit = false;
   const page = await pdfDoc.getPage(pageNum);
   const vp = page.getViewport({scale:1});
   zoom = Math.min((wrap.clientWidth-40)/vp.width, (wrap.clientHeight-40)/vp.height);
@@ -1800,7 +1397,7 @@ function rebuildStatic(lw){
   staticCanvas.width = overlay.width; staticCanvas.height = overlay.height;
   dctx = staticCanvas.getContext("2d");
   for(const m of measurements){
-    if(m.src!=="pdf" || m.page !== pageNum || m.doc !== curDocId) continue;
+    if(m.src!=="pdf" || m.page !== pageNum) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     if(staticExclude === m.id) continue;
     drawMeasure(m, m.id===selectedId, lw);
@@ -1878,7 +1475,7 @@ function snap(p){
 function hitTest(p){
   const vt = 9/zoom, st = 6/zoom;
   for(const m of [...measurements].reverse()){
-    if(m.src!=="pdf" || m.page!==pageNum || m.doc!==curDocId) continue;
+    if(m.src!=="pdf" || m.page!==pageNum) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     for(let i=m.pts.length-1;i>=0;i--){
       if(dist(p, m.pts[i]) < vt) return {kind: m.type==="count"?"dot":"vertex", m, idx:i};
@@ -1956,7 +1553,7 @@ overlay.addEventListener("click", e => {
     pushHistory();
     let m = drawing;
     if(!m){
-      m = {id:nextId++, src:"pdf", type:"count", page:pageNum, doc:curDocId, pts:[], name:newName("count"), color:newColor("count"), cat:activeCatId};
+      m = {id:nextId++, src:"pdf", type:"count", page:pageNum, pts:[], name:newName("count"), color:newColor("count"), cat:activeCatId};
       measurements.push(m); drawing = m; selectedId = m.id;
     }
     m.pts.push(p); refreshAll(); return;
@@ -2020,7 +1617,7 @@ function finishDrawing(){
       id: nextId++, src: drawing.src, type: drawing.type, pts: drawing.pts,
       color: drawing.color, cat: activeCatId, name: newName(drawing.type)
     };
-    if(drawing.src==="pdf"){ m.page = pageNum; m.doc = curDocId; }
+    if(drawing.src==="pdf") m.page = pageNum;
     measurements.push(m); selectedId = m.id;
   }
   drawing = null; refreshAll();
@@ -2049,7 +1646,7 @@ window.addEventListener("keydown", e => {
   const _mb = document.querySelector(".modalBack.open");
   if(_mb){ // a dialog is open — only Escape (via its cancel button) belongs to us here
     if(e.key==="Escape"){
-      const c = _mb.querySelector("#calCancel,#cusCancel,#catCancel,#clearCancel,#saveCancel,#newCancel,#verClose,#ceCancel,#gkeyCancel");
+      const c = _mb.querySelector("#calCancel,#cusCancel,#catCancel,#clearCancel,#saveCancel,#newCancel,#verClose,#ceCancel");
       if(c) c.click(); else _mb.classList.remove("open");
     }
     return;
@@ -2189,17 +1786,8 @@ function togglePageLock(){
   toast(pageLocked ? "Page locked" : "Page unlocked");
 }
 document.getElementById("lockPg").onclick = togglePageLock;
-function goPage(delta){
-  if(pageLocked || !pdfDoc) return;
-  const np = pageNum + delta;
-  if(np>=1 && np<=pageCount){ pageNum = np; drawing = null; renderPage(); refreshAll(); return; }
-  const i = docs.findIndex(d => d.id===curDocId), j = i + (delta>0 ? 1 : -1);
-  if(i<0 || j<0 || j>=docs.length) return;
-  const d = docs[j];
-  showDoc(d.id, delta>0 ? 1 : (d.pages || 1e6), {progress:true}).then(ok => { if(ok) toast("📄 "+shortName(d.name, 40)); });
-}
-document.getElementById("prevPg").onclick = () => goPage(-1);
-document.getElementById("nextPg").onclick = () => goPage(1);
+document.getElementById("prevPg").onclick = () => { if(!pageLocked && pageNum>1){ pageNum--; drawing=null; renderPage(); refreshAll(); } };
+document.getElementById("nextPg").onclick = () => { if(!pageLocked && pageNum<pageCount){ pageNum++; drawing=null; renderPage(); refreshAll(); } };
 document.getElementById("zoomIn").onclick = () => { zoom=Math.min(6,zoom*1.2); renderPage(); updateBar(); };
 document.getElementById("zoomOut").onclick = () => { zoom=Math.max(0.2,zoom/1.2); renderPage(); updateBar(); };
 document.getElementById("zoomFit").onclick = () => pdfDoc && fitPage();
@@ -2210,11 +1798,8 @@ document.getElementById("closeSide").onclick = () => document.getElementById("si
 
 // ================= scale =================
 function applyScale(fpu, label){
-  if(!pdfDoc){ toast("Open a plan first"); return; }
-  pushHistory();
-  ftPerUnit[PK()] = fpu; scaleLabels[PK()] = label;
-  docScale[curDocId] = {fpu, label};
-  scaleLabel = label;
+  ftPerUnit[pageNum] = fpu; defaultFtPerUnit = fpu;
+  scaleLabels[pageNum] = label; scaleLabel = label;
   refreshAll();
   toast("Scale set: "+label);
 }
@@ -2286,14 +1871,14 @@ document.getElementById("clearBack").addEventListener("keydown", e => {
 
 // ================= side panel =================
 document.getElementById("filterSel").onchange = renderList;
-function refreshAll(){ markStatic(); updateBar(); updateDocUI(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateFab(); updateLive(); if(typeof scheduleAutosave==="function") scheduleAutosave(); }
+function refreshAll(){ markStatic(); updateBar(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateFab(); updateLive(); if(typeof scheduleAutosave==="function") scheduleAutosave(); }
 function updateBar(){
   document.getElementById("pageInfo").textContent = pdfDoc ? pageNum+" / "+pageCount : "– / –";
   document.getElementById("zoomInfo").textContent = Math.round(zoom*100)+"%";
   const chip = document.getElementById("scaleChip");
   const has = getFPU()!=null;
   chip.classList.toggle("unset", !has);
-  let _lbl = scaleLabels[PK()] ?? (docScale[curDocId] ? docScale[curDocId].label : null);
+  let _lbl = scaleLabels[pageNum] ?? scaleLabel;
   if(has && (!_lbl || _lbl==="NOT SET")) _lbl = '1" = '+(getFPU()*72).toFixed(2)+"'";
   document.getElementById("scaleVal").textContent = has ? _lbl : "NOT SET";
 }
@@ -2312,7 +1897,7 @@ function filterLabel(){
   const filt = document.getElementById("filterSel").value;
   const q = document.getElementById("measSearch").value.trim();
   const parts = [];
-  if(filt==="page") parts.push((docs.length>1 && pdfDoc ? shortName(pdfName, 24)+" p."+pageNum : "Page "+pageNum)+" only");
+  if(filt==="page") parts.push("Page "+pageNum+" only");
   if(filt==="map") parts.push("Map only");
   if(q) parts.push('search "'+q+'"');
   return parts.join(", ");
@@ -2321,7 +1906,7 @@ function visibleMeasurements(){
   const filt = document.getElementById("filterSel").value;
   const q = document.getElementById("measSearch").value.trim().toLowerCase();
   return [...measurements].reverse().filter(m => {
-    if(filt==="page" && !(m.src==="pdf" && m.page===pageNum && m.doc===curDocId)) return false;
+    if(filt==="page" && !(m.src==="pdf" && m.page===pageNum)) return false;
     if(filt==="map" && m.src!=="map") return false;
     if(q){
       const c = catOf(m.cat);
@@ -2380,7 +1965,7 @@ document.getElementById("measSearch").addEventListener("input", renderList);
 function itemHTML(m, v, child){
   const perim = measurePerim(m);
   const qty = v==null ? "needs scale" : m.type==="count" ? v+" EA" : m.type==="line" ? v.toFixed(2)+" LF" : v.toFixed(1)+" SF";
-  const loc = esc2(locLabel(m));
+  const loc = m.src==="map" ? "map" : "p."+m.page;
   const catOpts = '<option value="">— no cat —</option>'+
     orderedCats().map(c=>'<option value="'+c.id+'"'+(m.cat===c.id?" selected":"")+'>'+
       (isChildCat(c)? "· ":"")+esc2(c.name)+'</option>').join("");
@@ -2452,10 +2037,8 @@ function itemHTML(m, v, child){
       }
     } else {
       if(mode!=="pdf") setMode("pdf");
-      if(m.doc!==curDocId || m.page!==pageNum || !pdfDoc){
-        if(!docMeta(m.doc)){ toast("That plan was removed from this project"); refreshAll(); return; }
-        if(pageLocked){ toast("Page is locked — item is on "+locLabel(m, true)); refreshAll(); return; }
-        if(m.doc!==curDocId || !pdfDoc){ showDoc(m.doc, m.page, {progress:true}); refreshAll(); return; }
+      if(m.page!==pageNum){
+        if(pageLocked){ toast("Page is locked — item is on p."+m.page); refreshAll(); return; }
         pageNum=m.page; renderPage();
       }
     }
@@ -2526,15 +2109,14 @@ function updateLive(){
 }
 
 // ================= print report =================
-function drawMeasureOn(ctx, m, sc, k){
-  k = k || 1;   // size factor for lines/labels (1 = print report)
+function drawMeasureOn(ctx, m, sc){
   const pts = m.pts.map(p=>({x:p.x*sc, y:p.y*sc}));
-  ctx.lineWidth = 2.4*k; ctx.strokeStyle = m.color; ctx.fillStyle = m.color;
+  ctx.lineWidth = 2.4; ctx.strokeStyle = m.color; ctx.fillStyle = m.color;
   if(m.type==="count"){
     pts.forEach((p,i)=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,9*k,0,7); ctx.globalAlpha=.3; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,9,0,7); ctx.globalAlpha=.3; ctx.fill();
       ctx.globalAlpha=1; ctx.stroke();
-      ctx.font="bold "+(10*k)+"px monospace"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.font="bold 10px monospace"; ctx.textAlign="center"; ctx.textBaseline="middle";
       ctx.fillText(i+1, p.x, p.y);
       ctx.textAlign="start"; ctx.textBaseline="alphabetic";
     });
@@ -2547,23 +2129,23 @@ function drawMeasureOn(ctx, m, sc, k){
     ctx.stroke();
   }
   for(const p of pts){
-    ctx.beginPath(); ctx.arc(p.x,p.y,3*k,0,7);
+    ctx.beginPath(); ctx.arc(p.x,p.y,3,0,7);
     ctx.fillStyle="#fff"; ctx.fill(); ctx.fillStyle=m.color; ctx.stroke();
   }
   const v = measureValue(m);
   if(v!=null && pts.length>1){
     const mid = pts[Math.floor(pts.length/2)];
     const lbl = m.name+" — "+(m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF");
-    ctx.font=(11*k)+"px monospace";
+    ctx.font="11px monospace";
     const w = ctx.measureText(lbl).width;
     ctx.fillStyle="rgba(255,255,255,.88)";
-    ctx.fillRect(mid.x+5*k, mid.y-15*k, w+8*k, 15*k);
+    ctx.fillRect(mid.x+5, mid.y-15, w+8, 15);
     ctx.fillStyle=m.color;
-    ctx.fillText(lbl, mid.x+9*k, mid.y-4*k);
+    ctx.fillText(lbl, mid.x+9, mid.y-4);
   }
 }
-async function pageSnapshot(docId, pageNo){
-  const page = await (await ensureDoc(docId)).pdf.getPage(pageNo);
+async function pageSnapshot(pageNo){
+  const page = await pdfDoc.getPage(pageNo);
   const sc = 1.5;
   const vp = page.getViewport({scale:sc});
   const c = document.createElement("canvas");
@@ -2571,7 +2153,7 @@ async function pageSnapshot(docId, pageNo){
   const ctx = c.getContext("2d");
   await page.render({canvasContext:ctx, viewport:vp}).promise;
   for(const m of measurements){
-    if(m.src!=="pdf" || m.doc!==docId || m.page!==pageNo) continue;
+    if(m.src!=="pdf" || m.page!==pageNo) continue;
     if(hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) continue;
     drawMeasureOn(ctx, m, sc);
   }
@@ -2584,7 +2166,7 @@ document.getElementById("printBtn").onclick = async () => {
   const title = defaultProjectName();
   let body = '<h1>'+esc(title)+'</h1>'+
     '<div class="meta">Plan Takeoff report · '+new Date().toLocaleDateString()+
-    (docs.length? ' · '+esc(docs.map(d=>shortName(d.name, 60)).join(", ")):'')+'</div>';
+    (pdfName? ' · '+esc(pdfName):'')+'</div>';
   // tables per category
   const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
   for(const m of measurements){
@@ -2598,7 +2180,7 @@ document.getElementById("printBtn").onclick = async () => {
     for(const m of b.items){
       const v = measureValue(m), p = measurePerim(m);
       if(v!=null) sub[m.type]+=v;
-      rows += '<tr><td>'+esc(m.name)+'</td><td>'+esc(locLabel(m, true))+'</td>'+
+      rows += '<tr><td>'+esc(m.name)+'</td><td>'+(m.src==="map"?"Map":"Page "+m.page)+'</td>'+
         '<td class="r">'+(v==null?"—": m.type==="count"? v+" EA" : m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF")+'</td>'+
         '<td class="r">'+(p!=null? p.toFixed(1)+" LF":"")+'</td></tr>';
     }
@@ -2615,14 +2197,13 @@ document.getElementById("printBtn").onclick = async () => {
         (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+cy.withWaste.toFixed(2)+' CY)':''):'')+'</div>'+
       (b.cat && b.cat.notes? '<div class="notes">Notes: '+esc(b.cat.notes)+'</div>':'');
   }
-  // page snapshots — every plan page that has measurements
-  for(const d of docs){
-    const pages = [...new Set(measurements.filter(m=>m.src==="pdf" && m.doc===d.id).map(m=>m.page))].sort((a,b)=>a-b);
+  // page snapshots
+  if(pdfDoc){
+    const pages = [...new Set(measurements.filter(m=>m.src==="pdf").map(m=>m.page))].sort((a,b)=>a-b);
     for(const pg of pages){
       try{
-        const img = await pageSnapshot(d.id, pg);
-        body += '<div class="pagebreak"></div><h2>Plan — '+(docs.length>1 ? esc(shortName(d.name, 60))+' · ' : '')+
-          'Page '+pg+'</h2><img class="plan" src="'+img+'">';
+        const img = await pageSnapshot(pg);
+        body += '<div class="pagebreak"></div><h2>Plan — Page '+pg+'</h2><img class="plan" src="'+img+'">';
       }catch{}
     }
   }
@@ -2651,270 +2232,17 @@ document.getElementById("printBtn").onclick = async () => {
   }, 400);
 };
 
-// ================= marked-up PDF download =================
-// Your measurements drawn onto the original plan as real PDF shapes (sharp at any zoom), plus a
-// takeoff summary page. Secured (locked) plans can't be edited, so those are rebuilt from page images.
-const PDFLIB_URLS = [
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
-  "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js",
-  "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"
-];
-let pdfLibP = null, markBusy = false;
-function loadPdfLib(){
-  if(window.PDFLib) return Promise.resolve(window.PDFLib);
-  if(!pdfLibP) pdfLibP = (async () => {
-    for(const u of PDFLIB_URLS){
-      try{
-        await new Promise((res, rej) => {
-          const sc = document.createElement("script");
-          sc.src = u; sc.onload = res; sc.onerror = () => { sc.remove(); rej(new Error("load")); };
-          document.head.appendChild(sc);
-        });
-        if(window.PDFLib) return window.PDFLib;
-      }catch{}
-    }
-    pdfLibP = null;
-    throw new Error("couldn't load the PDF tools — check connection");
-  })();
-  return pdfLibP;
-}
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-function pdfColor(L, hex){
-  const n = parseInt(String(hex||"#888888").replace("#","").slice(0,6).padEnd(6,"0"), 16) || 0;
-  return L.rgb((n>>16&255)/255, (n>>8&255)/255, (n&255)/255);
-}
-const WINANSI = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";   // extra characters the built-in PDF fonts can print
-function pdfTxt(t){
-  return String(t==null ? "" : t).replace(/[\r\n\t]+/g, " ")
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, ch => WINANSI.includes(ch) ? ch : "");
-}
-function qtyText(m, v){
-  if(v==null) return "";
-  return m.type==="count" ? v+" EA" : m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
-}
-function exportItems(docId){
-  return measurements.filter(m => m.src==="pdf" && m.doc===docId && m.pts && m.pts.length &&
-    !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id));
-}
-// vp = the pdf.js page viewport at scale 1 (the space measurements are stored in), rot = page rotation.
-// Shapes are laid out in on-screen space and mapped into the PDF with vp.convertToPdfPoint; text and
-// label boxes are turned by the page rotation so they read upright, exactly like on screen.
-function drawPageMarkups(L, page, items, vp, rot, font){
-  const P = (x, y) => { const q = vp.convertToPdfPoint(x, y); return {x:q[0], y:q[1]}; };
-  const minSide = Math.min(vp.width, vp.height);
-  const lw = clamp(minSide/650, 0.9, 3.5), fs = clamp(minSide/100, 7, 16);
-  const ang = L.degrees(rot||0), white = L.rgb(1,1,1), ink = L.rgb(0.11,0.11,0.12);
-  const label = (txt, ax, ay, col, centered) => {
-    txt = pdfTxt(txt); if(!txt) return;
-    const pad = fs*0.35, bh = fs*1.35, bw = font.widthOfTextAtSize(txt, fs) + pad*2;
-    const bx = centered ? ax - bw/2 : ax + fs*0.45;     // box bottom-left corner, on-screen coords (y down)
-    const by = centered ? ay + bh/2 : ay - fs*0.2;
-    const c0 = P(bx, by);
-    page.drawRectangle({x:c0.x, y:c0.y, width:bw, height:bh, rotate:ang, color:white, opacity:0.9,
-      borderColor:col, borderWidth:lw*0.6, borderOpacity:0.95});
-    const t0 = P(bx + pad, by - (bh - fs*0.72)/2);
-    page.drawText(txt, {x:t0.x, y:t0.y, size:fs, font, color:ink, rotate:ang});
-  };
-  for(const m of items){
-    const col = pdfColor(L, m.color);
-    const v = measureValue(m);
-    const txt = m.name + (v!=null ? " — "+qtyText(m, v) : "");
-    if(m.type==="count"){
-      const r = fs*0.8, ts = fs*0.8;
-      m.pts.forEach((p, i) => {
-        const c = P(p.x, p.y);
-        page.drawCircle({x:c.x, y:c.y, size:r, color:col, opacity:0.28, borderColor:col, borderWidth:lw, borderOpacity:1});
-        const n = String(i+1), w = font.widthOfTextAtSize(n, ts);
-        const t0 = P(p.x - w/2, p.y + ts*0.36);
-        page.drawText(n, {x:t0.x, y:t0.y, size:ts, font, color:ink, rotate:ang});
-      });
-      label(txt, m.pts[0].x + r, m.pts[0].y - r, col);
-      continue;
-    }
-    if(m.pts.length < 2) continue;
-    const pts = m.pts.map(p => P(p.x, p.y));
-    // pdf-lib reads SVG paths with y pointing down, so PDF y values go in negated
-    const d = pts.map((q, i) => (i ? "L" : "M")+q.x.toFixed(2)+" "+(-q.y).toFixed(2)).join(" ")+(m.type==="area" ? " Z" : "");
-    if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
-    else page.drawSvgPath(d, {x:0, y:0, borderColor:col, borderWidth:lw, borderOpacity:0.95});
-    for(const q of pts) page.drawCircle({x:q.x, y:q.y, size:lw*1.15, color:white, borderColor:col, borderWidth:lw*0.6});
-    if(m.type==="area"){
-      const cx = m.pts.reduce((a, p) => a+p.x, 0)/m.pts.length, cy = m.pts.reduce((a, p) => a+p.y, 0)/m.pts.length;
-      label(txt, cx, cy, col, true);
-    } else {
-      const k = Math.max(1, Math.floor(m.pts.length/2)), a = m.pts[k-1], b = m.pts[k];
-      label(txt, (a.x+b.x)/2, (a.y+b.y)/2, col);
-    }
-  }
-}
-function addSummaryPages(L, pdf, font, bold, items, subtitle){
-  if(!items.length) return;
-  const W = 612, H = 792, M = 46;
-  const ink = L.rgb(0.11,0.11,0.12), dim = L.rgb(0.45,0.45,0.48), hair = L.rgb(0.82,0.82,0.85);
-  let page = null, y = 0;
-  const need = h => { if(!page || y - h < M){ page = pdf.addPage([W, H]); y = H - M; } };
-  const text = (t, x, size, f, color, right) => {
-    t = pdfTxt(t);
-    page.drawText(t, {x: right ? x - f.widthOfTextAtSize(t, size) : x, y, size, font:f, color:color||ink});
-  };
-  const fit = (t, size, f, maxW) => {
-    t = pdfTxt(t);
-    if(f.widthOfTextAtSize(t, size) <= maxW) return t;
-    while(t.length>1 && f.widthOfTextAtSize(t+"…", size) > maxW) t = t.slice(0, -1);
-    return t+"…";
-  };
-  const lines = (t, size, f, maxW) => {
-    const out = []; let cur = "";
-    for(const w of pdfTxt(t).split(" ")){
-      const tryS = cur ? cur+" "+w : w;
-      if(cur && f.widthOfTextAtSize(tryS, size) > maxW){ out.push(cur); cur = w; } else cur = tryS;
-    }
-    if(cur) out.push(cur);
-    return out;
-  };
-  need(60);
-  text(fit(defaultProjectName(), 17, bold, W-2*M), M, 17, bold); y -= 17;
-  text(fit("Takeoff summary · "+new Date().toLocaleDateString()+(subtitle ? " · "+subtitle : ""), 9, font, W-2*M), M, 9, font, dim);
-  y -= 24;
-  const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
-  for(const m of items){
-    const b = buckets.find(b => (b.cat ? b.cat.id : "") === (m.cat||""));
-    (b || buckets[buckets.length-1]).items.push(m);
-  }
-  const grand = {area:0, line:0, count:0};
-  for(const b of buckets){
-    if(!b.items.length) continue;
-    need(44);
-    page.drawRectangle({x:M, y:y-0.5, width:8, height:8, color: b.cat ? pdfColor(L, b.cat.color) : dim});
-    text(fit(b.cat ? catLabel(b.cat).toUpperCase() : "UNCATEGORIZED", 10.5, bold, W-2*M-14), M+14, 10.5, bold);
-    y -= 15;
-    const sub = {area:0, line:0, count:0};
-    for(const m of b.items){
-      need(14);
-      const v = measureValue(m);
-      if(v!=null){ sub[m.type] += v; grand[m.type] += v; }
-      text(fit(m.name, 9.5, font, W-2*M-200), M+14, 9.5, font);
-      text(fit(locLabel(m), 9.5, font, 110), W-M-96, 9.5, font, dim, true);
-      text(v==null ? "needs scale" : qtyText(m, v), W-M, 9.5, bold, ink, true);
-      y -= 13;
-    }
-    const parts = [];
-    if(sub.area) parts.push(sub.area.toFixed(0)+" SF");
-    if(sub.line) parts.push(sub.line.toFixed(1)+" LF");
-    if(sub.count) parts.push(sub.count+" EA");
-    const cy = catCY(b.cat, sub.area);
-    need(18);
-    page.drawLine({start:{x:M+14, y:y+9.5}, end:{x:W-M, y:y+9.5}, thickness:0.5, color:hair});
-    text(fit("Total: "+(parts.join(" · ")||"—")+(cy ? "   ·   "+cy.withWaste.toFixed(2)+' CY @ '+b.cat.depth+'"'+
-      (b.cat.waste>0 ? " +"+b.cat.waste+"% waste" : "") : ""), 9.5, bold, W-2*M-14), M+14, 9.5, bold);
-    y -= 13;
-    if(b.cat && b.cat.notes){
-      for(const ln of lines("Notes: "+b.cat.notes, 8.5, font, W-2*M-14)){ need(12); text(ln, M+14, 8.5, font, dim); y -= 11; }
-    }
-    y -= 10;
-  }
-  need(26);
-  page.drawLine({start:{x:M, y:y+12}, end:{x:W-M, y:y+12}, thickness:0.8, color:ink});
-  text("GRAND TOTALS: "+grand.area.toFixed(0)+" SF · "+grand.line.toFixed(1)+" LF · "+grand.count+" EA", M, 10.5, bold);
-}
-// fallback for secured plans: page images with the markups baked in
-async function rasterPages(L, pdf, st, items){
-  for(let pg=1; pg<=st.pdf.numPages; pg++){
-    const page = await st.pdf.getPage(pg);
-    const vp1 = page.getViewport({scale:1});
-    const sc = Math.min(3, 4000/Math.max(vp1.width, vp1.height));
-    const vp = page.getViewport({scale:sc});
-    const c = document.createElement("canvas");
-    c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
-    const ctx = c.getContext("2d");
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
-    await page.render({canvasContext:ctx, viewport:vp}).promise;
-    const k = clamp(Math.min(vp1.width, vp1.height)/100, 7, 16)*sc/11;   // same label size as the vector version
-    for(const m of items) if(m.page===pg) drawMeasureOn(ctx, m, sc, k);
-    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
-    const img = await pdf.embedJpg(new Uint8Array(await blob.arrayBuffer()));
-    pdf.addPage([vp1.width, vp1.height]).drawImage(img, {x:0, y:0, width:vp1.width, height:vp1.height});
-    c.width = c.height = 0;
-  }
-}
-async function markedPlanBytes(L, docId, withSummary){
-  const st = await ensureDoc(docId);
-  const items = exportItems(docId);
-  const d = docMeta(docId), sub = d ? shortName(d.name, 60) : "";
-  try{
-    const pdf = await L.PDFDocument.load(st.data.slice(0), {updateMetadata:false});
-    const font = await pdf.embedFont(L.StandardFonts.Helvetica);
-    const pages = pdf.getPages();
-    for(let pg=1; pg<=Math.min(pages.length, st.pdf.numPages); pg++){
-      const mine = items.filter(m => m.page===pg);
-      if(!mine.length) continue;
-      const jp = await st.pdf.getPage(pg);
-      drawPageMarkups(L, pages[pg-1], mine, jp.getViewport({scale:1}), jp.rotate, font);
-    }
-    if(withSummary) addSummaryPages(L, pdf, font, await pdf.embedFont(L.StandardFonts.HelveticaBold), items, sub);
-    return await pdf.save();
-  }catch(err){
-    const pdf = await L.PDFDocument.create();
-    await rasterPages(L, pdf, st, items);
-    if(withSummary) addSummaryPages(L, pdf, await pdf.embedFont(L.StandardFonts.Helvetica),
-      await pdf.embedFont(L.StandardFonts.HelveticaBold), items, sub);
-    return await pdf.save();
-  }
-}
-function downloadBlob(blob, fname){
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = fname;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-}
-// which: "cur" (plan on screen), "all" (every plan in one file) or a plan id
-async function exportMarked(which){
-  if(!docs.length){ toast("Add a PDF plan first"); return; }
-  const ids = which==="all" ? docs.map(d => d.id) : [which==="cur" ? curDocId : which];
-  if(!ids[0] || !docMeta(ids[0])){ toast("Open a plan first"); return; }
-  if(markBusy){ toast("Still building the last PDF…"); return; }
-  markBusy = true;
-  toast("Building marked-up PDF…");
-  try{
-    const L = await loadPdfLib();
-    let bytes;
-    if(ids.length===1) bytes = await markedPlanBytes(L, ids[0], true);
-    else{
-      const out = await L.PDFDocument.create();
-      const all = [];
-      for(let i=0; i<ids.length; i++){
-        toast("Building marked-up PDF — plan "+(i+1)+" of "+ids.length+"…");
-        const src = await L.PDFDocument.load(await markedPlanBytes(L, ids[i], false));
-        (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
-        all.push(...exportItems(ids[i]));
-      }
-      addSummaryPages(L, out, await out.embedFont(L.StandardFonts.Helvetica),
-        await out.embedFont(L.StandardFonts.HelveticaBold), all, ids.length+" plans");
-      bytes = await out.save();
-    }
-    const pslug = slug(docMeta(ids[0]).name.replace(/\.pdf$/i, ""));
-    const tag = ids.length===1 && docs.length>1 && pslug!==slug(defaultProjectName()) ? "-"+pslug : "";
-    downloadBlob(new Blob([bytes], {type:"application/pdf"}), slug(defaultProjectName())+tag+"-marked-up.pdf");
-    toast("Marked-up PDF downloaded"+(hiddenCats.size || hiddenItems.size ? " — hidden items left out" : ""));
-  }catch(e){
-    toast("Couldn't build the PDF"+(e && e.message==="missing" ? " — that plan isn't loaded" : e && e.message ? " — "+e.message : ""));
-  }finally{ markBusy = false; }
-}
-document.getElementById("markBtn").onclick = () => exportMarked("cur");
-document.getElementById("markAllBtn").onclick = () => exportMarked("all");
-
 // ================= export / copy / save =================
 document.getElementById("exportBtn").onclick = () => {
   if(!measurements.length){ toast("Nothing to export"); return; }
-  let csv = "Category,Name,Type,Source,Page,Quantity,Unit,Perimeter LF,Plan\n";
+  let csv = "Category,Name,Type,Source,Page,Quantity,Unit,Perimeter LF\n";
   for(const m of measurements){
     const v = measureValue(m), p = measurePerim(m);
     const c = catOf(m.cat);
     csv += '"'+(c?c.name.replace(/"/g,'""'):"")+'","'+m.name.replace(/"/g,'""')+'",'+m.type+','+
       (m.src==="map"?"map":"pdf")+','+(m.src==="map"?"":m.page)+','+
       (v==null?"":m.type==="count"?v:v.toFixed(2))+','+unitOf(m.type)+','+
-      (p!=null?p.toFixed(2):"")+',"'+(m.src==="pdf" && docMeta(m.doc) ? docMeta(m.doc).name.replace(/"/g,'""') : "")+'"\n';
+      (p!=null?p.toFixed(2):"")+"\n";
   }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
@@ -2974,86 +2302,33 @@ document.getElementById("copyBtn").onclick = async () => {
   catch{ toast("Copy blocked by browser — use Export CSV"); }
 };
 function defaultProjectName(){
-  return projectName || lastAddress || (docs[0] ? docs[0].name.replace(/\.pdf$/i,"") : "") || "Takeoff "+new Date().toLocaleDateString();
+  return projectName || lastAddress || pdfName.replace(/\.pdf$/i,"") || "Takeoff "+new Date().toLocaleDateString();
 }
 function slug(s){ return s.replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").slice(0,60) || "takeoff"; }
 function serializeProject(){
-  const first = docs[0] ? (docStore.get(docs[0].id) || {}) : {};
-  return {v:5, projectName,
-    docs: docs.map(d => { const st = docStore.get(d.id) || {};
-      return {id:d.id, name:d.name, pages:d.pages||0, ref:st.ref||null, parts:st.parts||0}; }),
-    curDocId, curPage:pageNum, nextDocNum,
-    ftPerUnit, docScale, scaleLabels, measurements, nextId, counters, categories, activeCatId, nextCatId, versions,
-    // read by older copies of the app (they only know one plan)
-    pdfName: docs[0] ? docs[0].name : "", pdfRef: first.ref || undefined, pdfParts: first.parts || undefined,
-    defaultFtPerUnit: docs[0] && docScale[docs[0].id] ? docScale[docs[0].id].fpu : null};
+  return {v:4, projectName, pdfName, ftPerUnit, defaultFtPerUnit, scaleLabels, measurements, nextId, counters, categories, activeCatId, nextCatId, versions};
 }
-// project files from before multi-plan keyed scales by page number and had no plan ids
-function normScales(p){
-  if(p.docScale) return {ftPerUnit:p.ftPerUnit||{}, docScale:p.docScale, scaleLabels:p.scaleLabels||{}};
-  const f = {}, l = {};
-  for(const k in (p.ftPerUnit||{})) f[String(k).includes(":") ? k : "d1:"+k] = p.ftPerUnit[k];
-  for(const k in (p.scaleLabels||{})) l[String(k).includes(":") ? k : "d1:"+k] = p.scaleLabels[k];
-  const lbls = Object.values(p.scaleLabels||{});
-  return {ftPerUnit:f, scaleLabels:l,
-    docScale: p.defaultFtPerUnit!=null ? {d1:{fpu:p.defaultFtPerUnit, label:lbls[lbls.length-1]||null}} : {}};
-}
-function normMeas(arr){
-  return (arr||[]).map(m => { const x = {src:"pdf", ...m}; if(x.src==="pdf" && !x.doc) x.doc = "d1"; return x; });
-}
-// load a project's data; its plans are fetched afterwards by the caller (openLoadedProject)
 function applyProject(data){
-  docStore.clear(); baseCache.clear();
-  undoStack.length = 0; redoStack.length = 0; updateUndoBtns();   // a different job starts a fresh undo history
   projectName = data.projectName||"";
-  if(Array.isArray(data.docs)){
-    docs = data.docs.map(d => ({id:String(d.id), name:d.name||"plan.pdf", pages:d.pages||0}));
-    for(const d of data.docs) docStore.set(String(d.id), {ref:d.ref||null, parts:d.parts||0});
-  } else if(data.pdfName || data.pdfRef || data.pdfB64){
-    docs = [{id:"d1", name:data.pdfName||"plan.pdf", pages:0}];
-    docStore.set("d1", {ref:data.pdfRef||null, parts:data.pdfParts||0});
-  } else docs = [];
-  nextDocNum = Math.max(data.nextDocNum||1, 1, ...docs.map(d => (parseInt(d.id.slice(1), 10)||0)+1));
-  const sc = normScales(data);
-  ftPerUnit = sc.ftPerUnit; docScale = sc.docScale; scaleLabels = sc.scaleLabels;
-  scaleLabel = Object.values(scaleLabels)[0] || "NOT SET";
-  measurements = normMeas(data.measurements);
+  ftPerUnit = data.ftPerUnit||{}; defaultFtPerUnit = data.defaultFtPerUnit??null;
+  scaleLabels = data.scaleLabels||{};
+  scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
+  measurements = (data.measurements||[]).map(m => ({src:"pdf", ...m}));
   nextId = data.nextId||measurements.length+1;
   Object.assign(counters, data.counters||{});
   categories = data.categories||[];
   activeCatId = data.activeCatId||"";
   nextCatId = data.nextCatId||categories.length+1;
   versions = data.versions||[];
-  clearPlanView(docMeta(data.curDocId) ? data.curDocId : (docs[0] ? docs[0].id : ""));
-  selectedId = null;
   refreshCatSelect();
   syncTitle();
   refreshAll();
 }
-// show the plan the job was last on, then load the rest in the background
-async function openLoadedProject(data, msg){
-  if(!docs.length){ toast(msg); return; }
-  let ok = await showDoc(curDocId, data.curPage||1, {focus:true, progress:true});
-  if(!ok){
-    const alt = docs.find(d => d.id!==curDocId && (docReady(d.id) || (docStore.get(d.id)||{}).ref));
-    if(alt) ok = await showDoc(alt.id, 1, {focus:true, progress:true});
-  }
-  if(ok){
-    const lost = docs.filter(d => !docReady(d.id) && !(docStore.get(d.id)||{}).ref).length;
-    toast(msg+" — "+(docs.length>1 ? docs.length+" plans" : "PDF included")+
-      (lost ? " ("+lost+" PDF"+(lost>1?"s":"")+" missing — add again)" : ""));
-  }
-  preloadDocs();
-}
 let lastIncludePdf = true;
-async function buildProjectData(){
+function buildProjectData(){
   const data = serializeProject();
-  if(lastIncludePdf){
-    let miss = 0;
-    for(const d of data.docs){
-      try{ const st = await ensureDoc(d.id); d.b64 = bufToB64(st.data); }catch{ miss++; }
-    }
-    if(miss) toast(miss+" plan PDF"+(miss>1?"s":"")+" couldn't be included — saved without "+(miss>1?"them":"it"));
+  if(pdfData && lastIncludePdf){
+    try{ data.pdfB64 = bufToB64(pdfData); }catch{ toast("PDF too large to embed — saved without it"); }
   }
   return data;
 }
@@ -3078,7 +2353,7 @@ async function doSave(asNew){
       if(fileHandle.queryPermission && (await fileHandle.queryPermission({mode:"readwrite"}))!=="granted"){
         if((await fileHandle.requestPermission({mode:"readwrite"}))!=="granted") throw new Error("no-perm");
       }
-      await writeToHandle(fileHandle, await buildProjectData());
+      await writeToHandle(fileHandle, buildProjectData());
       afterSave("Saved — "+(fileHandle.name||projectName));
       return;
     }catch(e){ /* handle gone or denied — fall through to Save As */ }
@@ -3086,7 +2361,7 @@ async function doSave(asNew){
   document.getElementById("saveBack").classList.add("open");
   const f = document.getElementById("projName");
   f.value = defaultProjectName(); f.focus(); f.select();
-  document.getElementById("savePdfInc").checked = lastIncludePdf && docs.length>0;
+  document.getElementById("savePdfInc").checked = lastIncludePdf && !!pdfData;
 }
 document.getElementById("saveProj").onclick = () => doSave(false);
 document.getElementById("saveAsBtn").onclick = () => doSave(true);
@@ -3095,31 +2370,27 @@ document.getElementById("saveApply").onclick = async () => {
   projectName = document.getElementById("projName").value.trim() || defaultProjectName();
   lastIncludePdf = document.getElementById("savePdfInc").checked;
   closeModal("saveBack");
-  syncTitle();
+  const data = buildProjectData();
   const fname = slug(projectName)+"-project.json";
-  let h = null;
   if(window.showSaveFilePicker){
     try{
-      // ask where to save first, while the click still counts as a user gesture
-      h = await showSaveFilePicker({
+      const h = await showSaveFilePicker({
         suggestedName: fname,
         types:[{description:"Plan Takeoff project", accept:{"application/json":[".json"]}}]
       });
-    }catch(e){
-      if(e && e.name==="AbortError"){ pendingNew = false; return; }
-      h = null; /* no user gesture / unsupported — fall back to download */
-    }
-  }
-  const data = await buildProjectData();
-  if(h){
-    try{
       await writeToHandle(h, data);
       fileHandle = h;
       afterSave('Saved "'+projectName+'" — ⌘S now saves here directly');
       return;
-    }catch(e){ /* couldn't write there — download instead */ }
+    }catch(e){
+      if(e && e.name==="AbortError"){ pendingNew = false; return; }
+      /* no user gesture / unsupported — fall back to download */
+    }
   }
-  downloadBlob(new Blob([JSON.stringify(data)],{type:"application/json"}), fname);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));
+  a.download = fname;
+  a.click(); URL.revokeObjectURL(a.href);
   afterSave('Saved "'+projectName+'"');
 };
 document.getElementById("saveBack").addEventListener("keydown", e => {
@@ -3142,19 +2413,19 @@ document.getElementById("projInput").onchange = e => {
   if(e.target.files[0]){ fileHandle = null; loadProjectFile(e.target.files[0]); }
 };
 async function loadProjectFile(f){
-  let data;
-  try{ data = JSON.parse(await f.text()); }
-  catch{ toast("Couldn't read that project file"); return; }
-  await saveBeforeSwitch();
   try{
+    const data = JSON.parse(await f.text());
+    pushHistory();
     applyProject(data);
-    if(!projectName){ projectName = f.name.replace(/\.json$/i, "").replace(/-project$/i, "").replace(/-/g, " "); syncTitle(); }
-    const embedded = Array.isArray(data.docs) ? data.docs : (data.pdfB64 ? [{id:"d1", b64:data.pdfB64}] : []);
-    for(const d of embedded){
-      if(!d.b64) continue;
-      try{ const st = docStoreOf(String(d.id)); st.data = b64ToBuf(d.b64); st.refBytes = null; }catch{}
+    if(data.pdfB64){
+      try{
+        await loadPdfBytes(b64ToBuf(data.pdfB64), data.pdfName||"plan.pdf");
+        setMode("pdf");
+        toast("Project loaded — PDF included");
+      }catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
+    } else {
+      toast("Project loaded"+(data.pdfName?" — open "+data.pdfName+" to see plan markups":""));
     }
-    await openLoadedProject(data, "Project loaded");
     window.__isDirty = false; // freshly opened from disk = nothing unsaved yet
   }catch{ toast("Couldn't read that project file"); }
 }
@@ -3239,7 +2510,7 @@ document.getElementById("catEditBack").addEventListener("keydown", e => {
 const projTitle = document.getElementById("projTitle");
 function syncTitle(){
   projTitle.value = projectName;
-  projTitle.placeholder = lastAddress || (docs[0] ? docs[0].name.replace(/\.pdf$/i,"") : "Untitled project");
+  projTitle.placeholder = lastAddress || (pdfName ? pdfName.replace(/\.pdf$/i,"") : "Untitled project");
 }
 projTitle.addEventListener("input", () => {
   projectName = projTitle.value.trim();
@@ -3247,19 +2518,20 @@ projTitle.addEventListener("input", () => {
 });
 let pendingNew = false;
 function resetProject(){
-  pushHistory(); // one undo step brings the measurements, scales and plans back
+  pushHistory(); // one undo step can bring the measurements back
   measurements=[]; categories=[]; activeCatId=""; nextCatId=1; nextId=1;
   counters.line=1; counters.area=1; counters.count=1;
   projectName=""; lastAddress="";
-  ftPerUnit={}; docScale={}; scaleLabels={}; scaleLabel="NOT SET";
+  ftPerUnit={}; defaultFtPerUnit=null; scaleLabels={}; scaleLabel="NOT SET";
   selectedId=null; selVertex=null; drawing=null; calibPts=null;
-  docs=[]; // the PDFs stay in memory until another job is opened, so ⌘Z can restore them
-  clearPlanView();
+  pdfDoc=null; pdfName=""; pageCount=0; pageNum=1; pdfData=null;
   fileHandle=null; versions=[];
-  baseCache.clear();
+  baseCache.clear(); hiCanvas.style.display="none";
   collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
   document.getElementById("measSearch").value="";
   document.getElementById("filterSel").value="all";
+  stage.style.display="none";
+  document.getElementById("dropHint").style.display="flex";
   if(pageLocked) togglePageLock();
   refreshCatSelect(); syncTitle(); refreshAll();
   storeDel(AS_KEY);
@@ -3267,7 +2539,7 @@ function resetProject(){
   toast("New project started");
 }
 function askNewProject(){
-  if(measurements.length || categories.length || docs.length) openModal2("newBack");
+  if(measurements.length || categories.length || pdfDoc) openModal2("newBack");
   else resetProject();
 }
 window.__newProject = askNewProject;
@@ -3295,8 +2567,8 @@ function scheduleAutosave(){
   window.__isDirty = true;
   clearTimeout(autosaveTimer);
   autosaveTimer = setTimeout(()=>{
-    const hasScale = Object.keys(docScale).length>0 || Object.keys(ftPerUnit).length>0;
-    if(!measurements.length && !categories.length && !hasScale && !versions.length && !docs.length) storeDel(AS_KEY);
+    const hasScale = defaultFtPerUnit!=null || Object.keys(ftPerUnit).length>0;
+    if(!measurements.length && !categories.length && !hasScale && !versions.length) storeDel(AS_KEY);
     else storeSet(AS_KEY, JSON.stringify(serializeProject()));
   }, 800);
 }
@@ -3313,8 +2585,8 @@ const IS_DESKTOP_APP = /Electron/i.test(navigator.userAgent);
 window.addEventListener("beforeunload", e => {
   // flush the latest state no matter what
   clearTimeout(autosaveTimer);
-  if(measurements.length || categories.length || docs.length) storeSet(AS_KEY, JSON.stringify(serializeProject()));
-  if(!IS_DESKTOP_APP && window.__isDirty && (measurements.length || docs.length)){
+  if(measurements.length || categories.length) storeSet(AS_KEY, JSON.stringify(serializeProject()));
+  if(!IS_DESKTOP_APP && window.__isDirty && measurements.length){
     e.preventDefault();
     e.returnValue = "";
   }
@@ -3328,11 +2600,10 @@ window.addEventListener("beforeunload", e => {
     const d = JSON.parse(raw);
     const count = (d.measurements||[]).length;
     const hasScale = d.defaultFtPerUnit!=null || Object.keys(d.ftPerUnit||{}).length>0;
-    const nDocs = (d.docs||[]).length || (d.pdfName ? 1 : 0);
-    if(!count && !(d.categories||[]).length && !hasScale && !nDocs) return;
+    if(!count && !(d.categories||[]).length && !hasScale) return;
     applyProject(d);
     window.__isDirty = false;
-    toast("Last session restored"+(nDocs ? " — reopen the job from ☁️ to see the plan"+(nDocs>1?"s":"") : ""));
+    toast("Last session restored"+(d.pdfName ? " — reopen the job from ☁️ to see the plan" : ""));
   }catch{}
 })();
 
@@ -3371,7 +2642,7 @@ else if(_pdfInvSt==="0") applyPdfInvert(false, false);
 // ================= versions =================
 let verDelArm = null;
 function verSnap(){
-  return JSON.parse(JSON.stringify({measurements, categories, counters, nextId, nextCatId, activeCatId, ftPerUnit, docScale, scaleLabels}));
+  return JSON.parse(JSON.stringify({measurements, categories, counters, nextId, nextCatId, activeCatId, ftPerUnit, defaultFtPerUnit, scaleLabels}));
 }
 function renderVersions(){
   const el = document.getElementById("verList");
@@ -3409,12 +2680,12 @@ document.getElementById("verList").addEventListener("click", e => {
   if(act==="restore"){
     pushHistory();
     const p = JSON.parse(JSON.stringify(v.snap));
-    measurements = normMeas(p.measurements); categories = p.categories||[];
+    measurements = p.measurements||[]; categories = p.categories||[];
     Object.assign(counters, p.counters||{});
     nextId = p.nextId||measurements.length+1; nextCatId = p.nextCatId||categories.length+1;
     activeCatId = p.activeCatId||"";
-    const sc = normScales(p);
-    ftPerUnit = sc.ftPerUnit; docScale = sc.docScale; scaleLabels = sc.scaleLabels;
+    ftPerUnit = p.ftPerUnit||{}; defaultFtPerUnit = p.defaultFtPerUnit??null;
+    scaleLabels = p.scaleLabels||{};
     scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
     refreshCatSelect(); refreshAll();
     closeModal("verBack");
@@ -3514,7 +2785,6 @@ document.getElementById("histLive").onclick = wbExit;
 
 // ================= v2.1 popovers & scale menu =================
 function closePops(){
-  if(docRen) commitDocRename();   // closing the plans menu keeps a rename in progress
   document.querySelectorAll(".pop.open").forEach(p=>p.classList.remove("open"));
   document.querySelectorAll("[data-pop].on").forEach(b=>b.classList.remove("on"));
 }
@@ -3534,10 +2804,7 @@ document.querySelectorAll("[data-pop]").forEach(b => {
     const p = document.getElementById("pop-"+b.dataset.pop);
     const was = p.classList.contains("open");
     closePops();
-    if(!was){
-      if(b.dataset.pop==="docs"){ docArm = null; docRen = null; renderDocList(); }
-      positionPop(p,b); b.classList.add("on");
-    }
+    if(!was){ positionPop(p,b); b.classList.add("on"); }
   });
 });
 document.addEventListener("click", e => { if(!e.target.closest(".pop")) closePops(); });
@@ -3658,7 +2925,6 @@ document.getElementById("gSetupGo").onclick = async () => {
     toast("Storage connected");
     gateNext = null;
     openCloud();
-    syncSearchKey();
   }catch(e){ err.textContent = e.message || "Couldn't connect"; err.style.display = ""; }
   b.disabled = false; b.textContent = "Connect";
 };
@@ -3676,7 +2942,7 @@ async function gateLoginGo(){
       try{ await ghConnect(await decToken(pw)); }catch{}
     }
     if(!cloudReady()){ updateGate("setup"); }
-    else { gate.classList.remove("show"); openCloud(); syncSearchKey(); }
+    else { gate.classList.remove("show"); openCloud(); }
   } else {
     err.textContent = "Wrong password"; err.style.display = "";
   }
@@ -3691,215 +2957,140 @@ gate.addEventListener("keydown", e => {
 document.getElementById("gClose").onclick = () => gate.classList.remove("show");
 
 // ---- cloud modal ----
-let cloudArm = null, cloudRen = null, cloudItems = null;
+let cloudArm = null, cloudRen = null;
 function fmtSize(n){ return n>1e6 ? (n/1e6).toFixed(1)+" MB" : Math.round(n/1e3)+" KB"; }
-function normQ(t){ return String(t||"").toLowerCase().replace(/[-_~.]+/g," ").replace(/\s+/g," ").trim(); }
-// one cloud job at a time, so a save (and its clean-up), a rename and a delete never overlap
-let cloudQueue = Promise.resolve();
-function cloudSerial(fn){ const p = cloudQueue.then(fn, fn); cloudQueue = p.catch(()=>{}); return p; }
-
-async function ghList(){
-  const r = await ghFetch(ghRepoPath("/contents/"));
-  if(!r.ok) throw new Error("list "+r.status);
-  return await r.json();
-}
-async function ghRaw(name){
-  const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)), {headers:{Accept:"application/vnd.github.raw"}});
-  if(!r.ok) throw new Error("get "+r.status);
-  return r;
-}
-async function ghPut(name, b64, sha){
-  const body = {message:"save: "+name, content:b64};
-  if(sha) body.sha = sha;
-  const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
-    {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
-  if(!r.ok) throw new Error("put "+r.status);
-}
-async function ghPutSafe(name, b64, sha){
-  try{ await ghPut(name, b64, sha); }
-  catch(e){
-    // the file changed somewhere else (stale version id) — look it up and try once more
-    const g = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)));
-    if(!g.ok) throw e;
-    const cur = await g.json();
-    if(!cur || !cur.sha || cur.sha===sha) throw e;
-    await ghPut(name, b64, cur.sha);
-  }
-}
-async function ghDel(name, sha){
-  if(!sha) return;
-  await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
-    {method:"DELETE", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:"delete: "+name, sha})});
-}
-// plan PDFs sit next to the job file: <job>.pdf for the first plan, <job>~d2.pdf … for the others;
-// big ones are split into 30 MB parts (<name>.p1, .p2 …)
-const PART = 3e7;
-function docRef(base, id){ return id==="d1" ? base+".pdf" : base+"~"+id+".pdf"; }
-function refFiles(ref, parts){ return parts ? Array.from({length:parts}, (_, i) => ref+".p"+(i+1)) : [ref]; }
-function ownsFile(base, n){ return n.indexOf(base+".pdf")===0 || n.indexOf(base+"~")===0; }
-function forgetRefs(names){
-  for(const st of docStore.values())
-    if(st.ref && refFiles(st.ref, st.parts).some(n => names.includes(n))){ st.ref = null; st.refBytes = null; }
-}
-async function ghFetchPdf(ref, parts, progress){
-  if(!parts){
-    if(progress) progress("Loading plan PDF…");
-    return await (await ghRaw(ref)).arrayBuffer();
-  }
-  const bufs = [];
-  for(let i=1; i<=parts; i++){
-    if(progress) progress("Loading plan PDF — part "+i+" of "+parts+"…");
-    bufs.push(new Uint8Array(await (await ghRaw(ref+".p"+i)).arrayBuffer()));
-  }
-  const all = new Uint8Array(bufs.reduce((a, b) => a+b.length, 0));
-  let off = 0; for(const b of bufs){ all.set(b, off); off += b.length; }
-  return all.buffer;
-}
-async function ghPutPdf(ref, buf, shaOf, progress){
-  const mb = buf.byteLength/1e6;
-  if(buf.byteLength < 6e7){
-    if(progress) progress("Uploading plan PDF ("+(mb<10 ? mb.toFixed(1) : mb.toFixed(0))+" MB)…");
-    await ghPutSafe(ref, bufToB64(buf), shaOf(ref));
-    return 0;
-  }
-  const n = Math.ceil(buf.byteLength/PART);
-  for(let i=0; i<n; i++){
-    if(progress) progress("Uploading plan PDF — part "+(i+1)+" of "+n+"…");
-    const pn = ref+".p"+(i+1);
-    await ghPutSafe(pn, bufToB64(buf.slice(i*PART, Math.min((i+1)*PART, buf.byteLength))), shaOf(pn));
-  }
-  return n;
-}
-
-async function loadCloudList(){
+async function renderCloudList(){
   const el = document.getElementById("cloudList");
-  if(!cloudItems) el.innerHTML = '<div class="cloudMsg">Loading…</div>';
-  let items;
+  el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">Loading…</div>';
   try{
-    items = (await ghList()).filter(x => x.type==="file" && /\.json$/.test(x.name));
+    const r = await ghFetch(ghRepoPath("/contents/"));
+    if(!r.ok) throw 0;
+    let items = (await r.json()).filter(x => x.type==="file" && /\.json$/.test(x.name));
     const dates = {};
     try{
+      let cs = [];
       for(let pg=1; pg<=3; pg++){
         const cr = await ghFetch(ghRepoPath("/commits?per_page=100&page="+pg));
         if(!cr.ok) break;
         const arr = await cr.json();
-        for(const k of arr){
-          const m = (k.commit.message||"").match(/^save: (.+)$/);
-          if(m && !(m[1] in dates)) dates[m[1]] = k.commit.committer.date;
-        }
+        cs = cs.concat(arr);
         if(arr.length < 100) break;
+      }
+      const c = {ok:true, json: async () => cs};
+      if(c.ok) for(const k of await c.json()){
+        const m = (k.commit.message||"").match(/^save: (.+)$/);
+        if(m && !(m[1] in dates)) dates[m[1]] = k.commit.committer.date;
       }
     }catch{}
     items.forEach(x => { x.updated = dates[x.name] || ""; });
-    items.sort((a, b) => String(b.updated).localeCompare(String(a.updated)));
-  }catch{
-    if(!cloudItems) el.innerHTML = '<div class="cloudMsg err">Could not load — check connection (or the access code in ⚙️ Settings).</div>';
-    return;
-  }
-  cloudItems = items;
-  drawCloudList();
-}
-function drawCloudList(){
-  const el = document.getElementById("cloudList");
-  const cnt = document.getElementById("cloudCount");
-  if(!cloudItems){ cnt.textContent = ""; return; }
-  const raw = document.getElementById("cloudSearch").value.trim();
-  const words = normQ(raw).split(" ").filter(Boolean);
-  const shown = !words.length ? cloudItems : cloudItems.filter(x => {
-    const hay = normQ(x.name.replace(/\.json$/, ""));
-    return words.every(w => hay.includes(w));
-  });
-  cnt.textContent = words.length ? shown.length+" of "+cloudItems.length
-    : cloudItems.length ? cloudItems.length+" job"+(cloudItems.length>1?"s":"") : "";
-  if(!cloudItems.length){ el.innerHTML = '<div class="cloudMsg">No cloud projects yet — save one above.</div>'; return; }
-  if(!shown.length){ el.innerHTML = '<div class="cloudMsg">No projects match “'+esc2(raw)+'”.</div>'; return; }
-  el.innerHTML = shown.map(x => {
-    if(cloudRen===x.name){
-      return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'">'+
-        '<input class="rnIn" value="'+esc2(x.name.replace(/\.json$/,""))+'" style="flex:1;min-width:0">'+
-        '<button class="btn primary" data-act="rensave">Save</button>'+
-        '<button class="btn" data-act="rencancel">✕</button></div>';
+    items.sort((a,b) => String(b.updated).localeCompare(String(a.updated)));
+    if(!items.length){
+      el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No cloud projects yet — save one above.</div>';
+      return;
     }
-    return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'"><div class="vmeta">'+
-    '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
-    '<div class="vd">'+(x.updated ? new Date(x.updated).toLocaleString() : "")+
-    (x.size ? " · "+fmtSize(x.size) : "")+'</div></div>'+
-    '<button class="btn" data-act="open">☁️ Open</button>'+
-    '<button class="btn" data-act="ren" title="Rename">✏️</button>'+
-    '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>';
-  }).join("");
+    el.innerHTML = items.map(x => {
+      if(cloudRen===x.name){
+        return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'">'+
+          '<input class="rnIn" value="'+esc2(x.name.replace(/\.json$/,""))+'" style="flex:1;min-width:0">'+
+          '<button class="btn primary" data-act="rensave">Save</button>'+
+          '<button class="btn" data-act="rencancel">✕</button></div>';
+      }
+      return '<div class="vrow" data-n="'+esc2(x.name)+'" data-sha="'+esc2(x.sha)+'"><div class="vmeta">'+
+      '<div class="vn">'+esc2(x.name.replace(/\.json$/,""))+'</div>'+
+      '<div class="vd">'+(x.updated ? new Date(x.updated).toLocaleString() : "")+
+      (x.size ? " · "+fmtSize(x.size) : "")+'</div></div>'+
+      '<button class="btn" data-act="open">☁️ Open</button>'+
+      '<button class="btn" data-act="ren" title="Rename">✏️</button>'+
+      '<button class="btn danger" data-act="del">'+(cloudArm===x.name ? "Sure?" : "✕")+'</button></div>';
+    }).join("");
+  }catch{
+    el.innerHTML = '<div style="color:#e5493a;font-size:12px;padding:8px 2px">Could not load — check connection (or the access code in ⚙️ Settings).</div>';
+  }
 }
 function openCloud(){
   if(!cloudReady()){ gateNext = true; updateGate(ENC_TOKEN ? true : "setup"); return; }
-  cloudArm = null; cloudRen = null;
+  cloudArm = null;
   document.getElementById("cloudName").value = defaultProjectName();
-  const cs = document.getElementById("cloudSearch");
-  cs.value = "";
   openModal2("cloudBack");
-  drawCloudList();
-  loadCloudList();
-  if(matchMedia("(hover:hover) and (pointer:fine)").matches) cs.focus();   // type right away to find a job
+  renderCloudList();
 }
-document.getElementById("cloudSearch").addEventListener("input", () => { cloudArm = null; drawCloudList(); });
-
-function ghSave(quiet){ return cloudSerial(() => ghSaveNow(quiet)); }
-async function ghSaveNow(quiet){
-  if(!projectName){ projectName = defaultProjectName(); syncTitle(); }   // keeps saving to the same cloud file
+async function ghShaOf(fname){
+  try{
+    const l = await ghFetch(ghRepoPath("/contents/"));
+    if(l.ok){ const ex = (await l.json()).find(x => x.name===fname); if(ex) return ex.sha; }
+  }catch{}
+  return null;
+}
+let lastPdfUp = {file:"", bytes:0}; // skip re-uploading an unchanged plan
+let loadedPdfRef = null; // remembers which cloud PDF belongs to the opened project
+async function ghSave(quiet){
+  const data = serializeProject();
   const fbase = slug(defaultProjectName());
   const fname = fbase+".json";
-  let listing = [];
-  try{ listing = await ghList(); }catch{}
-  const shaOf = n => { const f = listing.find(x => x.name===n); return f ? f.sha : null; };
-  let failed = 0, missing = 0;
-  for(let i=0; i<docs.length; i++){
-    const d = docs[i], st = docStoreOf(d.id), want = docRef(fbase, d.id);
-    if(st.ref===want && (!st.data || st.refBytes===st.data.byteLength)) continue;   // already stored with this job
-    if(!st.data && !st.ref){ missing++; continue; }
-    try{
-      const s2 = await ensureDoc(d.id);   // a plan that came from another job gets copied over
-      const tag = docs.length>1 ? "Plan "+(i+1)+" of "+docs.length+": " : "";
-      s2.parts = await ghPutPdf(want, s2.data, shaOf, quiet ? null : t => toast(tag+t));
-      s2.ref = want; s2.refBytes = s2.data.byteLength;
-    }catch{ failed++; }
+  let pdfErr = false;
+  // opened from cloud without downloading the plan again? keep the link alive
+  if(!pdfData && loadedPdfRef && loadedPdfRef.base===fbase && loadedPdfRef.ref){
+    data.pdfRef = loadedPdfRef.ref;
+    if(loadedPdfRef.parts) data.pdfParts = loadedPdfRef.parts;
   }
-  const data = serializeProject();
-  try{
-    await ghPutSafe(fname, txtToB64(JSON.stringify(data)), shaOf(fname));
-  }catch(e){
-    const code = parseInt(String(e && e.message).replace(/\D/g, ""), 10) || 0;
-    if(!quiet) toast(code ? "Cloud save failed ("+code+")"+(code===401||code===403 ? " — check the access code in ⚙️ Settings" : "")
-      : "Cloud not reachable — check connection");
-    return false;
-  }
-  window.__isDirty = false;
-  toast('Saved to cloud — "'+defaultProjectName()+'"'+(!docs.length ? ""
-    : failed ? " ("+failed+" plan PDF upload"+(failed>1?"s":"")+" failed — will retry next save)"
-    : missing ? " ("+missing+" plan"+(missing>1?"s aren't":" isn't")+" loaded — add the PDF again)"
-    : " ("+(docs.length>1 ? docs.length+" plan PDFs" : "PDF")+" included)"));
-  // tidy up this job's plan files that nothing points at any more (removed plans, old parts)
-  try{
-    const keep = new Set();
-    for(const d of data.docs) if(d.ref) refFiles(d.ref, d.parts).forEach(n => keep.add(n));
-    const gone = [];
-    for(const f of await ghList()){
-      if(f.type!=="file" || keep.has(f.name) || !ownsFile(fbase, f.name)) continue;
-      await ghDel(f.name, f.sha); gone.push(f.name);
+  // the plan PDF travels as its own file(s) — big plans get split into parts automatically
+  const PART = 3e7;
+  if(pdfData && pdfData.byteLength < 6e7){
+    data.pdfRef = fbase+".pdf";
+    if(!(lastPdfUp.file===data.pdfRef && lastPdfUp.bytes===pdfData.byteLength)){
+      try{
+        if(!quiet) toast("Uploading plan PDF ("+(pdfData.byteLength/1e6).toFixed(0)+" MB)…");
+        const psha = await ghShaOf(data.pdfRef);
+        const pb = {message:"save: "+data.pdfRef, content: bufToB64(pdfData)};
+        if(psha) pb.sha = psha;
+        const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(data.pdfRef)),
+          {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(pb)});
+        if(!pr.ok){ delete data.pdfRef; pdfErr = true; }
+        else lastPdfUp = {file:fbase+".pdf", bytes:pdfData.byteLength};
+      }catch{ delete data.pdfRef; pdfErr = true; }
     }
-    if(gone.length) forgetRefs(gone);
-  }catch{}
+  } else if(pdfData){
+    const n = Math.ceil(pdfData.byteLength / PART);
+    data.pdfRef = fbase+".pdf";
+    data.pdfParts = n;
+    if(!(lastPdfUp.file===data.pdfRef && lastPdfUp.bytes===pdfData.byteLength)){
+      try{
+        for(let i=0;i<n;i++){
+          if(!quiet) toast("Uploading plan PDF — part "+(i+1)+" of "+n+"…");
+          const chunk = pdfData.slice(i*PART, Math.min((i+1)*PART, pdfData.byteLength));
+          const pn = fbase+".pdf.p"+(i+1);
+          const psha = await ghShaOf(pn);
+          const pb = {message:"save: "+pn, content: bufToB64(chunk)};
+          if(psha) pb.sha = psha;
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(pn)),
+            {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(pb)});
+          if(!pr.ok) throw 0;
+        }
+        lastPdfUp = {file:data.pdfRef, bytes:pdfData.byteLength};
+      }catch{ delete data.pdfRef; delete data.pdfParts; pdfErr = true; }
+    }
+  }
+  try{
+    const sha = await ghShaOf(fname);
+    const body = {message:"save: "+fname, content: txtToB64(JSON.stringify(data))};
+    if(sha) body.sha = sha;
+    const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(fname)),
+      {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    if(!r.ok){
+      if(!quiet) toast("Cloud save failed ("+r.status+")"+(r.status===401||r.status===403 ? " — check the access code in ⚙️ Settings" : ""));
+      return false;
+    }
+  }catch{ if(!quiet) toast("Cloud not reachable — check connection"); return false; }
+  window.__isDirty = false;
+  toast('Saved to cloud — "'+defaultProjectName()+'"'+
+    (data.pdfRef ? " (PDF included)" : (pdfData ? (pdfErr ? " (PDF upload failed — will retry next save)" : " (PDF too large for the cloud)") : "")));
   return true;
 }
 window.__cloudQuickSave = function(quiet){ return ghSave(quiet); };
 window.__cloudQuickSave.enabled = () => IS_WEB && cloudReady();
-// before opening another job, quietly save unsaved work in this one (website + cloud only)
-async function saveBeforeSwitch(nextName){
-  if(!window.__isDirty || !(measurements.length || docs.length) || !window.__cloudQuickSave.enabled()) return;
-  if(nextName && nextName===slug(defaultProjectName())+".json") return;   // reopening this job = back to the saved copy
-  try{ await ghSave(true); }catch{}
-}
 // auto-save to the cloud every 3 minutes while working on the website
 setInterval(() => {
-  if(IS_WEB && cloudReady() && window.__isDirty && (measurements.length || docs.length)
+  if(IS_WEB && cloudReady() && window.__isDirty && (measurements.length || pdfDoc)
      && !document.querySelector(".modalBack.open") && !drawing && !editDrag){
     ghSave(true);
   }
@@ -3909,7 +3100,7 @@ document.getElementById("cloudMenuOpen").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudNew").onclick = () => {
   closeModal("cloudBack");
-  if(measurements.length || categories.length || docs.length) askNewProject();
+  if(measurements.length || categories.length || pdfDoc) askNewProject();
   else toast("Fresh project — drop a PDF or switch to Map");
 };
 document.getElementById("cloudSettings").onclick = () => { closeModal("cloudBack"); updateGate("setup"); };
@@ -3918,115 +3109,153 @@ document.getElementById("cloudSignout").onclick = () => {
   closeModal("cloudBack"); toast("Storage disconnected");
 };
 document.getElementById("cloudSaveBtn").onclick = async () => {
-  if(!measurements.length && !docs.length && !categories.length){ toast("Nothing to save yet"); return; }
+  if(!measurements.length && !pdfDoc && !categories.length){ toast("Nothing to save yet"); return; }
   projectName = document.getElementById("cloudName").value.trim() || defaultProjectName();
   syncTitle();
   const b = document.getElementById("cloudSaveBtn");
   b.disabled = true; b.textContent = "Saving…";
-  if(await ghSave(false)) loadCloudList();
+  if(await ghSave(false)) renderCloudList();
   b.disabled = false; b.textContent = "Save to cloud";
 };
-async function ghRenameProject(name, newBase, typed){
-  const oldBase = name.replace(/\.json$/, "");
-  const d = JSON.parse(await (await ghRaw(name)).text());
-  const listing = await ghList();
-  const shaOf = n => { const f = listing.find(x => x.name===n); return f ? f.sha : null; };
-  const entries = Array.isArray(d.docs) ? d.docs : (d.pdfRef ? [{id:"d1", ref:d.pdfRef, parts:d.pdfParts||0}] : []);
-  const oldFiles = [], moved = {};
-  for(const e of entries){
-    if(!e.ref) continue;
-    const to = docRef(newBase, e.id);
-    if(to===e.ref) continue;
-    const from = refFiles(e.ref, e.parts||0), dest = refFiles(to, e.parts||0);
-    try{
-      for(let i=0; i<from.length; i++){
-        const buf = await (await ghRaw(from[i])).arrayBuffer();
-        await ghPutSafe(dest[i], bufToB64(buf), shaOf(dest[i]));
-      }
-      oldFiles.push(...from); moved[e.id] = to; e.ref = to;
-    }catch{ /* leave this plan where it is — the job keeps pointing at it */ }
-  }
-  if(Array.isArray(d.docs)){ if(d.docs[0]){ d.pdfRef = d.docs[0].ref || undefined; d.pdfParts = d.docs[0].parts || undefined; } }
-  else if(entries[0]) d.pdfRef = entries[0].ref;
-  d.projectName = typed;
-  await ghPutSafe(newBase+".json", txtToB64(JSON.stringify(d)), shaOf(newBase+".json"));
-  await ghDel(name, shaOf(name));
-  for(const n of oldFiles) await ghDel(n, shaOf(n));
-  // renamed the job that's open right now? follow it, so the next save doesn't bring the old name back
-  if(slug(defaultProjectName())===oldBase){
-    projectName = typed; syncTitle();
-    for(const id in moved){ const st = docStore.get(id); if(st) st.ref = moved[id]; }
-  }
-}
-async function ghDeleteProject(name){
-  const base = name.replace(/\.json$/, "");
-  const listing = await ghList();
-  const f = listing.find(x => x.name===name);
-  if(!f) throw new Error("gone");
-  const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
-    {method:"DELETE", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:"delete: "+name, sha:f.sha})});
-  if(!r.ok) throw new Error("delete "+r.status);
-  const gone = [];
-  for(const x of listing){
-    if(x.type==="file" && ownsFile(base, x.name)){ await ghDel(x.name, x.sha); gone.push(x.name); }
-  }
-  forgetRefs(gone);
-}
 document.getElementById("cloudList").addEventListener("click", async e => {
   const row = e.target.closest(".vrow"); if(!row) return;
-  const name = row.dataset.n;
+  const name = row.dataset.n, sha = row.dataset.sha;
   const act = e.target.dataset && e.target.dataset.act;
   if(act==="open"){
     toast("Opening…");
-    let d;
-    try{ d = JSON.parse(await (await ghRaw(name)).text()); }
-    catch{ toast("Could not open that project"); return; }
-    closeModal("cloudBack");
-    await saveBeforeSwitch(name);
     try{
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {headers:{Accept:"application/vnd.github.raw"}});
+      if(!r.ok) throw 0;
+      const d = JSON.parse(await r.text());
       fileHandle = null;
+      pushHistory();
       applyProject(d);
-      if(!projectName){ projectName = name.replace(/\.json$/, "").replace(/-/g, " "); syncTitle(); }
-      if(d.pdfB64 && !Array.isArray(d.docs)){ try{ docStoreOf("d1").data = b64ToBuf(d.pdfB64); }catch{} }
-      await openLoadedProject(d, "Project loaded");
+      closeModal("cloudBack");
+      if(d.pdfB64){
+        try{ await loadPdfBytes(b64ToBuf(d.pdfB64), d.pdfName||"plan.pdf"); setMode("pdf"); toast("Project loaded — PDF included"); }
+        catch{ toast("Project loaded, but the embedded PDF couldn't be read"); }
+      } else if(d.pdfRef && d.pdfParts){
+        loadedPdfRef = {ref:d.pdfRef, base:name.replace(/\.json$/,""), parts:d.pdfParts};
+        try{
+          const bufs = [];
+          for(let i=1;i<=d.pdfParts;i++){
+            toast("Loading plan PDF — part "+i+" of "+d.pdfParts+"…");
+            const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef+".p"+i)),
+              {headers:{Accept:"application/vnd.github.raw"}});
+            if(!pr.ok) throw 0;
+            bufs.push(new Uint8Array(await pr.arrayBuffer()));
+          }
+          const total = bufs.reduce((a,b)=>a+b.length,0);
+          const all = new Uint8Array(total);
+          let off = 0; for(const b of bufs){ all.set(b, off); off += b.length; }
+          await loadPdfBytes(all.buffer, d.pdfName||"plan.pdf");
+          setMode("pdf");
+          lastPdfUp = {file:d.pdfRef, bytes:pdfData.byteLength};
+          toast("Project loaded — PDF included");
+        }catch{ toast("Project loaded, but the plan PDF couldn't be fetched"); }
+      } else if(d.pdfRef){
+        loadedPdfRef = {ref:d.pdfRef, base:name.replace(/\.json$/,"")};
+        toast("Loading plan PDF…");
+        try{
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+            {headers:{Accept:"application/vnd.github.raw"}});
+          if(!pr.ok) throw 0;
+          await loadPdfBytes(await pr.arrayBuffer(), d.pdfName||"plan.pdf");
+          setMode("pdf");
+          lastPdfUp = {file:d.pdfRef, bytes:pdfData.byteLength};
+          toast("Project loaded — PDF included");
+        }catch{ toast("Project loaded, but the plan PDF couldn't be fetched"); }
+      } else {
+        toast("Project loaded"+(d.pdfName ? " — open "+d.pdfName+" to see plan markups" : ""));
+      }
+      window.__isDirty = false;
     }catch{ toast("Could not open that project"); }
-    window.__isDirty = false;
   } else if(act==="ren"){
-    cloudRen = name; cloudArm = null; drawCloudList();
-    const inp = document.querySelector("#cloudList .rnIn");
-    if(inp){ inp.focus(); inp.select(); }
+    cloudRen = name; cloudArm = null;
+    renderCloudList().then(()=>{
+      const inp = document.querySelector("#cloudList .rnIn");
+      if(inp){ inp.focus(); inp.select(); }
+    });
   } else if(act==="rencancel"){
-    cloudRen = null; drawCloudList();
+    cloudRen = null; renderCloudList();
   } else if(act==="rensave"){
     const inp = row.querySelector(".rnIn");
     const typed = (inp && inp.value || "").trim();
     const newBase = slug(typed);
     if(!newBase){ toast("Type a name"); return; }
-    if(newBase+".json"===name){ cloudRen = null; drawCloudList(); return; }
-    if(cloudItems && cloudItems.some(x => x.name===newBase+".json")){ toast("There's already a project with that name"); return; }
+    const newJson = newBase+".json";
+    if(newJson===name){ cloudRen = null; renderCloudList(); return; }
     toast("Renaming…");
     try{
-      await cloudSerial(() => ghRenameProject(name, newBase, typed));
-      cloudRen = null; toast('Renamed to "'+typed+'"');
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {headers:{Accept:"application/vnd.github.raw"}});
+      if(!r.ok) throw 0;
+      const d = JSON.parse(await r.text());
+      if(d.pdfRef){
+        try{
+          const pr = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+            {headers:{Accept:"application/vnd.github.raw"}});
+          if(pr.ok){
+            const pbuf = await pr.arrayBuffer();
+            const npdf = newBase+".pdf";
+            const ps = await ghShaOf(npdf);
+            const pb = {message:"save: "+npdf, content:bufToB64(pbuf)};
+            if(ps) pb.sha = ps;
+            const pput = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(npdf)),
+              {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(pb)});
+            if(pput.ok){
+              const osha = await ghShaOf(d.pdfRef);
+              if(osha) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(d.pdfRef)),
+                {method:"DELETE", headers:{"Content-Type":"application/json"},
+                 body:JSON.stringify({message:"delete: "+d.pdfRef, sha:osha})});
+              d.pdfRef = npdf;
+            }
+          }
+        }catch{}
+      }
+      d.projectName = typed;
+      const jsha = await ghShaOf(newJson);
+      const body = {message:"save: "+newJson, content:txtToB64(JSON.stringify(d))};
+      if(jsha) body.sha = jsha;
+      const rput = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(newJson)),
+        {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+      if(!rput.ok) throw 0;
+      const osha2 = await ghShaOf(name);
+      if(osha2) await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {method:"DELETE", headers:{"Content-Type":"application/json"},
+         body:JSON.stringify({message:"delete: "+name, sha:osha2})});
+      cloudRen = null; renderCloudList(); toast('Renamed to "'+typed+'"');
     }catch{ toast("Rename failed"); }
-    loadCloudList();
   } else if(act==="del"){
-    if(cloudArm!==name){ cloudArm = name; drawCloudList(); return; }
-    toast("Deleting…");
+    if(cloudArm!==name){ cloudArm = name; renderCloudList(); return; }
     try{
-      await cloudSerial(() => ghDeleteProject(name));
-      cloudArm = null; toast("Deleted from cloud");
+      toast("Deleting…");
+      const fsha = (await ghShaOf(name)) || sha;
+      const r = await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(name)),
+        {method:"DELETE", headers:{"Content-Type":"application/json"},
+         body: JSON.stringify({message:"delete: "+name, sha:fsha})});
+      if(!r.ok) throw r.status;
+      const base = name.replace(/\.json$/,"");
+      try{
+        const l = await ghFetch(ghRepoPath("/contents/"));
+        if(l.ok){
+          for(const f of await l.json()){
+            if(f.name===base+".pdf" || f.name.indexOf(base+".pdf.p")===0){
+              await ghFetch(ghRepoPath("/contents/"+encodeURIComponent(f.name)),
+                {method:"DELETE", headers:{"Content-Type":"application/json"},
+                 body: JSON.stringify({message:"delete: "+f.name, sha:f.sha})});
+            }
+          }
+        }
+      }catch{}
+      cloudArm = null; renderCloudList(); toast("Deleted from cloud");
     }catch{ toast("Delete failed"); }
-    loadCloudList();
   }
 });
 document.getElementById("cloudBack").addEventListener("keydown", e => {
   if(e.key==="Escape") closeModal("cloudBack");
   if(e.key==="Enter" && e.target.id==="cloudName") document.getElementById("cloudSaveBtn").click();
-  if(e.key==="Enter" && e.target.id==="cloudSearch"){
-    const first = document.querySelector('#cloudList .vrow [data-act="open"]');
-    if(first) first.click();
-  }
   if(e.key==="Enter" && e.target.classList && e.target.classList.contains("rnIn")){
     const row = e.target.closest(".vrow");
     const b = row && row.querySelector('[data-act="rensave"]');
@@ -4046,88 +3275,9 @@ document.getElementById("setDisc").onclick = () => {
   storeDel(TOKEN_KEY); storeDel(GH_OWNER_KEY);
   toast("Storage disconnected on this device");
 };
-// ---- Google address search key (optional) ----
-const GKEY_PATH = "/contents/config/google-key.txt";   // kept in the private storage so every computer gets it
-async function syncSearchKey(){
-  if(gKey || !cloudReady()) return;
-  try{
-    if(!(await ghList()).some(x => x.type==="dir" && x.name==="config")) return;
-    const r = await ghFetch(ghRepoPath(GKEY_PATH), {headers:{Accept:"application/vnd.github.raw"}});
-    if(!r.ok) return;
-    const k = (await r.text()).trim();
-    if(/^AIza[\w-]{30,}$/.test(k)){ gKey = k; storeSet(GKEY_KEY, k); }
-  }catch{}
-}
-async function saveSearchKey(k){
-  gKey = k; gBroken = false;
-  if(k) storeSet(GKEY_KEY, k); else storeDel(GKEY_KEY);
-  if(!cloudReady()) return;
-  try{
-    let sha = null;
-    if((await ghList()).some(x => x.type==="dir" && x.name==="config")){
-      const g = await ghFetch(ghRepoPath(GKEY_PATH));
-      if(g.ok) sha = (await g.json()).sha;
-    }
-    if(k){
-      const body = {message:"settings: search key", content:txtToB64(k)};
-      if(sha) body.sha = sha;
-      await ghFetch(ghRepoPath(GKEY_PATH), {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
-    } else if(sha){
-      await ghFetch(ghRepoPath(GKEY_PATH), {method:"DELETE", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:"settings: remove search key", sha})});
-    }
-  }catch{}
-}
-function gkeySay(t, bad){
-  const msg = document.getElementById("gkeyMsg");
-  msg.textContent = t; msg.style.color = bad ? "#e5493a" : "var(--dim)"; msg.style.display = "";
-}
-document.getElementById("setGkey").onclick = () => {
-  const inp = document.getElementById("gkeyIn");
-  inp.value = gKey;
-  gkeySay(gKey ? (gBroken ? "Google rejected the saved key — search is using Esri for now." : "Google search is on.")
-    : "Using the built-in search (Esri).");
-  document.getElementById("gkeyClear").style.display = gKey ? "" : "none";
-  openModal2("gkeyBack");
-  inp.focus(); inp.select();
-};
-document.getElementById("gkeyCancel").onclick = () => closeModal("gkeyBack");
-document.getElementById("gkeyClear").onclick = async () => {
-  await saveSearchKey("");
-  closeModal("gkeyBack");
-  toast("Google key removed — using the built-in search");
-};
-document.getElementById("gkeySave").onclick = async () => {
-  const k = document.getElementById("gkeyIn").value.trim();
-  const btn = document.getElementById("gkeySave");
-  if(!/^AIza[\w-]{30,}$/.test(k)){ gkeySay("That doesn't look like a Google API key — they start with AIza…", true); return; }
-  if(gLoadedKey && gLoadedKey!==k){
-    await saveSearchKey(k);
-    gkeySay("Saved. Reload the page to switch to the new key.");
-    return;
-  }
-  btn.disabled = true; gkeySay("Testing the key with Google…");
-  const prev = gKey; gKey = k; gBroken = false;
-  try{
-    const res = await googleSuggest("Yonkers NY");
-    if(gBroken || !res.length) throw new Error(gBroken ? "key rejected" : "no results");
-    await saveSearchKey(k);
-    closeModal("gkeyBack");
-    toast("Google search is on");
-  }catch(e){
-    gKey = prev;
-    gkeySay("Google didn't accept it ("+(e && e.message || "error")+"). Turn on “Maps JavaScript API” and “Places API (New)” for this key and allow this site under its website restrictions, then reload the page and try again.", true);
-  }
-  btn.disabled = false;
-};
-document.getElementById("gkeyBack").addEventListener("keydown", e => {
-  if(e.key==="Enter") document.getElementById("gkeySave").click();
-  if(e.key==="Escape") closeModal("gkeyBack");
-});
-
 updateGate();
 // always land on the projects list when the storage is already connected
-if(cloudReady() && (!IS_WEB || gateOn())){ setTimeout(openCloud, 400); syncSearchKey(); }
+if(cloudReady() && (!IS_WEB || gateOn())) setTimeout(openCloud, 400);
 
 setTool("select");
 refreshCatSelect();
