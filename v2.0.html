@@ -428,7 +428,7 @@
 
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>2.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
@@ -558,11 +558,11 @@
   </button>
   <button class="tool" data-tool="line" aria-label="Linear measure">
     <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M6.2 17.8L17.8 6.2"/></svg>
-    <span class="tip" id="tipLine">Linear — LF (L)</span>
+    <span class="tip">Linear — LF (L)</span>
   </button>
   <button class="tool" data-tool="area" aria-label="Area measure">
     <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
-    <span class="tip" id="tipArea">Area — SF (A)</span>
+    <span class="tip">Area — SF (A)</span>
   </button>
   <button class="tool" data-tool="count" aria-label="Count items">
     <svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="17" r="2"/></svg>
@@ -639,8 +639,13 @@
 <div class="modalBack" id="customBack">
   <div class="modal">
     <h3>Custom scale</h3>
-    <p id="cusIntro">Enter your own scale: how many inches on paper equal how much real distance.</p>
-    <div class="exgrid" id="cusEx"></div>
+    <p>Enter your own scale: how many inches on paper equal how much real distance.</p>
+    <div class="exgrid">
+      <button data-p="1" data-f="15" data-i="0">1" = 15'</button>
+      <button data-p="1" data-f="25" data-i="0">1" = 25'</button>
+      <button data-p="0.09375" data-f="1" data-i="0">3/32" = 1'</button>
+      <button data-p="1" data-f="200" data-i="0">1" = 200'</button>
+    </div>
     <div class="frow"><label for="cusPaper">Paper (inches)</label><input type="number" id="cusPaper" min="0" step="any" placeholder='e.g. 1 or 0.25'></div>
     <div class="frow"><label for="cusFt">Real feet</label><input type="number" id="cusFt" min="0" step="any" placeholder="e.g. 15"></div>
     <div class="frow"><label for="cusIn">Real inches</label><input type="number" id="cusIn" min="0" step="any" placeholder="0"></div>
@@ -699,12 +704,12 @@
       <div class="swRow" id="ceColors" style="margin-bottom:0"></div>
     </div>
     <div class="frow"><label for="ceParent">Inside of</label><select id="ceParent" style="flex:1"></select></div>
-    <div class="frow"><label for="ceDepth" id="ceDepthLbl">Depth (in)</label><input type="number" id="ceDepth" min="0" step="any" placeholder="optional — e.g. 3 for mulch"></div>
+    <div class="frow"><label for="ceDepth">Depth (in)</label><input type="number" id="ceDepth" min="0" step="any" placeholder="optional — e.g. 3 for mulch"></div>
     <div class="frow"><label for="ceWaste">Waste %</label><input type="number" id="ceWaste" min="0" step="any" placeholder="optional — e.g. 10"></div>
     <div class="frow" style="align-items:flex-start"><label style="padding-top:6px" for="ceNotes">Notes</label>
       <textarea id="ceNotes" placeholder="Scope notes — included in Copy for LMN"></textarea>
     </div>
-    <p id="ceHelp" style="margin:2px 0 10px; font-size:11px;">Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.</p>
+    <p style="margin:2px 0 10px; font-size:11px;">Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.</p>
     <div class="actions" style="justify-content:space-between">
       <button class="btn danger" id="ceDelete">Delete category</button>
       <span style="display:flex; gap:8px">
@@ -785,10 +790,8 @@
     <button id="gClose" class="btn" style="position:absolute;top:10px;right:10px;display:none">✕</button>
     <h3 style="font-size:16px">PLAN<span style="color:var(--amber)">TAKEOFF</span></h3>
     <div id="gSetup" style="display:none">
-      <p>Paste the storage access code (the ghp_… code from GitHub).</p>
-      <div class="frow"><label for="gKey">Access code</label><input type="text" id="gKey" placeholder="ghp_…" autocomplete="off" spellcheck="false"></div>
-      <label id="gRememberRow" style="display:flex;gap:8px;align-items:center;font-size:12px;margin:0 0 10px;cursor:pointer">
-        <input type="checkbox" id="gRemember" checked> Remember it with my password on every computer</label>
+      <p>One-time setup — paste the storage access code (the ghp_… code from GitHub).</p>
+      <div class="frow"><label for="gKey">Access code</label><input type="text" id="gKey" placeholder="ghp_…"></div>
       <div id="gSetErr" style="color:#e5493a;font-size:12px;margin:0 0 10px;display:none"></div>
       <div class="actions"><button class="btn primary" id="gSetupGo">Connect</button></div>
     </div>
@@ -806,9 +809,6 @@
   <button class="mi" id="setTheme">🌙 Dark / light mode</button>
   <button class="mi" id="setInvert">🌓 Invert plan colors</button>
   <button class="mi" id="setHelp">⌨️ Tools &amp; shortcuts</button>
-  <div class="ph">UNITS</div>
-  <button class="mi" id="setUnitsUS">✓ US — feet (LF · SF · CY)</button>
-  <button class="mi" id="setUnitsMetric">Metric — metres (m · m² · m³)</button>
   <div class="ph">SEARCH</div>
   <button class="mi" id="setGkey">🔎 Google address search…</button>
   <div class="ph">STORAGE</div>
@@ -872,7 +872,7 @@ function ftIn(ft){
   if(i===12) return (f+1)+"'-0\"";
   return f+"'-"+i+"\"";
 }
-function fmtLen(ft){ return isMetric() ? (ft*FT_M).toFixed(3)+" m" : ft.toFixed(2)+" LF ("+ftIn(ft)+")"; }
+function fmtLen(ft){ return ft.toFixed(2)+" LF ("+ftIn(ft)+")"; }
 function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
 function pathLen(pts){ let d=0; for(let i=1;i<pts.length;i++) d+=dist(pts[i-1],pts[i]); return d; }
 function pointInPoly(p, pts){
@@ -932,23 +932,7 @@ function measurePerim(m){
   const fpu = getFPU(m.page, m.doc);
   return fpu==null ? null : pathLen([...m.pts, m.pts[0]])*fpu;
 }
-// ---- units: everything is stored in feet / inches; metric only changes what's shown and typed ----
-const UNITS_KEY = "plantakeoff_units";
-let units = storeGet(UNITS_KEY)==="metric" ? "metric" : "us";
-const isMetric = () => units==="metric";
-const FT_M = 0.3048, SF_M2 = 0.09290304, CY_M3 = 0.764554857984, IN_CM = 2.54;
-const uLen = () => isMetric() ? "m" : "LF";
-const uArea = () => isMetric() ? "m²" : "SF";
-const uVol = () => isMetric() ? "m³" : "CY";
-function unitOf(t){ return t==="line" ? uLen() : t==="area" ? uArea() : "EA"; }
-// d = decimals in US units; metric gets one more (a metre is ~3 ft, a m² ~11 SF)
-function nLen(ft, d){ return (isMetric() ? ft*FT_M : ft).toFixed(d + (isMetric() ? 1 : 0)); }
-function nArea(sf, d){ return (isMetric() ? sf*SF_M2 : sf).toFixed(d + (isMetric() ? 1 : 0)); }
-function fLen(ft, d){ return nLen(ft, d)+" "+uLen(); }
-function fArea(sf, d){ return nArea(sf, d)+" "+uArea(); }
-function fVol(cy, d){ return (isMetric() ? cy*CY_M3 : cy).toFixed(d)+" "+uVol(); }
-function fQty(type, v, dl, da){ return type==="count" ? v+" EA" : type==="line" ? fLen(v, dl) : fArea(v, da); }
-function fDepth(inch){ return isMetric() ? +(inch*IN_CM).toFixed(1)+" cm" : +(+inch).toFixed(2)+'"'; }
+function unitOf(t){ return t==="line"?"LF":t==="area"?"SF":"EA"; }
 function toast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
@@ -1160,7 +1144,8 @@ function enableBodyDrag(layer, m){
       m.pts = orig.map(p=>({lat:p.lat+dLat, lng:p.lng+dLng}));
       layer.setLatLngs(m.pts); moved = true;
       const v = measureValue(m);
-      document.getElementById("liveVal").textContent = fQty(m.type, v, 1, 0);
+      document.getElementById("liveVal").textContent =
+        m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
     };
     const up = () => {
       map.off("mousemove", mv); map.off("mouseup", up);
@@ -1194,12 +1179,12 @@ function redrawMapLayers(){
     const style = {color:m.color, weight:hot?4:3, opacity:.95};
     if(m.type==="line" && m.pts.length>1){
       const pl = L.polyline(m.pts, style).addTo(mapLayerGroup);
-      pl.bindTooltip(m.name+" — "+fLen(geoPathFt(m.pts), 1), {sticky:true});
+      pl.bindTooltip(m.name+" — "+geoPathFt(m.pts).toFixed(1)+" LF", {sticky:true});
       pl.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); }
     } else if(m.type==="area" && m.pts.length>2){
       const pg = L.polygon(m.pts, {...style, fillOpacity:.22}).addTo(mapLayerGroup);
-      pg.bindTooltip(m.name+" — "+fArea(geoAreaSF(m.pts), 0), {sticky:true});
+      pg.bindTooltip(m.name+" — "+geoAreaSF(m.pts).toFixed(0)+" SF", {sticky:true});
       pg.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); }
     } else if(m.type==="count"){
@@ -1868,7 +1853,7 @@ function drawMeasure(m, hot, lw, ghost){
     if(!ghost && pts.length>1){
       const mid = pts[Math.floor(pts.length/2)] || pts[0];
       const v = measureValue(m);
-      const txt = v==null ? "—" : fQty(m.type, v, 1, 0);
+      const txt = v==null ? "—" : m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
       dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
       const w = dctx.measureText(txt).width;
       dctx.fillStyle = "rgba(20,22,26,.85)";
@@ -1940,7 +1925,8 @@ window.addEventListener("mousemove", e => {
     editDrag.moved = true; requestDraw();
     const v = measureValue(editDrag.m);
     document.getElementById("liveVal").textContent =
-      v==null ? "" : fQty(editDrag.m.type, v, 2, 1);
+      v==null ? "" : editDrag.m.type==="line" ? v.toFixed(2)+" LF" :
+      editDrag.m.type==="area" ? v.toFixed(1)+" SF" : v+" EA";
     return;
   }
   if(panning){
@@ -2246,37 +2232,31 @@ document.querySelectorAll(".modalBack").forEach(mb => {
 });
 document.getElementById("calCancel").onclick = () => { closeModal("calibBack"); calibPts=null; drawOverlay(); };
 document.getElementById("calApply").onclick = () => {
-  const a = parseFloat(document.getElementById("calFt").value)||0;
-  const b = parseFloat(document.getElementById("calIn").value)||0;
-  const real = isMetric() ? (a + b/100)/FT_M : a + b/12;   // feet
+  const ft = parseFloat(document.getElementById("calFt").value)||0;
+  const inch = parseFloat(document.getElementById("calIn").value)||0;
+  const real = ft + inch/12;
   if(real<=0 || !calibPts){ closeModal("calibBack"); return; }
   const d = dist(calibPts[0], calibPts[1]);
   const fpu = real/d;
   calibPts = null; closeModal("calibBack");
-  applyScale(fpu, isMetric() ? "CAL · 1:"+Math.round(fpu*864) : 'CAL · 1" = '+(fpu*72).toFixed(2)+"'");
+  applyScale(fpu, 'CAL · 1" = '+(fpu*72).toFixed(2)+"'");
   setTool("line");
 };
 document.getElementById("calibBack").addEventListener("keydown", e => {
   if(e.key==="Enter") document.getElementById("calApply").click();
   if(e.key==="Escape") document.getElementById("calCancel").click();
 });
-document.getElementById("cusEx").addEventListener("click", e => {
-  const b = e.target.closest("button"); if(!b) return;
-  document.getElementById("cusPaper").value = b.dataset.p;
-  document.getElementById("cusFt").value = b.dataset.f;
-  document.getElementById("cusIn").value = b.dataset.i || 0;
+document.querySelectorAll("#customBack .exgrid button").forEach(b => {
+  b.onclick = () => {
+    document.getElementById("cusPaper").value = b.dataset.p;
+    document.getElementById("cusFt").value = b.dataset.f;
+    document.getElementById("cusIn").value = b.dataset.i;
+  };
 });
 document.getElementById("cusCancel").onclick = () => closeModal("customBack");
 document.getElementById("cusApply").onclick = () => {
   const paper = parseFloat(document.getElementById("cusPaper").value)||0;
   const ft = parseFloat(document.getElementById("cusFt").value)||0;
-  if(isMetric()){
-    if(paper<=0 || ft<=0){ toast("Enter paper centimetres and real metres"); return; }
-    const ratio = ft*100/paper;   // real cm per paper cm
-    closeModal("customBack");
-    applyScale(ratio/864, "1:"+(+ratio.toFixed(2)));
-    return;
-  }
   const inch = parseFloat(document.getElementById("cusIn").value)||0;
   const real = ft + inch/12;
   if(paper<=0 || real<=0){ toast("Enter paper inches and a real length"); return; }
@@ -2314,18 +2294,18 @@ function updateBar(){
   const has = getFPU()!=null;
   chip.classList.toggle("unset", !has);
   let _lbl = scaleLabels[PK()] ?? (docScale[curDocId] ? docScale[curDocId].label : null);
-  if(has && (!_lbl || _lbl==="NOT SET")) _lbl = isMetric() ? "1:"+Math.round(getFPU()*864) : '1" = '+(getFPU()*72).toFixed(2)+"'";
+  if(has && (!_lbl || _lbl==="NOT SET")) _lbl = '1" = '+(getFPU()*72).toFixed(2)+"'";
   document.getElementById("scaleVal").textContent = has ? _lbl : "NOT SET";
 }
 function catSubtotal(items, cat){
   const t = {line:0, area:0, count:0};
   for(const {m,v} of items){ if(v!=null) t[m.type]+=v; }
   const parts = [];
-  if(t.area) parts.push(fArea(t.area, 0));
-  if(t.line) parts.push(fLen(t.line, 1));
+  if(t.area) parts.push(t.area.toFixed(0)+" SF");
+  if(t.line) parts.push(t.line.toFixed(1)+" LF");
   if(t.count) parts.push(t.count+" EA");
   const cy = catCY(cat, t.area);
-  if(cy) parts.push(fVol(cy.withWaste, 1));
+  if(cy) parts.push(cy.withWaste.toFixed(1)+" CY");
   return parts.join(" · ") || "—";
 }
 function filterLabel(){
@@ -2387,7 +2367,7 @@ function renderList(){
       if(typesPresent.size > 1){
         let tot=0; for(const {v} of sub) if(v!=null) tot+=v;
         html += '<div class="typeHead"><span>'+label+'</span><b>'+
-          fQty(t, tot, 1, 0)+'</b></div>';
+          (t==="count"? tot+" EA" : t==="line"? tot.toFixed(1)+" LF" : tot.toFixed(0)+" SF")+'</b></div>';
       }
       for(const {m,v} of sub) html += itemHTML(m, v, isChildCat(g.cat));
     }
@@ -2399,7 +2379,7 @@ function renderList(){
 document.getElementById("measSearch").addEventListener("input", renderList);
 function itemHTML(m, v, child){
   const perim = measurePerim(m);
-  const qty = v==null ? "needs scale" : fQty(m.type, v, 2, 1);
+  const qty = v==null ? "needs scale" : m.type==="count" ? v+" EA" : m.type==="line" ? v.toFixed(2)+" LF" : v.toFixed(1)+" SF";
   const loc = esc2(locLabel(m));
   const catOpts = '<option value="">— no cat —</option>'+
     orderedCats().map(c=>'<option value="'+c.id+'"'+(m.cat===c.id?" selected":"")+'>'+
@@ -2409,7 +2389,7 @@ function itemHTML(m, v, child){
     '<input class="name" value="'+esc2(m.name)+'">'+
     '<button class="del" title="Delete">✕</button></div>'+
     '<div class="row2"><span>'+loc+' · '+unitOf(m.type)+
-    (perim!=null?' <span class="sub">perim '+fLen(perim, 1)+'</span>':'')+
+    (perim!=null?' <span class="sub">perim '+perim.toFixed(1)+' LF</span>':'')+
     '</span><span style="display:flex;gap:6px;align-items:center">'+
     '<button class="iEye'+(hiddenItems.has(m.id)?" off":"")+'" title="Hide / show this measurement on the plan and map">'+(hiddenItems.has(m.id)?"🙈":"👁")+'</button>'+
     '<select class="catSel" title="Move to category">'+catOpts+'</select>'+
@@ -2512,10 +2492,10 @@ function renderTotals(){
     const cy = catCY(c, sf); if(cy) cyTotal += cy.withWaste;
   }
   document.getElementById("totals").innerHTML =
-    '<div class="trow"><span>Total linear</span><b>'+fLen(t.line, 2)+'</b></div>'+
-    '<div class="trow"><span>Total area</span><b>'+fArea(t.area, 1)+'</b></div>'+
+    '<div class="trow"><span>Total linear</span><b>'+t.line.toFixed(2)+' LF</b></div>'+
+    '<div class="trow"><span>Total area</span><b>'+t.area.toFixed(1)+' SF</b></div>'+
     '<div class="trow"><span>Total count</span><b>'+t.count+' EA</b></div>'+
-    (cyTotal>0?'<div class="trow"><span>Material volume</span><b>'+fVol(cyTotal, 1)+'</b></div>':'')+
+    (cyTotal>0?'<div class="trow"><span>Material volume</span><b>'+cyTotal.toFixed(1)+' CY</b></div>':'')+
     (pending?'<div class="trow" style="color:#ff7a6b">Some items need scale</div>':'');
 }
 function updateLive(){
@@ -2525,8 +2505,8 @@ function updateLive(){
   if(drawing){
     if(drawing.src==="map"){
       const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
-      if(drawing.type==="line" && pts.length>1) txt = fLen(geoPathFt(pts), 1);
-      else if(drawing.type==="area" && pts.length>2) txt = fArea(geoAreaSF(pts), 0);
+      if(drawing.type==="line" && pts.length>1) txt = geoPathFt(pts).toFixed(1)+" LF";
+      else if(drawing.type==="area" && pts.length>2) txt = geoAreaSF(pts).toFixed(0)+" SF";
       else if(drawing.type==="count") txt = drawing.pts.length+" EA";
     } else {
       const fpu = getFPU();
@@ -2535,7 +2515,7 @@ function updateLive(){
         txt = fpu!=null && pts.length>1 ? fmtLen(pathLen(pts)*fpu)
           : drawing.type==="calibrate" ? "pick 2 points on a known dimension" : "scale not set";
       } else if(drawing.type==="area"){
-        txt = fpu!=null && pts.length>2 ? fArea(polyArea(pts)*fpu*fpu, 1) : (fpu==null?"scale not set":"");
+        txt = fpu!=null && pts.length>2 ? (polyArea(pts)*fpu*fpu).toFixed(1)+" SF" : (fpu==null?"scale not set":"");
       } else if(drawing.type==="count"){
         txt = drawing.pts.length+" EA";
       }
@@ -2570,34 +2550,16 @@ function drawMeasureOn(ctx, m, sc, k){
     ctx.beginPath(); ctx.arc(p.x,p.y,3*k,0,7);
     ctx.fillStyle="#fff"; ctx.fill(); ctx.fillStyle=m.color; ctx.stroke();
   }
-}
-// labels for canvas renders (print report, locked-PDF fallback), laid out like the PDF export
-function drawLabelsOn(ctx, items, sc, k, W, H){
-  k = k || 1;
-  const fpx = 11*k, fs = fpx/sc, pad = fs*0.35, bh = fs*1.35, r = 9*k/sc;
-  ctx.font = fpx+"px Helvetica, Arial, sans-serif";
-  const reqs = [];
-  for(const m of items){
-    if(m.type!=="count" && m.pts.length<2) continue;
-    const v = measureValue(m);
-    const text = m.name + (v!=null ? " — "+qtyText(m, v) : "");
-    reqs.push({m, text, w:ctx.measureText(text).width/sc + pad*2, h:bh});
-  }
-  const laid = layoutLabels(reqs, W, H, fs*0.5, r, items);
-  for(const q of laid) if(q.leader){   // leader lines first, so they never cross over a label
-    const b = q.box;
-    ctx.strokeStyle = q.m.color; ctx.lineWidth = Math.max(1, 1.5*k);
-    ctx.beginPath(); ctx.moveTo(q.ax*sc, q.ay*sc);
-    ctx.lineTo(clamp(q.ax, b.x, b.x+b.w)*sc, clamp(q.ay, b.y, b.y+b.h)*sc); ctx.stroke();
-    ctx.fillStyle = q.m.color; ctx.beginPath(); ctx.arc(q.ax*sc, q.ay*sc, 2.6*k, 0, 7); ctx.fill();
-  }
-  for(const q of laid){
-    const b = q.box, X = b.x*sc, Y = b.y*sc, BW = b.w*sc, BH = b.h*sc;
-    ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fillRect(X, Y, BW, BH);
-    ctx.strokeStyle = q.m.color; ctx.lineWidth = Math.max(1, 1.1*k); ctx.strokeRect(X, Y, BW, BH);
-    ctx.fillStyle = "#1c1c1f"; ctx.textBaseline = "middle";
-    ctx.fillText(q.text, X + pad*sc, Y + BH/2);
-    ctx.textBaseline = "alphabetic";
+  const v = measureValue(m);
+  if(v!=null && pts.length>1){
+    const mid = pts[Math.floor(pts.length/2)];
+    const lbl = m.name+" — "+(m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF");
+    ctx.font=(11*k)+"px monospace";
+    const w = ctx.measureText(lbl).width;
+    ctx.fillStyle="rgba(255,255,255,.88)";
+    ctx.fillRect(mid.x+5*k, mid.y-15*k, w+8*k, 15*k);
+    ctx.fillStyle=m.color;
+    ctx.fillText(lbl, mid.x+9*k, mid.y-4*k);
   }
 }
 async function pageSnapshot(docId, pageNo){
@@ -2608,10 +2570,11 @@ async function pageSnapshot(docId, pageNo){
   c.width = vp.width; c.height = vp.height;
   const ctx = c.getContext("2d");
   await page.render({canvasContext:ctx, viewport:vp}).promise;
-  const mine = measurements.filter(m => m.src==="pdf" && m.doc===docId && m.page===pageNo &&
-    !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id));
-  for(const m of mine) drawMeasureOn(ctx, m, sc);
-  drawLabelsOn(ctx, mine, sc, 1, vp.width/sc, vp.height/sc);
+  for(const m of measurements){
+    if(m.src!=="pdf" || m.doc!==docId || m.page!==pageNo) continue;
+    if(hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) continue;
+    drawMeasureOn(ctx, m, sc);
+  }
   return c.toDataURL("image/jpeg", 0.82);
 }
 function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
@@ -2636,20 +2599,20 @@ document.getElementById("printBtn").onclick = async () => {
       const v = measureValue(m), p = measurePerim(m);
       if(v!=null) sub[m.type]+=v;
       rows += '<tr><td>'+esc(m.name)+'</td><td>'+esc(locLabel(m, true))+'</td>'+
-        '<td class="r">'+(v==null?"—": fQty(m.type, v, 1, 0))+'</td>'+
-        '<td class="r">'+(p!=null? fLen(p, 1):"")+'</td></tr>';
+        '<td class="r">'+(v==null?"—": m.type==="count"? v+" EA" : m.type==="line"? v.toFixed(1)+" LF" : v.toFixed(0)+" SF")+'</td>'+
+        '<td class="r">'+(p!=null? p.toFixed(1)+" LF":"")+'</td></tr>';
     }
     const cy = catCY(b.cat, sub.area);
     const tParts = [];
-    if(sub.area) tParts.push(fArea(sub.area, 0));
-    if(sub.line) tParts.push(fLen(sub.line, 1));
+    if(sub.area) tParts.push(sub.area.toFixed(0)+" SF");
+    if(sub.line) tParts.push(sub.line.toFixed(1)+" LF");
     if(sub.count) tParts.push(sub.count+" EA");
     body += '<h2><span class="dot" style="background:'+(b.cat?b.cat.color:"#999")+'"></span>'+
       esc(b.cat? catLabel(b.cat) : "Uncategorized")+'</h2>'+
       '<table><tr><th>Item</th><th>Location</th><th class="r">Quantity</th><th class="r">Perimeter</th></tr>'+rows+'</table>'+
       '<div class="sub">Total: '+tParts.join(" · ")+
-      (cy? ' &nbsp;·&nbsp; Material @ '+esc(fDepth(b.cat.depth))+' depth: '+fVol(cy.base, 2)+
-        (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+fVol(cy.withWaste, 2)+')':''):'')+'</div>'+
+      (cy? ' &nbsp;·&nbsp; Material @ '+b.cat.depth+'&quot; depth: '+cy.base.toFixed(2)+' CY'+
+        (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+cy.withWaste.toFixed(2)+' CY)':''):'')+'</div>'+
       (b.cat && b.cat.notes? '<div class="notes">Notes: '+esc(b.cat.notes)+'</div>':'');
   }
   // page snapshots — every plan page that has measurements
@@ -2727,144 +2690,11 @@ function pdfTxt(t){
 }
 function qtyText(m, v){
   if(v==null) return "";
-  return fQty(m.type, v, 1, 0);
+  return m.type==="count" ? v+" EA" : m.type==="line" ? v.toFixed(1)+" LF" : v.toFixed(0)+" SF";
 }
 function exportItems(docId){
   return measurements.filter(m => m.src==="pdf" && m.doc===docId && m.pts && m.pts.length &&
     !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id));
-}
-// ---- label layout ----
-// Keeps labels from piling on top of each other on crowded plans. Works in plan space (pdf.js viewport at
-// scale 1, y down). Each label first tries spots on or right next to its own shape; if those are taken it
-// moves outward ring by ring and gets a thin leader line back to its shape.
-function boxOverlap(a, b){
-  const w = Math.min(a.x+a.w, b.x+b.w) - Math.max(a.x, b.x);
-  const h = Math.min(a.y+a.h, b.y+b.h) - Math.max(a.y, b.y);
-  return w>0 && h>0 ? w*h : 0;
-}
-function interiorSpots(pts, n){
-  let x0=Infinity, y0=Infinity, x1=-Infinity, y1=-Infinity;
-  for(const p of pts){ x0=Math.min(x0,p.x); y0=Math.min(y0,p.y); x1=Math.max(x1,p.x); y1=Math.max(y1,p.y); }
-  const step = Math.max(x1-x0, y1-y0)/14 || 1, out = [];
-  for(let y=y0+step/2; y<y1; y+=step) for(let x=x0+step/2; x<x1; x+=step){
-    const p = {x, y};
-    if(pointInPoly(p, pts)) out.push({x, y, d:distToPath(p, pts, true)});
-  }
-  out.sort((a, b) => b.d - a.d);   // roomiest spots first
-  return out.slice(0, n);
-}
-function labelSpots(m, w, h, g, r){
-  const out = [];
-  const at = (cx, cy, ax, ay) => out.push({x:cx-w/2, y:cy-h/2, ax, ay});   // box centred on cx,cy
-  if(m.type==="area"){
-    const inner = interiorSpots(m.pts, 12);
-    for(const p of inner) at(p.x, p.y, p.x, p.y);
-    if(!inner.length){
-      const cx = m.pts.reduce((a, p) => a+p.x, 0)/m.pts.length, cy = m.pts.reduce((a, p) => a+p.y, 0)/m.pts.length;
-      at(cx, cy, cx, cy);
-    }
-  } else if(m.type==="line"){
-    const segs = [];
-    for(let i=1; i<m.pts.length; i++) segs.push([m.pts[i-1], m.pts[i]]);
-    segs.sort((a, b) => dist(b[0], b[1]) - dist(a[0], a[1]));
-    for(const [a, b] of segs.slice(0, 6)){
-      // beside the line, pushed out along its normal just far enough that the box clears it
-      const L = dist(a, b) || 1, nx = -(b.y-a.y)/L, ny = (b.x-a.x)/L;
-      const e = Math.abs(nx)*w/2 + Math.abs(ny)*h/2 + g, sd = ny <= 0 ? 1 : -1;   // upper side first
-      for(const t of [0.5, 0.3, 0.7, 0.15, 0.85]){
-        const px = a.x+(b.x-a.x)*t, py = a.y+(b.y-a.y)*t;
-        at(px + sd*nx*e, py + sd*ny*e, px, py);
-        at(px - sd*nx*e, py - sd*ny*e, px, py);
-      }
-    }
-  } else {
-    const d = r + g, e = d*0.72;
-    for(const p of m.pts.slice(0, 10)){
-      at(p.x+d+w/2, p.y, p.x, p.y); at(p.x-d-w/2, p.y, p.x, p.y);
-      at(p.x, p.y-d-h/2, p.x, p.y); at(p.x, p.y+d+h/2, p.x, p.y);
-      at(p.x+e+w/2, p.y-e-h/2, p.x, p.y); at(p.x+e+w/2, p.y+e+h/2, p.x, p.y);
-      at(p.x-e-w/2, p.y-e-h/2, p.x, p.y); at(p.x-e-w/2, p.y+e+h/2, p.x, p.y);
-    }
-  }
-  return out;
-}
-// reqs: [{m, w, h, …}] → each gets box {x,y,w,h}, its anchor ax/ay on the shape, and leader true/false.
-// all = every measurement drawn on the page: labels keep clear of their outlines and count dots too.
-function layoutLabels(reqs, W, H, g, r, all){
-  all = all || reqs.map(q => q.m);
-  const h0 = reqs.length ? reqs[0].h : 12;
-  const cell = Math.max(8, h0*3), grid = new Map();
-  let stamp = 0;
-  const cellsOf = (b, fn) => {
-    const c0 = Math.floor(b.x/cell), c1 = Math.floor((b.x+b.w)/cell);
-    const r0 = Math.floor(b.y/cell), r1 = Math.floor((b.y+b.h)/cell);
-    for(let i=c0; i<=c1; i++) for(let j=r0; j<=r1; j++) fn(i+","+j);
-  };
-  const add = o => cellsOf(o, key => { let a = grid.get(key); if(!a) grid.set(key, a = []); a.push(o); });
-  const room = g*0.6;   // breathing room between labels
-  // lab = overlap with other labels (never wanted), cov = other shapes' lines / dots covered (avoid if possible)
-  const score = (b, owner) => {
-    const big = {x:b.x-room, y:b.y-room, w:b.w+2*room, h:b.h+2*room};
-    const s = ++stamp; let lab = 0, cov = 0, own = 0;
-    cellsOf(big, key => { const a = grid.get(key); if(a) for(const o of a){
-      if(o._s===s) continue; o._s = s;
-      const v = boxOverlap(o.lab ? big : b, o); if(!v) continue;
-      if(o.lab) lab += v; else if(o.owner!==owner) cov += o.wt; else own += o.wt;
-    } });
-    return {lab, cov, s: lab*1000 + cov + own*0.25};   // covering its own shape is fine, just less nice
-  };
-  const fit = (x, y, w, h) => ({x:clamp(x, 0, Math.max(0, W-w)), y:clamp(y, 0, Math.max(0, H-h)), w, h});
-  // what labels keep clear of: points along every outline, and the count dots (weighted more)
-  const step = Math.max(h0*0.5, 2);
-  for(const m of all){
-    if(!m.pts || !m.pts.length) continue;
-    if(m.type==="count"){ for(const p of m.pts) add({x:p.x-r, y:p.y-r, w:2*r, h:2*r, owner:m.id, wt:3}); continue; }
-    const pts = m.type==="area" && m.pts.length>2 ? [...m.pts, m.pts[0]] : m.pts;
-    for(let i=1; i<pts.length; i++){
-      const a = pts[i-1], b = pts[i], n = Math.max(1, Math.ceil(dist(a, b)/step));
-      for(let k=0; k<=n; k++) add({x:a.x+(b.x-a.x)*k/n-0.5, y:a.y+(b.y-a.y)*k/n-0.5, w:1, h:1, owner:m.id, wt:1});
-    }
-  }
-  // middle of everything, so labels pushed out of a crowd fan outward from it
-  const anchorOf = m => m.type==="area" ? {x:m.pts.reduce((a, p) => a+p.x, 0)/m.pts.length, y:m.pts.reduce((a, p) => a+p.y, 0)/m.pts.length}
-    : m.type==="line" ? m.pts[Math.floor((m.pts.length-1)/2)] : m.pts[0];
-  let cx0 = W/2, cy0 = H/2;
-  if(reqs.length){
-    cx0 = 0; cy0 = 0;
-    for(const q of reqs){ const a = anchorOf(q.m); cx0 += a.x; cy0 += a.y; }
-    cx0 /= reqs.length; cy0 /= reqs.length;
-  }
-  // the tightest shapes pick first: counts, then short lines, then small areas
-  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(m.pts) : Math.sqrt(polyArea(m.pts));
-  const order = reqs.map((q, i) => ({q, i, s:size(q.m)})).sort((a, b) => a.s - b.s || a.i - b.i);
-  for(const {q} of order){
-    const {w, h} = q, id = q.m.id;
-    const spots = labelSpots(q.m, w, h, g, r);
-    let best = null, bs = null;
-    const consider = (b, ax, ay, near) => { const sc = score(b, id); if(!bs || sc.s < bs.s){ bs = sc; best = {b, ax, ay, near}; } return sc; };
-    for(const sp of spots) consider(fit(sp.x, sp.y, w, h), sp.ax, sp.ay, true);
-    // on or beside its own shape is best — unless it would cover another label or a lot of other linework
-    if(spots.length && !(bs && bs.lab===0 && bs.cov<=2)){
-      const ax = spots[0].ax, ay = spots[0].ay, stepR = h*1.25 + g;
-      const t0 = Math.atan2(ay - cy0, ax - cx0);   // head away from the crowd first
-      ring: for(let k=1; k<=18; k++){
-        const n = 8 + k*4;
-        for(let j=0; j<n; j++){
-          const t = t0 + (j===0 ? 0 : (j%2 ? (j+1)/2 : -j/2))*(Math.PI*2/n);
-          const b = fit(ax + Math.cos(t)*(k*stepR + w/2) - w/2, ay + Math.sin(t)*k*stepR - h/2, w, h);
-          const sc = consider(b, ax, ay, false);
-          if(sc.lab===0 && sc.cov===0) break ring;
-        }
-      }
-    }
-    if(!best){ const b = fit(0, 0, w, h); best = {b, ax:b.x, ay:b.y}; }
-    add({...best.b, lab:true, owner:id});
-    q.box = best.b; q.ax = best.ax; q.ay = best.ay;
-    const dx = Math.max(best.b.x - best.ax, 0, best.ax - (best.b.x+best.b.w));
-    const dy = Math.max(best.b.y - best.ay, 0, best.ay - (best.b.y+best.b.h));
-    q.leader = !best.near && Math.hypot(dx, dy) > (q.m.type==="count" ? r : 0) + g*2.5;   // moved away → line back
-  }
-  return reqs;
 }
 // vp = the pdf.js page viewport at scale 1 (the space measurements are stored in), rot = page rotation.
 // Shapes are laid out in on-screen space and mapped into the PDF with vp.convertToPdfPoint; text and
@@ -2874,12 +2704,23 @@ function drawPageMarkups(L, page, items, vp, rot, font){
   const minSide = Math.min(vp.width, vp.height);
   const lw = clamp(minSide/650, 0.9, 3.5), fs = clamp(minSide/100, 7, 16);
   const ang = L.degrees(rot||0), white = L.rgb(1,1,1), ink = L.rgb(0.11,0.11,0.12);
-  const r = fs*0.8, pad = fs*0.35, bh = fs*1.35;
-  // shapes first, so every label sits on top
+  const label = (txt, ax, ay, col, centered) => {
+    txt = pdfTxt(txt); if(!txt) return;
+    const pad = fs*0.35, bh = fs*1.35, bw = font.widthOfTextAtSize(txt, fs) + pad*2;
+    const bx = centered ? ax - bw/2 : ax + fs*0.45;     // box bottom-left corner, on-screen coords (y down)
+    const by = centered ? ay + bh/2 : ay - fs*0.2;
+    const c0 = P(bx, by);
+    page.drawRectangle({x:c0.x, y:c0.y, width:bw, height:bh, rotate:ang, color:white, opacity:0.9,
+      borderColor:col, borderWidth:lw*0.6, borderOpacity:0.95});
+    const t0 = P(bx + pad, by - (bh - fs*0.72)/2);
+    page.drawText(txt, {x:t0.x, y:t0.y, size:fs, font, color:ink, rotate:ang});
+  };
   for(const m of items){
     const col = pdfColor(L, m.color);
+    const v = measureValue(m);
+    const txt = m.name + (v!=null ? " — "+qtyText(m, v) : "");
     if(m.type==="count"){
-      const ts = fs*0.8;
+      const r = fs*0.8, ts = fs*0.8;
       m.pts.forEach((p, i) => {
         const c = P(p.x, p.y);
         page.drawCircle({x:c.x, y:c.y, size:r, color:col, opacity:0.28, borderColor:col, borderWidth:lw, borderOpacity:1});
@@ -2887,6 +2728,7 @@ function drawPageMarkups(L, page, items, vp, rot, font){
         const t0 = P(p.x - w/2, p.y + ts*0.36);
         page.drawText(n, {x:t0.x, y:t0.y, size:ts, font, color:ink, rotate:ang});
       });
+      label(txt, m.pts[0].x + r, m.pts[0].y - r, col);
       continue;
     }
     if(m.pts.length < 2) continue;
@@ -2896,29 +2738,13 @@ function drawPageMarkups(L, page, items, vp, rot, font){
     if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
     else page.drawSvgPath(d, {x:0, y:0, borderColor:col, borderWidth:lw, borderOpacity:0.95});
     for(const q of pts) page.drawCircle({x:q.x, y:q.y, size:lw*1.15, color:white, borderColor:col, borderWidth:lw*0.6});
-  }
-  // labels, spread out so they don't cover each other
-  const reqs = [];
-  for(const m of items){
-    if(m.type!=="count" && m.pts.length<2) continue;
-    const v = measureValue(m);
-    const text = pdfTxt(m.name + (v!=null ? " — "+qtyText(m, v) : ""));
-    if(text) reqs.push({m, text, w:font.widthOfTextAtSize(text, fs) + pad*2, h:bh});
-  }
-  const laid = layoutLabels(reqs, vp.width, vp.height, fs*0.5, r, items);
-  for(const q of laid) if(q.leader){   // leader lines first, so they never cross over a label
-    const col = pdfColor(L, q.m.color), b = q.box;
-    const s0 = P(q.ax, q.ay), e0 = P(clamp(q.ax, b.x, b.x+b.w), clamp(q.ay, b.y, b.y+b.h));
-    page.drawLine({start:s0, end:e0, thickness:lw*0.8, color:col, opacity:0.95});
-    page.drawCircle({x:s0.x, y:s0.y, size:lw*1.4, color:col});
-  }
-  for(const q of laid){
-    const col = pdfColor(L, q.m.color), b = q.box;
-    const c0 = P(b.x, b.y + b.h);   // box bottom-left, on-screen coords (y down)
-    page.drawRectangle({x:c0.x, y:c0.y, width:b.w, height:b.h, rotate:ang, color:white, opacity:0.92,
-      borderColor:col, borderWidth:lw*0.6, borderOpacity:0.95});
-    const t0 = P(b.x + pad, b.y + b.h - (b.h - fs*0.72)/2);
-    page.drawText(q.text, {x:t0.x, y:t0.y, size:fs, font, color:ink, rotate:ang});
+    if(m.type==="area"){
+      const cx = m.pts.reduce((a, p) => a+p.x, 0)/m.pts.length, cy = m.pts.reduce((a, p) => a+p.y, 0)/m.pts.length;
+      label(txt, cx, cy, col, true);
+    } else {
+      const k = Math.max(1, Math.floor(m.pts.length/2)), a = m.pts[k-1], b = m.pts[k];
+      label(txt, (a.x+b.x)/2, (a.y+b.y)/2, col);
+    }
   }
 }
 function addSummaryPages(L, pdf, font, bold, items, subtitle){
@@ -2973,13 +2799,13 @@ function addSummaryPages(L, pdf, font, bold, items, subtitle){
       y -= 13;
     }
     const parts = [];
-    if(sub.area) parts.push(fArea(sub.area, 0));
-    if(sub.line) parts.push(fLen(sub.line, 1));
+    if(sub.area) parts.push(sub.area.toFixed(0)+" SF");
+    if(sub.line) parts.push(sub.line.toFixed(1)+" LF");
     if(sub.count) parts.push(sub.count+" EA");
     const cy = catCY(b.cat, sub.area);
     need(18);
     page.drawLine({start:{x:M+14, y:y+9.5}, end:{x:W-M, y:y+9.5}, thickness:0.5, color:hair});
-    text(fit("Total: "+(parts.join(" · ")||"—")+(cy ? "   ·   "+fVol(cy.withWaste, 2)+" @ "+fDepth(b.cat.depth)+
+    text(fit("Total: "+(parts.join(" · ")||"—")+(cy ? "   ·   "+cy.withWaste.toFixed(2)+' CY @ '+b.cat.depth+'"'+
       (b.cat.waste>0 ? " +"+b.cat.waste+"% waste" : "") : ""), 9.5, bold, W-2*M-14), M+14, 9.5, bold);
     y -= 13;
     if(b.cat && b.cat.notes){
@@ -2989,7 +2815,7 @@ function addSummaryPages(L, pdf, font, bold, items, subtitle){
   }
   need(26);
   page.drawLine({start:{x:M, y:y+12}, end:{x:W-M, y:y+12}, thickness:0.8, color:ink});
-  text("GRAND TOTALS: "+fArea(grand.area, 0)+" · "+fLen(grand.line, 1)+" · "+grand.count+" EA", M, 10.5, bold);
+  text("GRAND TOTALS: "+grand.area.toFixed(0)+" SF · "+grand.line.toFixed(1)+" LF · "+grand.count+" EA", M, 10.5, bold);
 }
 // fallback for secured plans: page images with the markups baked in
 async function rasterPages(L, pdf, st, items){
@@ -3004,9 +2830,7 @@ async function rasterPages(L, pdf, st, items){
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
     await page.render({canvasContext:ctx, viewport:vp}).promise;
     const k = clamp(Math.min(vp1.width, vp1.height)/100, 7, 16)*sc/11;   // same label size as the vector version
-    const mine = items.filter(m => m.page===pg);
-    for(const m of mine) drawMeasureOn(ctx, m, sc, k);
-    drawLabelsOn(ctx, mine, sc, k, vp1.width, vp1.height);
+    for(const m of items) if(m.page===pg) drawMeasureOn(ctx, m, sc, k);
     const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
     const img = await pdf.embedJpg(new Uint8Array(await blob.arrayBuffer()));
     pdf.addPage([vp1.width, vp1.height]).drawImage(img, {x:0, y:0, width:vp1.width, height:vp1.height});
@@ -3083,14 +2907,14 @@ document.getElementById("markAllBtn").onclick = () => exportMarked("all");
 // ================= export / copy / save =================
 document.getElementById("exportBtn").onclick = () => {
   if(!measurements.length){ toast("Nothing to export"); return; }
-  let csv = "Category,Name,Type,Source,Page,Quantity,Unit,Perimeter "+uLen()+",Plan\n";
+  let csv = "Category,Name,Type,Source,Page,Quantity,Unit,Perimeter LF,Plan\n";
   for(const m of measurements){
     const v = measureValue(m), p = measurePerim(m);
     const c = catOf(m.cat);
     csv += '"'+(c?c.name.replace(/"/g,'""'):"")+'","'+m.name.replace(/"/g,'""')+'",'+m.type+','+
       (m.src==="map"?"map":"pdf")+','+(m.src==="map"?"":m.page)+','+
-      (v==null?"":m.type==="count"?v: m.type==="line"? nLen(v, 2) : nArea(v, 2))+','+unitOf(m.type)+','+
-      (p!=null?nLen(p, 2):"")+',"'+(m.src==="pdf" && docMeta(m.doc) ? docMeta(m.doc).name.replace(/"/g,'""') : "")+'"\n';
+      (v==null?"":m.type==="count"?v:v.toFixed(2))+','+unitOf(m.type)+','+
+      (p!=null?p.toFixed(2):"")+',"'+(m.src==="pdf" && docMeta(m.doc) ? docMeta(m.doc).name.replace(/"/g,'""') : "")+'"\n';
   }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
@@ -3123,29 +2947,29 @@ document.getElementById("copyBtn").onclick = async () => {
       for(const {m,v} of rows){
         sub[t]+=v; grand[t]+=v; tTot+=v;
         const p = measurePerim(m);
-        if(t==="area") txt += "- "+m.name+": "+fArea(v, 0)+(p?" (perimeter "+fLen(p, 0)+")":"")+"\n";
-        else if(t==="line") txt += "- "+m.name+": "+fLen(v, 1)+"\n";
+        if(t==="area") txt += "- "+m.name+": "+v.toFixed(0)+" SF"+(p?" (perimeter "+p.toFixed(0)+" LF)":"")+"\n";
+        else if(t==="line") txt += "- "+m.name+": "+v.toFixed(1)+" LF\n";
         else txt += "- "+m.name+": "+v+" EA\n";
       }
       if(typesPresent.size > 1){
         txt += "Subtotal "+label.toLowerCase()+": "+
-          fQty(t, tTot, 1, 0)+"\n";
+          (t==="count" ? tTot+" EA" : t==="line" ? tTot.toFixed(1)+" LF" : tTot.toFixed(0)+" SF")+"\n";
       }
     }
     const parts = [];
-    if(sub.area) parts.push(fArea(sub.area, 0));
-    if(sub.line) parts.push(fLen(sub.line, 1));
+    if(sub.area) parts.push(sub.area.toFixed(0)+" SF");
+    if(sub.line) parts.push(sub.line.toFixed(1)+" LF");
     if(sub.count) parts.push(sub.count+" EA");
     txt += "Category total: "+parts.join(" · ")+"\n";
     const cy = catCY(b.cat, sub.area);
     if(cy){
-      txt += "Material @ "+fDepth(b.cat.depth)+" depth: "+fVol(cy.base, 2)+
-        (b.cat.waste>0 ? " · +"+b.cat.waste+"% waste = "+fVol(cy.withWaste, 2) : "")+"\n";
+      txt += 'Material @ '+b.cat.depth+'" depth: '+cy.base.toFixed(2)+" CY"+
+        (b.cat.waste>0 ? " · +"+b.cat.waste+"% waste = "+cy.withWaste.toFixed(2)+" CY" : "")+"\n";
     }
     if(b.cat && b.cat.notes) txt += "Notes: "+b.cat.notes+"\n";
     txt += "\n";
   }
-  txt += "GRAND TOTALS: "+fArea(grand.area, 0)+" · "+fLen(grand.line, 1)+" · "+grand.count+" EA\n";
+  txt += "GRAND TOTALS: "+grand.area.toFixed(0)+" SF · "+grand.line.toFixed(1)+" LF · "+grand.count+" EA\n";
   try{ await navigator.clipboard.writeText(txt); toast("Copied"+(fl? " ("+fl+")":"")+" — paste into LMN"); }
   catch{ toast("Copy blocked by browser — use Export CSV"); }
 };
@@ -3349,7 +3173,7 @@ function catCY(c, sf){
 function openCatEditor(c){
   editCatId = c.id; ceColor = c.color; ceDelArmed = false;
   document.getElementById("ceName").value = c.name;
-  document.getElementById("ceDepth").value = c.depth>0 ? +(isMetric() ? c.depth*IN_CM : c.depth).toFixed(2) : "";
+  document.getElementById("ceDepth").value = c.depth>0 ? c.depth : "";
   document.getElementById("ceWaste").value = c.waste>0 ? c.waste : "";
   document.getElementById("ceNotes").value = c.notes || "";
   const hasKids = categories.some(x=>x.parent===c.id);
@@ -3379,8 +3203,7 @@ document.getElementById("ceSave").onclick = () => {
   c.name = name;
   const psv = document.getElementById("ceParent");
   if(!psv.disabled) c.parent = psv.value || "";
-  const dv = parseFloat(document.getElementById("ceDepth").value)||0;
-  c.depth = isMetric() ? dv/IN_CM : dv;   // always kept in inches
+  c.depth = parseFloat(document.getElementById("ceDepth").value)||0;
   c.waste = parseFloat(document.getElementById("ceWaste").value)||0;
   c.notes = document.getElementById("ceNotes").value.trim();
   if(ceColor && ceColor!==c.color){
@@ -3725,61 +3548,21 @@ document.querySelectorAll(".pop").forEach(p => {
 // scale presets
 const SCALE_PRESETS = [
   ["ARCHITECTURAL", [["1/16\" = 1'-0\"",192],["3/32\" = 1'-0\"",128],["1/8\" = 1'-0\"",96],["3/16\" = 1'-0\"",64],["1/4\" = 1'-0\"",48],["3/8\" = 1'-0\"",32],["1/2\" = 1'-0\"",24],["3/4\" = 1'-0\"",16],["1\" = 1'-0\"",12],["1-1/2\" = 1'-0\"",8],["3\" = 1'-0\"",4]]],
-  ["ENGINEERING", [["1\" = 10'",120],["1\" = 20'",240],["1\" = 30'",360],["1\" = 40'",480],["1\" = 50'",600],["1\" = 60'",720],["1\" = 100'",1200]]],
-  ["METRIC", [["1:1",1],["1:5",5],["1:10",10],["1:20",20],["1:25",25],["1:50",50],["1:75",75],["1:100",100],["1:125",125],["1:200",200],["1:250",250],["1:500",500],["1:1000",1000],["1:1250",1250],["1:2500",2500]]]
+  ["ENGINEERING", [["1\" = 10'",120],["1\" = 20'",240],["1\" = 30'",360],["1\" = 40'",480],["1\" = 50'",600],["1\" = 60'",720],["1\" = 100'",1200]]]
 ];
-function buildScaleList(){
+(function(){
   const list = document.getElementById("scaleList");
-  list.innerHTML = "";
-  const groups = isMetric() ? [SCALE_PRESETS[2], SCALE_PRESETS[0], SCALE_PRESETS[1]] : SCALE_PRESETS;
-  for(const [grp, items] of groups){
+  for(const [grp, items] of SCALE_PRESETS){
     const h = document.createElement("div"); h.className = "ph"; h.textContent = grp;
     list.appendChild(h);
     for(const [label, ratio] of items){
       const b = document.createElement("button");
       b.className = "mi"; b.textContent = label;
-      b.onclick = () => applyScale(ratio/12/72, label);   // ratio = real ÷ paper
+      b.onclick = () => applyScale(ratio/12/72, label);
       list.appendChild(b);
     }
   }
-}
-function applyUnitsUI(){
-  const met = isMetric();
-  document.getElementById("setUnitsUS").textContent = (met ? "" : "✓ ")+"US — feet (LF · SF · CY)";
-  document.getElementById("setUnitsMetric").textContent = (met ? "✓ " : "")+"Metric — metres (m · m² · m³)";
-  document.getElementById("tipLine").textContent = "Linear — "+uLen()+" (L)";
-  document.getElementById("tipArea").textContent = "Area — "+uArea()+" (A)";
-  document.querySelector('label[for="calFt"]').textContent = met ? "Metres" : "Feet";
-  document.querySelector('label[for="calIn"]').textContent = met ? "Centimetres" : "Inches";
-  document.getElementById("cusIntro").textContent = met
-    ? "Enter your own scale: how many centimetres on paper equal how many metres."
-    : "Enter your own scale: how many inches on paper equal how much real distance.";
-  document.querySelector('label[for="cusPaper"]').textContent = met ? "Paper (cm)" : "Paper (inches)";
-  document.getElementById("cusPaper").placeholder = met ? "e.g. 1" : "e.g. 1 or 0.25";
-  document.querySelector('label[for="cusFt"]').textContent = met ? "Real metres" : "Real feet";
-  document.getElementById("cusFt").placeholder = met ? "e.g. 2" : "e.g. 15";
-  document.getElementById("cusIn").closest(".frow").style.display = met ? "none" : "";
-  const ex = met ? [["1:50",1,0.5],["1:100",1,1],["1:200",1,2],["1:500",1,5]]
-    : [["1\" = 15'",1,15],["1\" = 25'",1,25],["3/32\" = 1'",0.09375,1],["1\" = 200'",1,200]];
-  document.getElementById("cusEx").innerHTML = ex.map(([l, p, f]) =>
-    '<button data-p="'+p+'" data-f="'+f+'" data-i="0">'+esc2(l)+'</button>').join("");
-  document.getElementById("ceDepthLbl").textContent = met ? "Depth (cm)" : "Depth (in)";
-  document.getElementById("ceDepth").placeholder = met ? "optional — e.g. 8 for mulch" : "optional — e.g. 3 for mulch";
-  document.getElementById("ceHelp").textContent = met
-    ? "Depth turns this category's total m² into cubic metres automatically (m² × depth ÷ 100), plus waste if set."
-    : "Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.";
-  buildScaleList();
-}
-function setUnits(u){
-  if(u===units) return;
-  units = u; storeSet(UNITS_KEY, u);
-  applyUnitsUI();
-  markStatic(); updateBar(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateLive();
-  toast(isMetric() ? "Units: metric (m · m² · m³)" : "Units: US (LF · SF · CY)");
-}
-document.getElementById("setUnitsUS").onclick = () => setUnits("us");
-document.getElementById("setUnitsMetric").onclick = () => setUnits("metric");
-applyUnitsUI();
+})();
 document.getElementById("scCustom").onclick = () => openModal("customBack","cusPaper");
 document.getElementById("scCalib").onclick = () => {
   if(mode!=="pdf"){ toast("Calibration is for the plan — switch to Plan mode"); return; }
@@ -3791,23 +3574,13 @@ document.getElementById("scCalib").onclick = () => {
 const GH_REPO_NAME = "plantakeoff-projects";
 // storage access code, locked with the app password (useless without it — safe in public files)
 const ENC_TOKEN = "Kuabzy0cEAn5FHhFiNikv8H5dGVrlOxwCbt3qv10wdqU1O1+2a7soN9BqXmIPI2qfSo6sAAmik6EQQoZgBvJ/1Puufs=";
-// the key that locks / unlocks the storage access code — made from the password, kept only in memory
-async function passKey(pw){
+async function decToken(pw){
   const enc = new TextEncoder();
   const km = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("plantakeoff-v1"), iterations:120000, hash:"SHA-256"},
-    km, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
-}
-async function unlockCode(key, b64){
-  const raw = Uint8Array.from(atob(String(b64).trim()), c=>c.charCodeAt(0));
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:enc.encode("plantakeoff-v1"), iterations:120000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const raw = Uint8Array.from(atob(ENC_TOKEN), c=>c.charCodeAt(0));
   const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv: raw.slice(0,12)}, key, raw.slice(12));
   return new TextDecoder().decode(pt);
-}
-async function lockCode(key, txt){
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(txt)));
-  const all = new Uint8Array(12 + ct.length); all.set(iv); all.set(ct, 12);
-  return bufToB64(all.buffer);
 }
 const TOKEN_KEY = "plantakeoff_ghtoken", GH_OWNER_KEY = "plantakeoff_ghowner";
 const IS_WEB = location.protocol.indexOf("http")===0 && !IS_DESKTOP_APP;
@@ -3826,7 +3599,7 @@ function ghRepoPath(rest){ return "/repos/"+storeGet(GH_OWNER_KEY)+"/"+GH_REPO_N
 async function ghConnect(token){
   storeSet(TOKEN_KEY, token);
   const u = await ghFetch("/user");
-  if(!u.ok){ storeDel(TOKEN_KEY); throw new Error("That code isn't working (wrong or expired) — copy the whole ghp_… code"); }
+  if(!u.ok){ storeDel(TOKEN_KEY); throw new Error("That code isn't valid — copy the whole ghp_… code"); }
   const login = (await u.json()).login;
   let owner = "";
   const mine = await ghFetch("/repos/"+login+"/"+GH_REPO_NAME);
@@ -3851,69 +3624,6 @@ async function ghConnect(token){
 }
 function txtToB64(txt){ return bufToB64(new TextEncoder().encode(txt).buffer); }
 
-// ---- password unlock ----
-// A copy of the access code, locked with the password, sits next to the app (access.enc). The password alone
-// then reconnects storage on any computer, even after a browser forgets the code. Pasting a new code
-// (when the old one expires) refreshes the copy, so it's only ever asked for once per code.
-const APP_REPO = (() => {
-  const h = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
-  if(h){
-    const seg = location.pathname.split("/").filter(Boolean)[0] || "";
-    return h[1]+"/"+(seg && !/\.html?$/i.test(seg) ? seg : h[1]+".github.io");
-  }
-  return "stephanbluitt/plantakeoff";   // desktop app / opened from a file
-})();
-const ACCESS_FILE = "access.enc";
-let passKeyMem = null;   // made at password login, never stored
-function accessFileUrl(){
-  const [own, rep] = APP_REPO.split("/");
-  if(/\.github\.io$/i.test(location.hostname))
-    return location.origin+"/"+(rep.toLowerCase()===own.toLowerCase()+".github.io" ? "" : rep+"/")+ACCESS_FILE;
-  return "https://raw.githubusercontent.com/"+APP_REPO+"/main/"+ACCESS_FILE;
-}
-async function readAccessFile(){
-  try{
-    const r = await fetch(accessFileUrl()+"?t="+Date.now(), {cache:"no-store"});
-    if(!r.ok) return null;
-    const t = (await r.text()).trim();
-    return /^[A-Za-z0-9+/=]{40,}$/.test(t) ? t : null;
-  }catch{ return null; }
-}
-async function saveAccessFile(code){
-  if(!passKeyMem) return "nokey";
-  try{
-    const blob = await lockCode(passKeyMem, code);
-    const dir = await ghFetch("/repos/"+APP_REPO+"/contents/");
-    if(!dir.ok) return "fail";
-    const cur = (await dir.json()).find(x => x.name===ACCESS_FILE);
-    const body = {message:"settings: password unlock", content:txtToB64(blob)};
-    if(cur) body.sha = cur.sha;
-    const r = await ghFetch("/repos/"+APP_REPO+"/contents/"+ACCESS_FILE,
-      {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
-    return r.ok ? "ok" : "fail";
-  }catch{ return "fail"; }
-}
-// after the password: reconnect from the saved copy first (newest), then the copy built into the app
-async function restoreAccess(key){
-  if(!key) return false;
-  const blobs = [await readAccessFile(), ENC_TOKEN].filter(Boolean);
-  for(const b of blobs){
-    let code = "";
-    try{ code = await unlockCode(key, b); }catch{ continue; }
-    try{ await ghConnect(code); return true; }catch{}
-  }
-  return false;
-}
-// a stored code that GitHub no longer accepts is dropped, so the password can bring a working one back
-async function storedCodeWorks(){
-  try{
-    const r = await ghFetch("/user");
-    if(r.status===401){ storeDel(TOKEN_KEY); return false; }
-  }catch{}
-  return true;   // offline or other hiccups: keep it
-}
-function keepStorage(){ try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch{} }
-
 // ---- built-in password gate ----
 const GATE_HASH = "4ac13f470fd73d196dbc4204929e3370fb5fd1ccb61ce1f13e19288105026f0a"; // the password, one-way scrambled
 const GATE_KEY = "plantakeoff_unlock";
@@ -3933,7 +3643,6 @@ function updateGate(force){
   const setup = force==="setup" || (gateOn() && !cloudReady() && !ENC_TOKEN);
   document.getElementById("gSetup").style.display = setup ? "" : "none";
   document.getElementById("gLogin").style.display = setup ? "none" : "";
-  document.getElementById("gRememberRow").style.display = passKeyMem ? "" : "none";
   if(setup) document.getElementById("gKey").focus();
   else document.getElementById("gPass").focus();
 }
@@ -3945,16 +3654,8 @@ document.getElementById("gSetupGo").onclick = async () => {
   b.disabled = true; b.textContent = "Connecting…"; err.style.display = "none";
   try{
     await ghConnect(tok);
-    keepStorage();
-    let note = "";
-    if(passKeyMem && document.getElementById("gRemember").checked){
-      b.textContent = "Saving…";
-      note = (await saveAccessFile(tok))==="ok" ? " — the password will unlock it on any computer"
-        : " (couldn't save it for other computers — this one will remember it)";
-    }
-    document.getElementById("gKey").value = "";
     gate.classList.remove("show");
-    toast("Storage connected"+note);
+    toast("Storage connected");
     gateNext = null;
     openCloud();
     syncSearchKey();
@@ -3971,12 +3672,11 @@ async function gateLoginGo(){
   if(hex === GATE_HASH){
     gateSet();
     toast("Welcome");
-    try{ passKeyMem = await passKey(pw); }catch{ passKeyMem = null; }
-    if(cloudReady()) await storedCodeWorks();
-    if(!cloudReady()) await restoreAccess(passKeyMem);
-    document.getElementById("gPass").value = "";
+    if(!cloudReady() && ENC_TOKEN){
+      try{ await ghConnect(await decToken(pw)); }catch{}
+    }
     if(!cloudReady()){ updateGate("setup"); }
-    else { keepStorage(); gate.classList.remove("show"); openCloud(); syncSearchKey(); }
+    else { gate.classList.remove("show"); openCloud(); syncSearchKey(); }
   } else {
     err.textContent = "Wrong password"; err.style.display = "";
   }
