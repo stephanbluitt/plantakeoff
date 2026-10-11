@@ -130,14 +130,16 @@
   .pop .mi:hover{background:var(--amber); color:#fff;}
   .pop .mi .k{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--faint);}
   .pop .mi:hover .k{color:rgba(255,255,255,.8);}
+  .pop .mi.sel::after{content:"✓"; margin-left:auto; padding-left:12px; color:var(--amber); font-weight:800;}
+  .pop .mi.sel:hover::after{color:#fff;}
   .pop .sep{height:1px; background:var(--hair); margin:5px 8px;}
   .pop .ph{font-size:10px; letter-spacing:1px; color:var(--faint); padding:7px 10px 3px; font-weight:600;}
   .pop .hrow{display:flex; justify-content:space-between; gap:16px; padding:4px 10px; font-size:12px;}
   .pop .hrow b{font-family:var(--mono); font-weight:600; color:var(--dim); white-space:nowrap;}
-  .pop .mchk{display:flex; align-items:center; gap:8px; padding:6px 10px 7px; font-size:12px; color:var(--dim);
+  .pop .mchk{display:flex; align-items:center; gap:0; padding:6px 10px 7px; font-size:12.5px; color:var(--dim);
     cursor:pointer; user-select:none; -webkit-user-select:none;}
   .pop .mchk:hover{color:var(--ink);}
-  .pop .mchk input{width:15px; height:15px; margin:0; flex:none; accent-color:var(--amber); cursor:pointer;}
+  .pop .mchk input{width:16px; height:16px; margin:0 4px 0 0; flex:none; accent-color:var(--amber); cursor:pointer;}
   #pop-scale{max-height:70vh; overflow-y:auto; min-width:230px;}
   /* ================= canvas & map ================= */
   html, body{overscroll-behavior:none;}   /* a sideways swipe never leaves the app */
@@ -263,6 +265,15 @@
   #fab.show{display:flex;}
   #fab.show ~ #livePill{display:none;}
   #fab .btn{font-size:13px;}
+  #fab .btn.on{background:var(--amber); color:#fff; border-color:transparent;}
+  /* the ◆ in the middle of a map segment: drag it to curve the segment */
+  .bendDot{width:10px; height:10px; margin:2px; background:#fff; border:2px solid var(--amber); border-radius:2px;
+    transform:rotate(45deg); box-shadow:0 1px 3px rgba(0,0,0,.45); cursor:grab;}
+  .bendDot.on{background:var(--amber); box-shadow:inset 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,.45);}
+  body:has(#fab.show) #toast{bottom:calc(124px + var(--sab));}   /* tips sit above the floating bar, not on it */
+  @media (max-width:380px){   /* small phones: the floating bar with ⌒ Curve still fits */
+    #fab{gap:4px; padding:5px;} #fab .btn{padding:7px 9px;} #fabVal{min-width:0; padding:0 4px;}
+  }
   #fabVal{font-family:var(--mono); font-size:13px; color:var(--amber); font-weight:700;
     padding:0 8px; min-width:64px; text-align:center;}
   /* ================= buttons / inputs ================= */
@@ -479,6 +490,7 @@
     #navPill{bottom:calc(14px + var(--sab)); max-width:96vw; overflow-x:auto;}
     #livePill{bottom:calc(120px + var(--sab));}
     #fab{bottom:calc(120px + var(--sab));}
+    body:has(#fab.show) #toast{bottom:calc(182px + var(--sab));}
     #side{
       position:fixed; top:0; right:0; bottom:0; width:min(360px,94vw); z-index:1500;
       transform:translateX(105%); transition:transform .22s; border-left:1px solid var(--hair);
@@ -523,30 +535,33 @@
 
 <!-- popover menus -->
 <div class="pop" id="pop-project">
-  <button class="mi" id="newBtn">＋ New project <span class="k">⌘N</span></button>
+  <button class="mi" id="newBtn">➕ New project <span class="k">⌘N</span></button>
   <div class="sep"></div>
-  <button class="mi" id="openBtn">Add PDF plans…</button>
+  <button class="mi" id="openBtn">📄 Add PDF plans…</button>
   <button class="mi" id="cloudMenuOpen">☁️ Cloud projects…</button>
-  <button class="mi" id="saveProj">Save <span class="k">⌘S</span></button>
+  <button class="mi" id="saveProj">💾 Save <span class="k">⌘S</span></button>
   <button class="mi" id="verBtn">🕘 Project versions…</button>
   <div class="sep"></div>
-  <button class="mi" id="clearBtn">Clear measurements…</button>
+  <button class="mi" id="clearBtn">🗑️ Clear measurements…</button>
   <div class="sep"></div>
   <div class="menuFoot madeUS"><svg class="usFlag" viewBox="0 0 19 10" aria-hidden="true"><rect width="19" height="10" fill="#b22234"/><path d="M0 1.15h19M0 2.69h19M0 4.23h19M0 5.77h19M0 7.31h19M0 8.85h19" stroke="#fff" stroke-width=".77"/><rect width="7.6" height="5.38" fill="#3c3b6e"/></svg> Made in the USA</div>
 </div>
 <div class="pop" id="pop-share">
-  <button class="mi" id="copyBtn">Copy project measurements <span class="k">⇧⌘C</span></button>
-  <button class="mi" id="exportBtn">Export CSV <span class="k">⌘E</span></button>
-  <button class="mi" id="printBtn">Print report…</button>
+  <button class="mi" id="copyBtn">📋 Copy project measurements <span class="k">⇧⌘C</span></button>
+  <button class="mi" id="exportBtn">📊 Export CSV <span class="k">⌘E</span></button>
+  <button class="mi" id="printBtn">🖨️ Print report…</button>
   <div class="sep"></div>
-  <button class="mi" id="markBtn">⬇ Export PDF</button>
-  <button class="mi" id="markAllBtn" style="display:none">⬇ Export PDF — all plans</button>
+  <button class="mi" id="markBtn">⬇️ Export PDF</button>
+  <button class="mi" id="markAllBtn" style="display:none">⬇️ Export PDF — all plans</button>
   <label class="mchk" title="On: your measurements drawn on the plan, plus a takeoff summary page. Off: the plans as they came."><input type="checkbox" id="pdfMarks" checked> Include markups</label>
 </div>
 <div class="pop" id="pop-help" style="min-width:300px">
   <div class="ph">TOOLS</div>
   <div class="hrow"><span>Select / edit shapes</span><b>V</b></div>
-  <div class="hrow"><span>Linear · Curve · Area · Count</span><b>L · U · A · K</b></div>
+  <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
+  <div class="hrow"><span>Curve a segment of a line or area</span><b>drag its ◆</b></div>
+  <div class="hrow"><span>…while drawing</span><b>⌥/Alt + click · U</b></div>
+  <div class="hrow"><span>Make a curve straight again</span><b>right-click its ◆</b></div>
   <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
@@ -562,15 +577,15 @@
   <div class="hrow"><span>Hide / show everything</span><b>Hide all</b></div>
   <div class="ph">PROJECT</div>
   <div class="hrow"><span>Undo · Redo</span><b>⌘Z · ⇧⌘Z</b></div>
-  <div class="hrow"><span>Take back the last point while drawing</span><b>⌘Z · Backspace</b></div>
+  <div class="hrow"><span>Take back the last point or curve while drawing</span><b>⌘Z · Backspace</b></div>
   <div class="hrow"><span>Save</span><b>⌘S</b></div>
   <div class="hrow"><span>Copy measurements · CSV</span><b>⇧⌘C · ⌘E</b></div>
   <div class="hrow"><span>Plan with your markups</span><b>Export → Export PDF</b></div>
 </div>
 <div class="pop" id="pop-scale">
   <div class="ph">SET SCALE</div>
-  <button class="mi" id="scCalib">📐 Calibrate on plan… <span class="k">C</span></button>
-  <button class="mi" id="scCustom">✎ Custom scale…</button>
+  <button class="mi" id="scCalib">Calibrate on plan… <span class="k">C</span></button>
+  <button class="mi" id="scCustom">Custom scale…</button>
   <div class="sep"></div>
   <div id="scaleList"></div>
 </div>
@@ -578,7 +593,7 @@
   <div class="ph">PLANS IN THIS PROJECT</div>
   <div id="docList"></div>
   <div class="sep"></div>
-  <button class="mi" id="docAdd">＋ Add PDF plans…</button>
+  <button class="mi" id="docAdd">➕ Add PDF plans…</button>
 </div>
 
 <div id="canvasWrap">
@@ -611,10 +626,10 @@
   <button id="histBtn" class="mapOnly" title="Time travel — see this property on older imagery dates">🕐 Dates</button>
   <div class="pill mapOnly" id="histPill">
     <select id="histSeason" title="Season filter — Winter is best for seeing the ground through trees">
-      <option value="all">All seasons</option>
-      <option value="win">❄ Winter (leaf-off)</option>
+      <option value="all">🗓️ All seasons</option>
+      <option value="win">❄️ Winter (leaf-off)</option>
       <option value="spr">🌱 Spring</option>
-      <option value="sum">☀ Summer</option>
+      <option value="sum">☀️ Summer</option>
       <option value="fal">🍂 Fall</option>
     </select>
     <div class="pdiv"></div>
@@ -635,10 +650,6 @@
   <button class="tool" data-tool="line" aria-label="Linear measure">
     <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M6.2 17.8L17.8 6.2"/></svg>
     <span class="tip" id="tipLine">Linear — LF (L)</span>
-  </button>
-  <button class="tool" data-tool="curve" aria-label="Curved measure">
-    <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M5 17.3C5 10.5 10.5 5 17.3 5"/></svg>
-    <span class="tip" id="tipCurve">Curve — LF (U)</span>
   </button>
   <button class="tool" data-tool="area" aria-label="Area measure">
     <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
@@ -672,6 +683,7 @@
 <div id="fab">
   <button class="btn" id="fabUndo" title="Undo last point">↩</button>
   <span id="fabVal"></span>
+  <button class="btn" id="fabCurve" title="Curve the last segment (U): then click on the curve — or hold Alt / Option and click">⌒ Curve</button>
   <button class="btn primary" id="fabDone">✓ Done</button>
   <button class="btn" id="fabCancel">✕</button>
 </div>
@@ -836,7 +848,7 @@
     <div class="actions">
       <button class="btn" id="cloudSignout">Sign out</button>
       <button class="btn" id="cloudSettings">Settings</button>
-      <button class="btn" id="cloudNew">＋ New project</button>
+      <button class="btn" id="cloudNew">➕ New project</button>
       <button class="btn primary" id="cloudClose">Close</button>
     </div>
   </div>
@@ -888,8 +900,8 @@
   <button class="mi" id="setInvert">🌓 Invert plan colors</button>
   <button class="mi" id="setHelp">⌨️ Tools &amp; shortcuts</button>
   <div class="ph">UNITS</div>
-  <button class="mi" id="setUnitsUS">✓ US — feet (LF · SF · CY)</button>
-  <button class="mi" id="setUnitsMetric">Metric — metres (m · m² · m³)</button>
+  <button class="mi sel" id="setUnitsUS">📏 US — feet (LF · SF · CY)</button>
+  <button class="mi" id="setUnitsMetric">🌍 Metric — metres (m · m² · m³)</button>
   <div class="ph">SEARCH</div>
   <button class="mi" id="setGkey">🔎 Google address search…</button>
   <div class="ph">STORAGE</div>
@@ -985,44 +997,121 @@ function polyArea(pts){
   for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; s += a.x*b.y - b.x*a.y; }
   return Math.abs(s)/2;
 }
-// ---- curve tool: a smooth line through every clicked point, measured along the curve. Between two clicks it
-// blends the circle through them and the click before with the circle through them and the click after, so clicks
-// on a round edge give that exact circle (start, middle and end are enough for an arc), and it never kinks.
-// Works on plan points {x,y} and map points {lat,lng}.
-function arcThru(a, b, c, p, q){   // the circle through a, b, c (in drawing order), walked from p to q; null = straight
-  const bx = b.x-a.x, by = b.y-a.y, cx = c.x-a.x, cy = c.y-a.y, d = 2*(bx*cy - by*cx);
-  const b2 = bx*bx+by*by, c2 = cx*cx+cy*cy, L2 = Math.max(b2, c2);
-  if(!L2 || Math.abs(d) < 1e-9*L2) return null;   // in a straight line
-  const ox = a.x+(cy*b2-by*c2)/d, oy = a.y+(bx*c2-cx*b2)/d, dir = d>0 ? 1 : -1;
-  const f = Math.atan2(p.y-oy, p.x-ox);
-  let sw = dir*(Math.atan2(q.y-oy, q.x-ox) - f);
-  while(sw<=0) sw += 2*Math.PI;
-  while(sw>2*Math.PI) sw -= 2*Math.PI;
-  if(sw>Math.PI || sw<1e-7) return null;   // more than half a turn between two clicks (doubling back): keep it straight
-  return {ox, oy, r:Math.hypot(p.x-ox, p.y-oy), f, sw:dir*sw};
+// ---- curved segments: any segment of a line or an area can be a circular arc ----
+// m.arcs[i] is the bend of segment i (pts[i] → pts[i+1]; on an area the last one closes back to pts[0]):
+// 0 = straight, otherwise its "bulge" — tan of a quarter of the arc's angle (1 = half circle), the sign says which side.
+// Bulges don't change when the ends move, so dragging points keeps curves curved. Plan points are {x,y}; map points
+// {lat,lng} are worked in metres around the first point. Lengths and areas on the plan use exact arc formulas.
+const BULGE_MAX = 2.4;   // about three quarters of a circle at most
+function flatFrame(pts){
+  if(!pts.length || pts[0].lat==null) return {to:p => p, from:z => z};
+  const ky = 111320, kx = ky*Math.cos(pts[0].lat*Math.PI/180);
+  return {to:p => ({x:p.lng*kx, y:p.lat*ky}), from:z => ({lat:z.y/ky, lng:z.x/kx})};
 }
-function smoothPts(pts, steps){
-  if(!pts || pts.length<3) return pts || [];
-  steps = steps || 24;
-  const geo = pts[0].lat!=null, kx = geo ? Math.cos(pts[0].lat*Math.PI/180) : 1;
-  const P = geo ? pts.map(p => ({x:p.lng*kx, y:p.lat})) : pts;
-  const n = P.length, out = [];
-  const on = (A, p, q, s) => A ? {x:A.ox+A.r*Math.cos(A.f+A.sw*s), y:A.oy+A.r*Math.sin(A.f+A.sw*s)}
-                               : {x:p.x+(q.x-p.x)*s, y:p.y+(q.y-p.y)*s};
-  for(let i=0; i<n-1; i++){
-    const p = P[i], q = P[i+1];
-    const before = i>0 ? arcThru(P[i-1], p, q, p, q) : undefined, after = i+2<n ? arcThru(p, q, P[i+2], p, q) : undefined;
-    const A = before===undefined ? after : before, B = after===undefined ? before : after;   // the ends have one circle
-    for(let k=0; k<steps; k++){
-      const s = k/steps, w = Math.sin(Math.PI*s/2)**2, u = on(A, p, q, s), v = on(B, p, q, s);
-      out.push({x:u.x+(v.x-u.x)*w, y:u.y+(v.y-u.y)*w});
-    }
+function arcOf(P, Q, b){
+  const vx = Q.x-P.x, vy = Q.y-P.y, c = Math.hypot(vx, vy);
+  if(!b || !c) return null;
+  const th = 4*Math.atan(Math.abs(b)), r = c/(2*Math.sin(th/2)), s = b*c/2;
+  const nx = -vy/c, ny = vx/c, mx = (P.x+Q.x)/2, my = (P.y+Q.y)/2, k = Math.sign(b)*(Math.abs(s)-r);
+  const ox = mx+nx*k, oy = my+ny*k;
+  return {ox, oy, r, a0:Math.atan2(P.y-oy, P.x-ox), sweep:-Math.sign(b)*th, mid:{x:mx+nx*s, y:my+ny*s}};
+}
+// the outline as drawn: curved segments as short steps (closed: back to the start, without repeating it)
+function bentPts(pts, arcs, closed, coarse){
+  const n = pts.length;
+  if(n<2 || !arcs || !arcs.some(b => b)) return pts;
+  const f = flatFrame(pts), P = pts.map(f.to), out = [];
+  for(let i=0; i<(closed ? n : n-1); i++){
+    const a = P[i], g = arcOf(a, P[(i+1)%n], arcs[i]);
+    out.push(a);
+    if(!g) continue;
+    const k = Math.max(coarse ? 3 : 8, Math.ceil(Math.abs(g.sweep)*180/Math.PI/(coarse ? 15 : 2.5)));
+    for(let j=1; j<k; j++){ const t = g.a0+g.sweep*j/k; out.push({x:g.ox+g.r*Math.cos(t), y:g.oy+g.r*Math.sin(t)}); }
   }
-  out.push(P[n-1]);
-  return geo ? out.map(z => ({lat:z.y, lng:z.x/kx})) : out;
+  if(!closed) out.push(P[n-1]);
+  return P===pts ? out : out.map(f.from);
 }
-// the points a shape is drawn and measured along
-function shapePts(m){ return m.curve && m.type==="line" ? smoothPts(m.pts) : m.pts; }
+function shapePts(m, coarse){ return m.type==="count" ? m.pts : bentPts(m.pts, m.arcs, m.type==="area", coarse); }
+function bentLen(pts, arcs, closed){
+  let d = 0; const n = pts.length;
+  for(let i=0; i<(closed ? n : n-1); i++){
+    const c = dist(pts[i], pts[(i+1)%n]), b = arcs && arcs[i];
+    if(!b){ d += c; continue; }
+    const th = 4*Math.atan(Math.abs(b)); d += c*th/(2*Math.sin(th/2));
+  }
+  return d;
+}
+function bentArea(pts, arcs){
+  const n = pts.length; let s = 0;
+  for(let i=0; i<n; i++){ const a = pts[i], q = pts[(i+1)%n]; s += a.x*q.y - q.x*a.y; }
+  s /= 2;
+  if(arcs) for(let i=0; i<n; i++){   // each curved edge adds or takes away the slice between its chord and its arc
+    const b = arcs[i]; if(!b) continue;
+    const c = dist(pts[i], pts[(i+1)%n]), th = 4*Math.atan(Math.abs(b)), r = c/(2*Math.sin(th/2));
+    s -= Math.sign(b)*r*r/2*(th - Math.sin(th));
+  }
+  return Math.abs(s);
+}
+// the bend that makes segment P→Q pass through H (straight when H is within `snap` of the straight line)
+function bulgeThrough(P, Q, H, snap){
+  const vx = Q.x-P.x, vy = Q.y-P.y, c = Math.hypot(vx, vy);
+  if(!c) return 0;
+  const side = (-(H.x-P.x)*vy + (H.y-P.y)*vx)/c;
+  if(Math.abs(side) <= (snap||0)) return 0;
+  let ang = Math.abs(Math.atan2(P.y-H.y, P.x-H.x) - Math.atan2(Q.y-H.y, Q.x-H.x));
+  if(ang > Math.PI) ang = 2*Math.PI - ang;
+  return Math.sign(side)*Math.min(BULGE_MAX, ang < 1e-9 ? BULGE_MAX : 1/Math.tan(ang/2));
+}
+function pdfBulge(P, Q, H){ return bulgeThrough(P, Q, H, 6/zoom); }
+function mapBulge(P, Q, H){   // worked on screen (the map keeps angles), so "close to straight" is in pixels
+  const f = ll => map.latLngToContainerPoint(ll);
+  return -bulgeThrough(f(P), f(Q), f(H), 6);   // the screen's y runs down, the flat frame's runs north: the side flips
+}
+// where each segment's ◆ sits: the middle of the segment, on the curve
+function bendHandles(pts, arcs, closed){
+  const n = pts.length, out = [];
+  if(n<2) return out;
+  const f = flatFrame(pts);
+  for(let i=0; i<(closed ? n : n-1); i++){
+    const a = f.to(pts[i]), q = f.to(pts[(i+1)%n]), g = arcOf(a, q, arcs && arcs[i]);
+    out.push(f.from(g ? g.mid : {x:(a.x+q.x)/2, y:(a.y+q.y)/2}));
+  }
+  return out;
+}
+function showsBend(P, Q){ return dist(P, Q)*zoom >= 26; }   // segments too short on screen get no ◆
+function tidyArcs(m){
+  if(!m.arcs) return;
+  const segs = m.type==="area" ? m.pts.length : m.pts.length-1;
+  m.arcs.length = Math.max(0, segs);
+  for(let i=0; i<m.arcs.length; i++) if(!m.arcs[i]) m.arcs[i] = 0;
+  if(!m.arcs.some(b => b)) delete m.arcs;
+}
+// removing a point joins its two segments into one straight segment
+function dropVertexArcs(m, k){
+  if(!m.arcs) return;
+  const n = m.pts.length;   // before the point goes
+  if(m.type==="area"){ if(k===0){ m.arcs.shift(); m.arcs[n-2] = 0; } else m.arcs.splice(k-1, 2, 0); }
+  else if(k===0) m.arcs.shift();
+  else if(k===n-1) m.arcs.pop();
+  else m.arcs.splice(k-1, 2, 0);
+}
+// projects saved with the first curve tool (one smooth line through every point): each segment becomes the arc it followed
+function circleBulge(P, Q, T){
+  const vx = Q.x-P.x, vy = Q.y-P.y, side = -(T.x-P.x)*vy + (T.y-P.y)*vx;
+  let ang = Math.abs(Math.atan2(P.y-T.y, P.x-T.x) - Math.atan2(Q.y-T.y, Q.x-T.x));
+  if(ang > Math.PI) ang = 2*Math.PI - ang;
+  return !side || ang > Math.PI/2 ? 0 : -Math.sign(side)*Math.tan(ang/2);
+}
+function legacyCurveArcs(pts){
+  const f = flatFrame(pts), P = pts.map(f.to), n = P.length, out = [];
+  for(let i=0; i<n-1; i++){
+    const bs = [];
+    if(i>0) bs.push(circleBulge(P[i], P[i+1], P[i-1]));
+    if(i+2<n) bs.push(circleBulge(P[i], P[i+1], P[i+2]));
+    out.push(bs.length ? bs.reduce((a, b) => a+b, 0)/bs.length : 0);
+  }
+  return out;
+}
 // --- geodesic (map) math ---
 const R_EARTH = 6378137, M2FT = 3.280839895;
 function havFt(a,b){
@@ -1040,20 +1129,44 @@ function geoAreaSF(pts){
   }
   return Math.abs(area*R_EARTH*R_EARTH/2) * M2FT * M2FT;
 }
+// on the map: the straight outline measured on the earth, each curved segment adding its exact extra
+function geoBentLen(pts, arcs, closed){
+  let d = 0; const n = pts.length;
+  for(let i=0; i<(closed ? n : n-1); i++){
+    const c = havFt(pts[i], pts[(i+1)%n]), b = arcs && arcs[i];
+    if(!b){ d += c; continue; }
+    const th = 4*Math.atan(Math.abs(b)); d += c*th/(2*Math.sin(th/2));
+  }
+  return d;
+}
+function geoBentArea(pts, arcs){
+  const a = geoAreaSF(pts);
+  if(!arcs || !arcs.some(b => b) || pts.length<3) return a;
+  const f = flatFrame(pts), P = pts.map(f.to), n = P.length;
+  let s = 0, cut = 0;
+  for(let i=0; i<n; i++){
+    const p = P[i], q = P[(i+1)%n], b = arcs[i];
+    s += p.x*q.y - q.x*p.y;
+    if(!b) continue;
+    const c = Math.hypot(q.x-p.x, q.y-p.y), th = 4*Math.atan(Math.abs(b)), r = c/(2*Math.sin(th/2));
+    cut += Math.sign(b)*r*r/2*(th - Math.sin(th));   // m²
+  }
+  return Math.abs(Math.sign(s)*a - cut*M2FT*M2FT);
+}
 function measureValue(m){
   if(m.type==="count") return m.pts.length;
   if(m.src==="map"){
-    return m.type==="line" ? geoPathFt(shapePts(m)) : geoAreaSF(m.pts);
+    return m.type==="line" ? geoBentLen(m.pts, m.arcs, false) : geoBentArea(m.pts, m.arcs);
   }
   const fpu = getFPU(m.page, m.doc);
   if(fpu == null) return null;
-  return m.type==="line" ? pathLen(shapePts(m))*fpu : polyArea(m.pts)*fpu*fpu;
+  return m.type==="line" ? bentLen(m.pts, m.arcs, false)*fpu : bentArea(m.pts, m.arcs)*fpu*fpu;
 }
 function measurePerim(m){
   if(m.type!=="area" || m.pts.length<3) return null;
-  if(m.src==="map") return geoPathFt([...m.pts, m.pts[0]]);
+  if(m.src==="map") return geoBentLen(m.pts, m.arcs, true);
   const fpu = getFPU(m.page, m.doc);
-  return fpu==null ? null : pathLen([...m.pts, m.pts[0]])*fpu;
+  return fpu==null ? null : bentLen(m.pts, m.arcs, true)*fpu;
 }
 // ---- units: everything is stored in feet / inches; metric only changes what's shown and typed ----
 const UNITS_KEY = "plantakeoff_units";
@@ -1072,10 +1185,10 @@ function fArea(sf, d){ return nArea(sf, d)+" "+uArea(); }
 function fVol(cy, d){ return (isMetric() ? cy*CY_M3 : cy).toFixed(d)+" "+uVol(); }
 function fQty(type, v, dl, da){ return type==="count" ? v+" EA" : type==="line" ? fLen(v, dl) : fArea(v, da); }
 function fDepth(inch){ return isMetric() ? +(inch*IN_CM).toFixed(1)+" cm" : +(+inch).toFixed(2)+'"'; }
-function toast(msg){
+function toast(msg, ms){
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
-  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2000);
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), ms || 2000);
 }
 function fracLabel(v){
   const fracs = [[1,16],[3,32],[1,8],[3,16],[1,4],[3,8],[1,2],[3,4],[1,1],[3,2],[3,1]];
@@ -1129,12 +1242,39 @@ function newColor(type){
   const c = catOf(activeCatId);
   return c ? c.color : COLORS[type];
 }
-// a shape that's being drawn with the current tool (the curve tool draws a line that bends through its points)
-function newDrawing(src){
-  const type = tool==="curve" ? "line" : tool;
-  const d = {src, type, pts:[], color:newColor(type)};
-  if(tool==="curve") d.curve = true;
-  return d;
+// a line or area being drawn: its points, the bend of each segment, and its own undo steps (a point, or a bend)
+function newDrawing(src){ return {src, type:tool, pts:[], arcs:[], hist:[], redo:[], color:newColor(tool)}; }
+function addDrawPoint(p){
+  const d = drawing;
+  d.pts.push(p);
+  if(d.pts.length>1) d.arcs.push(0);
+  d.hist.push({t:"pt"}); d.redo = [];
+}
+function setDrawingBend(i, b){
+  const d = drawing, prev = d.arcs[i] || 0;
+  curveMode = false;
+  if(prev!==b){ d.arcs[i] = b; d.hist.push({t:"bend", i, prev, next:b}); d.redo = []; }
+  drawOverlay(); tempSig = ""; drawTemp(); updateFab(); updateLive();
+}
+// bending the last segment right now: Alt (Option) held, or ⌒ Curve switched on
+function bending(){
+  const d = drawing;
+  return !!d && (curveMode || altHeld) && (d.type==="line" || d.type==="area") && d.pts.length>=2;
+}
+// where the mouse is for the shape being drawn (none while a ◆ is being dragged: no rubber band then)
+function drawCursor(d){ return d.src==="map" ? (mapBendDrag ? null : mouseLL) : (bendDrag ? null : mousePdf); }
+// what a shape being drawn looks like: a straight piece to the mouse — or, while bending, the last segment through it
+function drawingShape(d, cur){
+  const n = d.pts.length, arcs = (d.arcs || []).slice(0, Math.max(0, n-1));
+  if(cur && bending()){ arcs[n-2] = d.src==="map" ? mapBulge(d.pts[n-2], d.pts[n-1], cur) : pdfBulge(d.pts[n-2], d.pts[n-1], cur); return {pts:d.pts, arcs}; }
+  if(cur && d.type!=="count"){ arcs.push(0); return {pts:[...d.pts, d.src==="map" ? cur : snap(cur)], arcs}; }
+  return {pts:d.pts, arcs};
+}
+function bendTip(){
+  if(bendTipShown || !drawing || drawing.pts.length!==2 || !(drawing.type==="line" || drawing.type==="area")) return;
+  bendTipShown = true;
+  toast(matchMedia("(pointer: coarse)").matches ? "Curved edge? Tap ⌒ Curve, then tap on the curve"
+        : "Curved edge? Drag the ◆ in the middle of the segment — or press U and click on the curve", 5000);
 }
 
 // ================= undo / redo history =================
@@ -1194,7 +1334,7 @@ function deleteVertex(m, idx){
   }
   const min = m.type==="area" ? 3 : 2;
   if(m.pts.length<=min){ toast("Needs at least "+min+" points — delete the whole item from the list"); return; }
-  pushHistory(); m.pts.splice(idx,1); selVertex=null; refreshAll();
+  pushHistory(); dropVertexArcs(m, idx); m.pts.splice(idx,1); tidyArcs(m); selVertex=null; refreshAll();
   toast("Point removed");
 }
 function updateUndoBtns(){
@@ -1250,11 +1390,21 @@ function initMap(){
       return;
     }
     if(e.originalEvent && e.originalEvent.detail > 1) return; // part of a double-click
-    mapAddPoint({lat:e.latlng.lat, lng:e.latlng.lng});
+    const ll = {lat:e.latlng.lat, lng:e.latlng.lng}, d = drawing;
+    if(d && (d.type==="line" || d.type==="area") && d.pts.length>=2 && (curveMode || (e.originalEvent && e.originalEvent.altKey))){
+      const n = d.pts.length;   // bend the last segment through this point
+      setDrawingBend(n-2, mapBulge(d.pts[n-2], d.pts[n-1], ll));
+      return;
+    }
+    mapAddPoint(ll);
   });
   map.on("dblclick", () => finishDrawing());
   map.on("mousemove", e => {
-    if(drawing && mode==="map"){ mouseLL = {lat:e.latlng.lat, lng:e.latlng.lng}; drawTemp(); updateLive(); }
+    if(drawing && mode==="map"){
+      mouseLL = {lat:e.latlng.lat, lng:e.latlng.lng};
+      altHeld = !!(e.originalEvent && e.originalEvent.altKey);
+      scheduleTemp();
+    }
   });
 }
 let mouseLL = null;
@@ -1276,9 +1426,9 @@ function mapAddPoint(ll){
     }
     m.pts.push(ll); refreshAll(); return;
   }
-  if(tool==="line" || tool==="area" || tool==="curve"){
+  if(tool==="line" || tool==="area"){
     if(!drawing) drawing = newDrawing("map");
-    drawing.pts.push(ll); drawing.redo = []; drawTemp(); updateFab(); updateLive();
+    addDrawPoint(ll); bendTip(); drawTemp(); updateFab(); updateLive();
   }
 }
 
@@ -1327,17 +1477,17 @@ function redrawMapLayers(){
     if(m.src!=="map") continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     const hot = m.id===selectedId;
-    const style = {color:m.color, weight:hot?4:3, opacity:.95};
+    const style = {color:m.color, weight:hot?4:3, opacity:.95, smoothFactor:0};   // keep curves round (no simplifying)
     if(m.type==="line" && m.pts.length>1){
       const pl = L.polyline(shapePts(m), style).addTo(mapLayerGroup);
       pl.bindTooltip(m.name+" — "+fLen(measureValue(m), 1), {sticky:true});
       pl.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
-      if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); }
+      if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); addBendHandles(pl, m); }
     } else if(m.type==="area" && m.pts.length>2){
-      const pg = L.polygon(m.pts, {...style, fillOpacity:.22}).addTo(mapLayerGroup);
-      pg.bindTooltip(m.name+" — "+fArea(geoAreaSF(m.pts), 0), {sticky:true});
+      const pg = L.polygon(shapePts(m), {...style, fillOpacity:.22}).addTo(mapLayerGroup);
+      pg.bindTooltip(m.name+" — "+fArea(measureValue(m), 0), {sticky:true});
       pg.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
-      if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); }
+      if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); addBendHandles(pg, m); }
     } else if(m.type==="count"){
       m.pts.forEach((p,i)=>{
         if(hot){
@@ -1362,17 +1512,72 @@ function redrawMapLayers(){
   }
   drawTemp();
 }
+// the ◆ on a selected map line or area: drag it to curve that segment, right-click it to straighten
+function bendIcon(on){ return L.divIcon({className:"", iconSize:[14,14], iconAnchor:[7,7], html:'<div class="bendDot'+(on ? " on" : "")+'"></div>'}); }
+function mapShowsBend(P, Q){ return map.latLngToContainerPoint(P).distanceTo(map.latLngToContainerPoint(Q)) >= 26; }
+function addBendHandles(layer, m){
+  const n = m.pts.length;
+  bendHandles(m.pts, m.arcs, m.type==="area").forEach((pos, i) => {
+    if(!mapShowsBend(m.pts[i], m.pts[(i+1)%n])) return;
+    const mk = L.marker(pos, {draggable:true, icon:bendIcon(!!(m.arcs && m.arcs[i])), zIndexOffset:400}).addTo(mapLayerGroup);
+    let pre = null;
+    mk.on("dragstart", () => { pre = snapshot(); });
+    mk.on("drag", e => {
+      if(!m.arcs) m.arcs = [];
+      m.arcs[i] = mapBulge(m.pts[i], m.pts[(i+1)%n], e.latlng);
+      layer.setLatLngs(shapePts(m));
+      const v = measureValue(m);
+      document.getElementById("liveVal").textContent = v==null ? "" : fQty(m.type, v, 1, 0);
+    });
+    mk.on("dragend", () => { tidyArcs(m); if(pre) commitHistory(pre); refreshAll(); });
+    mk.on("contextmenu", e => {
+      L.DomEvent.stopPropagation(e);
+      if(m.arcs && m.arcs[i]){ pushHistory(); m.arcs[i] = 0; tidyArcs(m); refreshAll(); toast("Straightened"); }
+    });
+    mk.on("click", e => L.DomEvent.stopPropagation(e));
+  });
+}
+// the shape being drawn on the map: the outline follows the mouse (once per frame); its dots and ◆ are rebuilt only
+// when points or bends change, so a ◆ being dragged stays where it is
+var tempShape = null, tempSig = "", tempRaf = 0, mapBendDrag = false;
 function drawTemp(){
   if(!map) return;
-  tempGroup.clearLayers();
-  if(!drawing || mode!=="map") return;
-  const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
-  if(drawing.type==="line" && pts.length>1)
-    L.polyline(drawing.curve ? smoothPts(pts) : pts, {color:drawing.color, weight:3, dashArray:"7,5"}).addTo(tempGroup);
-  if(drawing.type==="area" && pts.length>1)
-    L.polygon(pts, {color:drawing.color, weight:3, dashArray:"7,5", fillOpacity:.15}).addTo(tempGroup);
-  for(const p of drawing.pts)
-    L.circleMarker(p, {radius:4, color:"#fff", weight:1.5, fillColor:drawing.color, fillOpacity:1}).addTo(tempGroup);
+  const d = mode==="map" ? drawing : null;
+  if(!d || !d.pts.length){ if(tempSig || tempShape){ tempGroup.clearLayers(); tempShape = null; tempSig = ""; } return; }
+  const sig = d.type+":"+d.pts.length+":"+(d.arcs || []).join(",")+":"+map.getZoom();
+  if(sig!==tempSig && !mapBendDrag){
+    tempGroup.clearLayers(); tempShape = null;
+    for(const p of d.pts) L.circleMarker(p, {radius:4, color:"#fff", weight:1.5, fillColor:d.color, fillOpacity:1, interactive:false}).addTo(tempGroup);
+    if(d.type==="line" || d.type==="area") addTempBendHandles(d);
+    tempSig = sig;
+  }
+  if(d.type==="count") return;
+  const g = drawingShape(d, drawCursor(d));
+  if(g.pts.length<2){ if(tempShape){ tempGroup.removeLayer(tempShape); tempShape = null; } return; }
+  const shape = bentPts(g.pts, g.arcs, false);
+  if(!tempShape){
+    tempShape = (d.type==="area" ? L.polygon : L.polyline)(shape, {color:d.color, weight:3, dashArray:"7,5", fillOpacity:.15, interactive:false, smoothFactor:0}).addTo(tempGroup);
+    tempShape.bringToBack();
+  } else tempShape.setLatLngs(shape);
+}
+function scheduleTemp(){
+  if(tempRaf) return;
+  tempRaf = requestAnimationFrame(() => { tempRaf = 0; drawTemp(); updateLive(); });
+}
+function addTempBendHandles(d){
+  bendHandles(d.pts, d.arcs, false).forEach((pos, i) => {
+    if(!mapShowsBend(d.pts[i], d.pts[i+1])) return;
+    const mk = L.marker(pos, {draggable:true, icon:bendIcon(!!d.arcs[i]), zIndexOffset:400}).addTo(tempGroup);
+    let prev = 0;
+    mk.on("dragstart", () => { mapBendDrag = true; prev = d.arcs[i] || 0; });
+    mk.on("drag", e => { d.arcs[i] = mapBulge(d.pts[i], d.pts[i+1], e.latlng); scheduleTemp(); });
+    mk.on("dragend", () => {
+      mapBendDrag = false;
+      if(d.arcs[i]!==prev){ d.hist.push({t:"bend", i, prev, next:d.arcs[i]}); d.redo = []; }
+      tempSig = ""; drawTemp(); updateFab(); updateLive();
+    });
+    mk.on("click", e => L.DomEvent.stopPropagation(e));
+  });
 }
 
 // ---- address / place search ----
@@ -1822,7 +2027,7 @@ function updateDocUI(){
   document.getElementById("docName").textContent =
     i<0 ? "Plans" : (docs.length>1 ? (i+1)+"/"+docs.length+" · " : "")+shortName(docs[i].name, 22);
   chip.title = i<0 ? "Plans in this project" : docs[i].name+" — switch plans or add more PDFs";
-  document.getElementById("markBtn").textContent = docs.length>1 ? "⬇ Export PDF — this plan" : "⬇ Export PDF";
+  document.getElementById("markBtn").textContent = docs.length>1 ? "⬇️ Export PDF — this plan" : "⬇️ Export PDF";
   document.getElementById("markAllBtn").style.display = docs.length>1 ? "" : "none";
   document.getElementById("projTitle").placeholder = lastAddress || (has ? docs[0].name.replace(/\.pdf$/i,"") : "Untitled project");
   document.getElementById("hintBig").textContent = has && !pdfDoc
@@ -1966,14 +2171,15 @@ function drawOverlay(){
   octx.drawImage(staticCanvas,0,0);
   if(editDrag && editDrag.m.src==="pdf") drawMeasure(editDrag.m, true, lw);
   if(drawing && drawing.src!=="map" && drawing.pts.length){
-    const ghost = {type:drawing.type, curve:drawing.curve, pts: mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts,
-                   color: drawing.color || COLORS[drawing.type], page:pageNum, src:"pdf"};
+    const g = drawingShape(drawing, drawCursor(drawing));
+    const ghost = {type:drawing.type, pts:g.pts, arcs:g.arcs, color: drawing.color || COLORS[drawing.type], page:pageNum, src:"pdf",
+                   bends: drawing.type==="line" || drawing.type==="area" ? drawing.pts.length-1 : 0};
     drawMeasure(ghost, true, lw, true);
   }
 }
 function drawMeasure(m, hot, lw, ghost){
   const pts = m.pts.map(pdfToScreen);
-  const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(pdfToScreen) : pts;   // a curve bends through its points
+  const path = m.type==="count" ? pts : bentPts(m.pts, m.arcs, m.type==="area" && !ghost).map(pdfToScreen);
   dctx.lineWidth = hot? lw*1.3 : lw;
   dctx.strokeStyle = m.color; dctx.fillStyle = m.color;
   dctx.setLineDash(ghost ? [6*dpr,4*dpr] : []);
@@ -1994,6 +2200,7 @@ function drawMeasure(m, hot, lw, ghost){
       if(m.type==="area"){ dctx.globalAlpha = .18; dctx.fill(); dctx.globalAlpha = 1; }
       dctx.stroke();
     }
+    dctx.setLineDash([]);   // corner dots are solid, also on the shape being drawn
     pts.forEach((p,i)=>{
       const isSel = selVertex && selVertex.mId===m.id && selVertex.idx===i;
       dctx.beginPath(); dctx.arc(p.x,p.y,(isSel?5.5:hot?4.2:2.6)*dpr,0,7);
@@ -2002,6 +2209,9 @@ function drawMeasure(m, hot, lw, ghost){
       dctx.lineWidth = (isSel?2.4:1.4)*dpr; dctx.stroke();
       dctx.strokeStyle = m.color; dctx.lineWidth = lw;
     });
+    // ◆ in the middle of each segment: on the selected line or area, and on the placed segments of one being drawn
+    const nb = ghost ? (m.bends||0) : (m.id===selectedId && (m.type==="line" || m.type==="area") ? (m.type==="area" ? m.pts.length : m.pts.length-1) : 0);
+    if(nb>0) drawBendDots(m, nb, m.type==="area" && !ghost);
     if(!ghost && pts.length>1){
       const mid = path[Math.floor(path.length/2)] || pts[0];
       const v = measureValue(m);
@@ -2017,6 +2227,20 @@ function drawMeasure(m, hot, lw, ghost){
   dctx.setLineDash([]);
 }
 
+// ◆ = a white diamond on each segment; a curved segment's has a coloured centre
+function drawBendDots(m, nb, closed){
+  const hs = bendHandles(m.pts, m.arcs, closed), n = m.pts.length;
+  const dia = (c, r) => { dctx.beginPath(); dctx.moveTo(c.x, c.y-r); dctx.lineTo(c.x+r, c.y); dctx.lineTo(c.x, c.y+r); dctx.lineTo(c.x-r, c.y); dctx.closePath(); };
+  dctx.setLineDash([]);
+  for(let i=0; i<Math.min(nb, hs.length); i++){
+    if(!showsBend(m.pts[i], m.pts[(i+1)%n])) continue;
+    const c = pdfToScreen(hs[i]), r = 6*dpr;
+    dia(c, r); dctx.fillStyle = "#fff"; dctx.fill();
+    dctx.strokeStyle = m.color; dctx.lineWidth = 2*dpr; dctx.stroke();
+    if(m.arcs && m.arcs[i]){ dia(c, r*0.42); dctx.fillStyle = m.color; dctx.fill(); }
+  }
+}
+
 // ================= PDF mouse & touch =================
 function evtPdf(e){
   const r = overlay.getBoundingClientRect();
@@ -2029,14 +2253,23 @@ function snap(p){
 }
 function hitTest(p){
   const vt = 9/zoom, st = 6/zoom;
+  // the ◆ of the selected line or area first (they only show on it) — a corner point right there still wins
+  const sel = selectedId!=null ? measurements.find(m => m.id===selectedId) : null;
+  if(sel && sel.src==="pdf" && sel.page===pageNum && sel.doc===curDocId && (sel.type==="line" || sel.type==="area")
+     && !sel.pts.some(q => dist(p, q) < vt)){
+    const hs = bendHandles(sel.pts, sel.arcs, sel.type==="area"), n = sel.pts.length;
+    for(let i=0; i<hs.length; i++) if(showsBend(sel.pts[i], sel.pts[(i+1)%n]) && dist(p, hs[i]) < vt) return {kind:"bend", m:sel, idx:i};
+  }
   for(const m of [...measurements].reverse()){
     if(m.src!=="pdf" || m.page!==pageNum || m.doc!==curDocId) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     for(let i=m.pts.length-1;i>=0;i--){
       if(dist(p, m.pts[i]) < vt) return {kind: m.type==="count"?"dot":"vertex", m, idx:i};
     }
-    if(m.type==="area" && m.pts.length>2 &&
-       (pointInPoly(p, m.pts) || distToPath(p, m.pts, true) < st)) return {kind:"body", m};
+    if(m.type==="area" && m.pts.length>2){
+      const r = shapePts(m);
+      if(pointInPoly(p, r) || distToPath(p, r, true) < st) return {kind:"body", m};
+    }
     if(m.type==="line" && m.pts.length>1 && distToPath(p, shapePts(m), false) < st) return {kind:"body", m};
   }
   return null;
@@ -2046,7 +2279,7 @@ overlay.addEventListener("mousedown", e => {
     const hit = hitTest(evtPdf(e));
     if(hit){
       selectedId = hit.m.id;
-      selVertex = hit.kind==="body" ? null : {mId:hit.m.id, idx:hit.idx};
+      selVertex = hit.kind==="body" || hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
       editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start:evtPdf(e),
                   orig: hit.m.pts.map(q=>({...q})), pre:snapshot(), moved:false};
       staticExclude = hit.m.id; markStatic();
@@ -2063,6 +2296,11 @@ overlay.addEventListener("mousedown", e => {
 overlay.addEventListener("contextmenu", e => {
   if(tool!=="select") return;
   const hit = hitTest(evtPdf(e));
+  if(hit && hit.kind==="bend"){   // right-click a ◆: straight again
+    e.preventDefault();
+    if(hit.m.arcs && hit.m.arcs[hit.idx]){ pushHistory(); hit.m.arcs[hit.idx] = 0; tidyArcs(hit.m); refreshAll(); toast("Straightened"); }
+    return;
+  }
   if(hit && hit.kind!=="body"){ e.preventDefault(); deleteVertex(hit.m, hit.idx); }
 });
 window.addEventListener("mousemove", e => {
@@ -2071,6 +2309,10 @@ window.addEventListener("mousemove", e => {
     const dx = p.x - editDrag.start.x, dy = p.y - editDrag.start.y;
     if(editDrag.kind==="body"){
       editDrag.m.pts = editDrag.orig.map(q => ({x:q.x+dx, y:q.y+dy}));
+    } else if(editDrag.kind==="bend"){   // the segment follows the mouse
+      const m = editDrag.m, i = editDrag.idx;
+      if(!m.arcs) m.arcs = [];
+      m.arcs[i] = pdfBulge(m.pts[i], m.pts[(i+1)%m.pts.length], p);
     } else {
       editDrag.m.pts[editDrag.idx] = {x:editDrag.orig[editDrag.idx].x+dx, y:editDrag.orig[editDrag.idx].y+dy};
     }
@@ -2087,8 +2329,9 @@ window.addEventListener("mousemove", e => {
 });
 window.addEventListener("mouseup", () => {
   if(editDrag){
-    const {moved, pre} = editDrag;
+    const {moved, pre, m} = editDrag;
     editDrag = null; staticExclude = null; markStatic();
+    tidyArcs(m);
     if(moved){ commitHistory(pre); refreshAll(); }
     else drawOverlay();
   }
@@ -2096,10 +2339,48 @@ window.addEventListener("mouseup", () => {
 });
 overlay.addEventListener("mousemove", e => {
   mousePdf = evtPdf(e);
+  altHeld = e.altKey;
   updateLive();
   if(drawing && drawing.src!=="map") requestDraw();
 });
+// while drawing: drag the ◆ in the middle of a placed segment to curve it (mouse, pen or finger)
+var bendDrag = null, suppressClick = false;
+overlay.addEventListener("pointerdown", e => {
+  if(bendDrag) return;   // a second finger
+  suppressClick = false;
+  const d = drawing;
+  if(e.button!==0 || !d || d.src!=="pdf" || !(d.type==="line" || d.type==="area") || d.pts.length<2 || spaceDown) return;
+  const p = evtPdf(e), hs = bendHandles(d.pts, d.arcs, false), reach = (e.pointerType==="touch" ? 20 : 10)/zoom;
+  for(let i=0; i<hs.length; i++){
+    if(!showsBend(d.pts[i], d.pts[i+1]) || dist(p, hs[i]) >= reach) continue;
+    bendDrag = {i, prev:d.arcs[i] || 0, id:e.pointerId, moved:false};
+    try{ overlay.setPointerCapture(e.pointerId); }catch{}
+    e.preventDefault(); return;
+  }
+});
+// a finger on a ◆ bends the segment instead of scrolling the plan
+overlay.addEventListener("touchstart", e => { if(bendDrag && e.touches.length===1) e.preventDefault(); }, {passive:false});
+overlay.addEventListener("pointermove", e => {
+  if(!bendDrag || e.pointerId!==bendDrag.id) return;
+  const d = drawing;
+  if(!d){ bendDrag = null; return; }
+  const i = bendDrag.i;
+  mousePdf = evtPdf(e);
+  d.arcs[i] = pdfBulge(d.pts[i], d.pts[i+1], mousePdf);
+  bendDrag.moved = true;
+  requestDraw(); updateLive();
+});
+function endBendDrag(e){
+  if(!bendDrag || e.pointerId!==bendDrag.id) return;
+  const d = drawing, b = bendDrag;
+  bendDrag = null; suppressClick = true;   // the click that ends a drag doesn't add a point
+  if(d && d.arcs[b.i]!==b.prev){ d.hist.push({t:"bend", i:b.i, prev:b.prev, next:d.arcs[b.i]}); d.redo = []; }
+  requestDraw(); updateFab(); updateLive();
+}
+overlay.addEventListener("pointerup", endBendDrag);
+overlay.addEventListener("pointercancel", endBendDrag);
 overlay.addEventListener("click", e => {
+  if(suppressClick){ suppressClick = false; return; }
   if(panning || tool==="select" || spaceDown || pinchActive) return;
   if(e.detail > 1) return; // second click of a double-click — dblclick handler finishes the shape
   const p = snap(evtPdf(e));
@@ -2118,9 +2399,15 @@ overlay.addEventListener("click", e => {
     if(drawing.pts.length===2){ calibPts = drawing.pts; drawing = null; openModal("calibBack","calFt"); updateFab(); }
     drawOverlay(); updateFab(); return;
   }
-  if(tool==="line" || tool==="area" || tool==="curve"){
+  if(tool==="line" || tool==="area"){
+    const d = drawing;
+    if(d && d.pts.length>=2 && (e.altKey || curveMode)){   // bend the last segment through this point
+      const n = d.pts.length;
+      setDrawingBend(n-2, pdfBulge(d.pts[n-2], d.pts[n-1], evtPdf(e)));
+      return;
+    }
     if(!drawing) drawing = newDrawing("pdf");
-    drawing.pts.push(p); drawing.redo = []; drawOverlay(); updateFab(); updateLive();
+    addDrawPoint(p); bendTip(); drawOverlay(); updateFab(); updateLive();
   }
 });
 overlay.addEventListener("dblclick", e => { e.preventDefault(); finishDrawing(); });
@@ -2169,32 +2456,42 @@ function finishDrawing(){
     pushHistory();
     const m = {
       id: nextId++, src: drawing.src, type: drawing.type, pts: drawing.pts,
-      color: drawing.color, cat: activeCatId, name: newName(drawing.curve ? "curve" : drawing.type)
+      color: drawing.color, cat: activeCatId, name: newName(drawing.type)
     };
-    if(drawing.curve) m.curve = true;
+    const arcs = (drawing.arcs || []).slice(0, pts.length-1);
+    if(drawing.type==="area") arcs.push(0);   // the closing segment starts straight
+    if(arcs.some(b => b)) m.arcs = Array.from(arcs, b => b || 0);
     if(drawing.src==="pdf"){ m.page = pageNum; m.doc = curDocId; }
     measurements.push(m); selectedId = m.id;
   }
-  drawing = null; refreshAll();
+  drawing = null; curveMode = false; refreshAll();
 }
 function cancelDrawing(){
   if(drawing && drawing.type==="count"){ finishDrawing(); return; }
-  drawing = null;
+  drawing = null; curveMode = false;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
+// ⌘Z while drawing takes back the last step — a point, or the bend you just gave a segment
 function undoPoint(){
   if(!drawing || !drawing.pts.length) return;
   if(drawing.type==="count"){ countStep(false); return; }
-  (drawing.redo || (drawing.redo = [])).push(drawing.pts.pop());
-  if(!drawing.pts.length) drawing = null;
-  drawOverlay(); drawTemp(); updateFab(); updateLive();
+  const d = drawing, a = (d.hist && d.hist.pop()) || {t:"pt"};
+  if(a.t==="bend") d.arcs[a.i] = a.prev;
+  else { a.p = d.pts.pop(); a.b = d.arcs && d.arcs.length>Math.max(0, d.pts.length-1) ? d.arcs.pop() : 0; }
+  (d.redo || (d.redo = [])).push(a);
+  if(!d.pts.length) drawing = null;
+  curveMode = false;
+  drawOverlay(); tempSig = ""; drawTemp(); updateFab(); updateLive();
 }
 function redoPoint(){
   if(!drawing) return;
   if(drawing.type==="count"){ countStep(true); return; }
-  if(!drawing.redo || !drawing.redo.length) return;
-  drawing.pts.push(drawing.redo.pop());
-  drawOverlay(); drawTemp(); updateFab(); updateLive();
+  const d = drawing, a = d.redo && d.redo.pop();
+  if(!a) return;
+  if(a.t==="bend") d.arcs[a.i] = a.next;
+  else { d.pts.push(a.p); if(d.pts.length>1) (d.arcs || (d.arcs = [])).push(a.b || 0); }
+  (d.hist || (d.hist = [])).push(a);
+  drawOverlay(); tempSig = ""; drawTemp(); updateFab(); updateLive();
 }
 // counting: every click is its own undo step — step back or forward and keep counting on the same item
 function countStep(redo){
@@ -2210,9 +2507,18 @@ document.getElementById("fabDone").onclick = finishDrawing;
 document.getElementById("fabCancel").onclick = cancelDrawing;
 document.getElementById("fabUndo").onclick = undoPoint;
 function updateFab(){
-  document.getElementById("fab").classList.toggle("show", !!drawing && drawing.pts && drawing.pts.length>0);
+  const d = drawing;
+  document.getElementById("fab").classList.toggle("show", !!d && d.pts && d.pts.length>0);
+  const cb = document.getElementById("fabCurve");
+  cb.style.display = d && (d.type==="line" || d.type==="area") && d.pts.length>=2 ? "" : "none";
+  cb.classList.toggle("on", !!curveMode);
   updateUndoBtns();
 }
+document.getElementById("fabCurve").onclick = () => {
+  curveMode = !curveMode;
+  if(curveMode) toast((matchMedia("(pointer: coarse)").matches ? "Tap" : "Click")+" on the curve — the last segment bends through that point", 3500);
+  updateFab(); requestDraw(); scheduleTemp(); updateLive();
+};
 
 window.addEventListener("keydown", e => {
   if(["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
@@ -2228,7 +2534,8 @@ window.addEventListener("keydown", e => {
   if(e.key===" "){ spaceDown = true; e.preventDefault(); }
   if(e.key==="Enter") finishDrawing();
   if(e.key==="Escape"){
-    if(drawing) cancelDrawing();
+    if(curveMode){ curveMode = false; updateFab(); requestDraw(); scheduleTemp(); updateLive(); }   // leave ⌒ Curve, keep drawing
+    else if(drawing) cancelDrawing();
     else if(selectedId!=null || selVertex){
       selectedId=null; selVertex=null; markStatic(); renderList(); drawOverlay();
       if(mode==="map") redrawMapLayers();
@@ -2250,7 +2557,13 @@ window.addEventListener("keydown", e => {
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="y"){
     e.preventDefault(); window.__redo(); return;
   }
-  const map_ = {v:"select", c:"calibrate", l:"line", u:"curve", a:"area", k:"count"};
+  // U while drawing a line or area = ⌒ Curve: the next click bends the last segment
+  if(e.key.toLowerCase()==="u" && !e.metaKey && !e.ctrlKey && !e.altKey){
+    if(drawing && (drawing.type==="line" || drawing.type==="area") && drawing.pts.length>=2) document.getElementById("fabCurve").click();
+    else toast("Curves are part of Linear (L) and Area (A): after 2 points, press U or drag the ◆", 4000);
+    return;
+  }
+  const map_ = {v:"select", c:"calibrate", l:"line", a:"area", k:"count"};
   if(map_[e.key.toLowerCase()] && !e.metaKey && !e.ctrlKey){
     if(e.key.toLowerCase()==="c" && mode==="map") return;
     setTool(map_[e.key.toLowerCase()]);
@@ -2350,13 +2663,18 @@ function setTool(t){
   overlay.style.cursor = t==="select" ? "grab" : DRAW_CURSOR;
   overlay.style.touchAction = t==="select" ? "auto" : "none";
   if(map) map.getContainer().style.cursor = t==="select" ? "" : DRAW_CURSOR;
-  if(t==="curve" && !curveTipShown){
-    curveTipShown = true;
-    toast("Curve: click points along the edge — the line bends through them. Double-click to finish.");
-  }
+  curveMode = false;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
-var curveTipShown = false;
+var bendTipShown = false, curveMode = false, altHeld = false;
+// holding Alt (Option on a Mac) while drawing shows the last segment bending through the mouse — click to keep it
+window.addEventListener("keydown", e => {
+  if(e.key==="Alt" && drawing){ e.preventDefault(); if(!altHeld){ altHeld = true; requestDraw(); scheduleTemp(); updateLive(); } }
+});
+window.addEventListener("keyup", e => {
+  if(e.key==="Alt" && (altHeld || drawing)){ e.preventDefault(); altHeld = false; requestDraw(); scheduleTemp(); updateLive(); }
+});
+window.addEventListener("blur", () => { altHeld = false; });
 document.querySelectorAll(".tool").forEach(b => b.onclick = () => setTool(b.dataset.tool));
 
 function goPage(delta){
@@ -2733,22 +3051,22 @@ function updateLive(){
   const live = document.getElementById("liveVal");
   const fabVal = document.getElementById("fabVal");
   let txt = "";
-  if(drawing){
-    if(drawing.src==="map"){
-      const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
-      if(drawing.type==="line" && pts.length>1) txt = fLen(geoPathFt(drawing.curve ? smoothPts(pts) : pts), 1);
-      else if(drawing.type==="area" && pts.length>2) txt = fArea(geoAreaSF(pts), 0);
-      else if(drawing.type==="count") txt = drawing.pts.length+" EA";
+  const d = drawing;
+  if(d){
+    const g = drawingShape(d, drawCursor(d)), pts = g.pts;
+    if(d.src==="map"){
+      if(d.type==="line" && pts.length>1) txt = fLen(geoBentLen(pts, g.arcs, false), 1);
+      else if(d.type==="area" && pts.length>2) txt = fArea(geoBentArea(pts, [...g.arcs, 0]), 0);
+      else if(d.type==="count") txt = d.pts.length+" EA";
     } else {
       const fpu = getFPU();
-      const pts = mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts;
-      if(drawing.type==="calibrate" || drawing.type==="line"){
-        txt = fpu!=null && pts.length>1 ? fmtLen(pathLen(drawing.curve ? smoothPts(pts) : pts)*fpu)
-          : drawing.type==="calibrate" ? "pick 2 points on a known dimension" : "scale not set";
-      } else if(drawing.type==="area"){
-        txt = fpu!=null && pts.length>2 ? fArea(polyArea(pts)*fpu*fpu, 1) : (fpu==null?"scale not set":"");
-      } else if(drawing.type==="count"){
-        txt = drawing.pts.length+" EA";
+      if(d.type==="calibrate" || d.type==="line"){
+        txt = fpu!=null && pts.length>1 ? fmtLen(bentLen(pts, g.arcs, false)*fpu)
+          : d.type==="calibrate" ? "pick 2 points on a known dimension" : "scale not set";
+      } else if(d.type==="area"){
+        txt = fpu!=null && pts.length>2 ? fArea(bentArea(pts, g.arcs)*fpu*fpu, 1) : (fpu==null?"scale not set":"");
+      } else if(d.type==="count"){
+        txt = d.pts.length+" EA";
       }
     }
   }
@@ -2772,7 +3090,7 @@ function drawMeasureOn(ctx, m, sc, k){
     return;
   }
   if(pts.length>1){
-    const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(p=>({x:p.x*sc, y:p.y*sc})) : pts;
+    const path = bentPts(m.pts, m.arcs, m.type==="area").map(p=>({x:p.x*sc, y:p.y*sc}));
     ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
     for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x,path[i].y);
     if(m.type==="area"){ ctx.closePath(); ctx.globalAlpha=.16; ctx.fill(); ctx.globalAlpha=1; }
@@ -2980,14 +3298,14 @@ function labelSpots(m, w, h, g, r){
   const out = [];
   const at = (cx, cy, ax, ay) => out.push({x:cx-w/2, y:cy-h/2, ax, ay});   // box centred on cx,cy
   if(m.type==="area"){
-    const inner = interiorSpots(m.pts, 12);
+    const inner = interiorSpots(shapePts(m), 12);
     for(const p of inner) at(p.x, p.y, p.x, p.y);
     if(!inner.length){
       const cx = m.pts.reduce((a, p) => a+p.x, 0)/m.pts.length, cy = m.pts.reduce((a, p) => a+p.y, 0)/m.pts.length;
       at(cx, cy, cx, cy);
     }
   } else if(m.type==="line"){
-    const segs = [], lp = m.curve ? smoothPts(m.pts, 4) : m.pts;   // a curve: beside its bends
+    const segs = [], lp = shapePts(m, true);   // curved segments: beside their bends
     for(let i=1; i<lp.length; i++) segs.push([lp[i-1], lp[i]]);
     segs.sort((a, b) => dist(b[0], b[1]) - dist(a[0], a[1]));
     for(const [a, b] of segs.slice(0, 6)){
@@ -3042,7 +3360,7 @@ function layoutLabels(reqs, W, H, g, r, all){
   for(const m of all){
     if(!m.pts || !m.pts.length) continue;
     if(m.type==="count"){ for(const p of m.pts) add({x:p.x-r, y:p.y-r, w:2*r, h:2*r, owner:m.id, wt:3}); continue; }
-    const pts = m.type==="area" && m.pts.length>2 ? [...m.pts, m.pts[0]] : shapePts(m);
+    const sp = shapePts(m), pts = m.type==="area" && sp.length>2 ? [...sp, sp[0]] : sp;
     for(let i=1; i<pts.length; i++){
       const a = pts[i-1], b = pts[i], n = Math.max(1, Math.ceil(dist(a, b)/step));
       for(let k=0; k<=n; k++) add({x:a.x+(b.x-a.x)*k/n-0.5, y:a.y+(b.y-a.y)*k/n-0.5, w:1, h:1, owner:m.id, wt:1});
@@ -3058,7 +3376,7 @@ function layoutLabels(reqs, W, H, g, r, all){
     cx0 /= reqs.length; cy0 /= reqs.length;
   }
   // the tightest shapes pick first: counts, then short lines, then small areas
-  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(shapePts(m)) : Math.sqrt(polyArea(m.pts));
+  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(shapePts(m)) : Math.sqrt(polyArea(shapePts(m)));
   const order = reqs.map((q, i) => ({q, i, s:size(q.m)})).sort((a, b) => a.s - b.s || a.i - b.i);
   for(const {q} of order){
     const {w, h} = q, id = q.m.id;
@@ -3114,7 +3432,7 @@ function drawPageMarkups(L, page, items, vp, rot, font){
     }
     if(m.pts.length < 2) continue;
     const pts = m.pts.map(p => P(p.x, p.y));
-    const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(p => P(p.x, p.y)) : pts;
+    const path = bentPts(m.pts, m.arcs, m.type==="area").map(p => P(p.x, p.y));
     // pdf-lib reads SVG paths with y pointing down, so PDF y values go in negated
     const d = path.map((q, i) => (i ? "L" : "M")+q.x.toFixed(2)+" "+(-q.y).toFixed(2)).join(" ")+(m.type==="area" ? " Z" : "");
     if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
@@ -3427,7 +3745,12 @@ function normScales(p){
     docScale: p.defaultFtPerUnit!=null ? {d1:{fpu:p.defaultFtPerUnit, label:lbls[lbls.length-1]||null}} : {}};
 }
 function normMeas(arr){
-  return (arr||[]).map(m => { const x = {src:"pdf", ...m}; if(x.src==="pdf" && !x.doc) x.doc = "d1"; return x; });
+  return (arr||[]).map(m => {
+    const x = {src:"pdf", ...m};
+    if(x.src==="pdf" && !x.doc) x.doc = "d1";
+    if(x.curve){ if(x.type==="line" && x.pts && x.pts.length>2){ x.arcs = legacyCurveArcs(x.pts); tidyArcs(x); } delete x.curve; }
+    return x;
+  });
 }
 // load a project's data; its plans are fetched afterwards by the caller (openLoadedProject)
 var verClockStart = Date.now();   // var: used by the session restore while the page loads
@@ -4198,10 +4521,9 @@ function buildScaleList(){
 }
 function applyUnitsUI(){
   const met = isMetric();
-  document.getElementById("setUnitsUS").textContent = (met ? "" : "✓ ")+"US — feet (LF · SF · CY)";
-  document.getElementById("setUnitsMetric").textContent = (met ? "✓ " : "")+"Metric — metres (m · m² · m³)";
+  document.getElementById("setUnitsUS").classList.toggle("sel", !met);
+  document.getElementById("setUnitsMetric").classList.toggle("sel", met);
   document.getElementById("tipLine").textContent = "Linear — "+uLen()+" (L)";
-  document.getElementById("tipCurve").textContent = "Curve — "+uLen()+" (U)";
   document.getElementById("tipArea").textContent = "Area — "+uArea()+" (A)";
   document.querySelector('label[for="calFt"]').textContent = met ? "Metres" : "Feet";
   document.querySelector('label[for="calIn"]').textContent = met ? "Centimetres" : "Inches";
