@@ -55,16 +55,29 @@
     border-bottom:1px solid var(--hair);
   }
   #appMenuBtn{
-    display:flex; align-items:center; gap:6px; background:none; border:none;
-    font-weight:700; font-size:13px; letter-spacing:.2px; cursor:pointer;
-    padding:6px 8px; border-radius:8px;
+    display:flex; align-items:center; gap:7px; background:var(--solid); border:1px solid var(--line);
+    font-weight:700; font-size:13px; letter-spacing:.2px; cursor:pointer; color:var(--ink);
+    padding:5px 10px 5px 8px; border-radius:10px; box-shadow:0 1px 2px rgba(0,0,0,.07); flex:none;
   }
+  #appMenuBtn .ham{width:15px; height:15px; flex:none; fill:none; stroke:var(--dim); stroke-width:2; stroke-linecap:round;}
   #appMenuBtn span{color:var(--amber);}
   #appMenuBtn em{font-style:normal; font-weight:400; font-size:9px; color:var(--faint);}
-  #appMenuBtn .chev{font-size:9px; color:var(--faint);}
-  #appMenuBtn:hover, #appMenuBtn.on{background:var(--panel2);}
+  #appMenuBtn .chev{font-size:10px; color:var(--dim);}
+  #appMenuBtn:hover, #appMenuBtn.on{background:var(--panel2); border-color:var(--amber);}
+  /* save indicator next to the project name */
+  .saveState{background:none; border:1px solid transparent; border-radius:8px; padding:4px 8px; font-size:11.5px;
+    color:var(--faint); white-space:nowrap; cursor:default; flex:none;}
+  .saveState.dirty{color:var(--dim); cursor:pointer;}
+  .saveState.dirty:hover{border-color:var(--line);}
+  .saveState.busy{color:var(--dim);}
+  .saveState.err{color:#e5493a; border-color:rgba(229,73,58,.35); cursor:pointer;}
   .credit{position:fixed; left:16px; bottom:calc(6px + var(--sab)); font-size:8.5px;
     letter-spacing:.4px; color:var(--faint); opacity:.55; pointer-events:none; z-index:5;}
+  /* Made in the USA */
+  .usFlag{width:16px; height:8.4px; flex:none; border-radius:1.5px; box-shadow:0 0 0 .5px rgba(0,0,0,.18);}
+  .madeUS{display:inline-flex; align-items:center; gap:5px; white-space:nowrap;}
+  .credit .usFlag{width:12px; height:6.3px;}
+  .pop .menuFoot{display:flex; align-items:center; gap:7px; padding:6px 10px 4px; font-size:10.5px; letter-spacing:.3px; color:var(--faint);}
   #projTitle{
     background:transparent; border:1px solid transparent; color:var(--ink);
     font-size:13px; font-weight:600; padding:6px 10px; border-radius:8px;
@@ -90,6 +103,17 @@
   .ibtn:hover{background:var(--panel2); color:var(--ink);}
   .ibtn:disabled{opacity:.35; cursor:default;}
   .ibtn.on{background:var(--panel2); color:var(--amber);}
+  /* text buttons top right: Save · Export */
+  .tbtn{height:30px; padding:0 13px; border-radius:9px; border:1px solid var(--line); background:var(--solid); color:var(--ink);
+    font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap; flex:none;}
+  .tbtn:hover{background:var(--panel2);}
+  .tbtn.on{background:var(--panel2); border-color:var(--amber);}
+  .tbtn.primary{background:var(--amber); border-color:transparent; color:#fff;}
+  .tbtn.primary:hover{background:var(--amber); filter:brightness(1.07);}
+  .tbtn .chev{font-size:9px; opacity:.75;}
+  body[data-theme="dark"] .tbtn.primary{color:#141416;}   /* dark text reads better on the bright dark-mode accent */
+  #saveBtn{margin:0 2px 0 4px;}
+  #shareBtn{margin-right:2px;}
   #listToggle{display:none;}
   /* ================= popovers ================= */
   .pop{
@@ -110,16 +134,21 @@
   .pop .ph{font-size:10px; letter-spacing:1px; color:var(--faint); padding:7px 10px 3px; font-weight:600;}
   .pop .hrow{display:flex; justify-content:space-between; gap:16px; padding:4px 10px; font-size:12px;}
   .pop .hrow b{font-family:var(--mono); font-weight:600; color:var(--dim); white-space:nowrap;}
+  .pop .mchk{display:flex; align-items:center; gap:8px; padding:6px 10px 7px; font-size:12px; color:var(--dim);
+    cursor:pointer; user-select:none; -webkit-user-select:none;}
+  .pop .mchk:hover{color:var(--ink);}
+  .pop .mchk input{width:15px; height:15px; margin:0; flex:none; accent-color:var(--amber); cursor:pointer;}
   #pop-scale{max-height:70vh; overflow-y:auto; min-width:230px;}
   /* ================= canvas & map ================= */
-  #canvasWrap{grid-area:canvas; overflow:auto; background:var(--well); position:relative;
+  html, body{overscroll-behavior:none;}   /* a sideways swipe never leaves the app */
+  #canvasWrap{grid-area:canvas; overflow:auto; background:var(--well); position:relative; overscroll-behavior:none;
     -webkit-overflow-scrolling:touch;}
   #stage{position:relative; margin:26px auto; width:fit-content; display:none;
     box-shadow:var(--shadow); border-radius:3px;}
   #pdfCanvas{display:block; background:#fff; border-radius:3px;}
   #pdfCanvas.inverted, #hiCanvas.inverted{filter:invert(0.93) hue-rotate(180deg);}
   #hiCanvas{position:absolute; pointer-events:none; display:none;}
-  #overlay{position:absolute; inset:0; cursor:crosshair;}
+  #overlay{position:absolute; inset:0; cursor:grab;}
   #dropHint{
     position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
     align-items:center; justify-content:center; color:var(--faint); text-align:center; padding:20px;
@@ -260,6 +289,10 @@
   #sideHead{display:flex; align-items:center; gap:8px; padding:13px 14px 8px;}
   #side h2{font-size:13px; font-weight:700; letter-spacing:.2px; margin-right:auto;}
   #filterSel{font-size:11.5px; padding:4px 7px; border-radius:8px;}
+  .hideAll{background:var(--solid); border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:4px 8px;
+    font-size:11.5px; cursor:pointer; white-space:nowrap; flex:none;}
+  .hideAll:hover{color:var(--ink); border-color:var(--amber);}
+  .hideAll.on{color:var(--amber); border-color:var(--amber);}
   #closeSide{display:none; background:none; border:none; color:var(--dim); font-size:17px; cursor:pointer;}
   #searchWrap{padding:0 14px;}
   #measSearch{width:100%; margin:0 0 8px; font-size:12px; border-radius:9px;}
@@ -314,6 +347,16 @@
     padding-bottom:calc(11px + var(--sab)); font-family:var(--mono); font-size:12px;}
   #totals .trow{display:flex; justify-content:space-between; padding:2px 0; color:var(--dim);}
   #totals .trow b{color:var(--ink); font-weight:700;}
+  #totals .tcap{font:600 10.5px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:var(--amber); margin-bottom:5px;}
+  .ttab{width:100%; border-collapse:collapse;}
+  .ttab th{font:700 10.5px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:var(--dim); text-align:right; padding:0 0 4px 8px;}
+  .ttab td{padding:2px 0 2px 8px; text-align:right; color:var(--ink); font-weight:700; white-space:nowrap;}
+  .ttab th:first-child, .ttab td:first-child{text-align:left; padding-left:0; color:var(--dim); font-weight:400;}
+  /* plan and map measurements, listed apart */
+  .srcHead{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:14px 4px 2px; padding:0 2px 5px;
+    border-bottom:2px solid var(--line); font-size:11px; font-weight:800; letter-spacing:.9px; color:var(--ink);}
+  .srcHead:first-child{margin-top:2px;}
+  .srcHead b{font-family:var(--mono); font-weight:600; font-size:10.5px; letter-spacing:0; color:var(--dim); text-align:right;}
   /* ================= modals & toast ================= */
   .modalBack{position:fixed; inset:0; background:rgba(0,0,0,.38); display:none;
     align-items:center; justify-content:center; z-index:4000; padding:16px;
@@ -373,6 +416,31 @@
     border:3px solid var(--amber); box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
   .cntIcon{width:20px; height:20px; border-radius:50%; color:#fff; font:bold 10px/20px ui-monospace,monospace;
     text-align:center; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
+  /* ================= project versions ================= */
+  .segTabs{display:flex; background:var(--panel2); border-radius:9px; padding:2px; gap:2px;}
+  .segTabs button{background:none; border:none; padding:5px 10px; border-radius:7px; font-size:12px; color:var(--dim); cursor:pointer;}
+  .segTabs button.on{background:var(--solid); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.14);}
+  .verBar{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 0 8px;}
+  .vcount{font-family:var(--mono); font-size:10.5px; color:var(--faint); white-space:nowrap;}
+  .vrow.ver{align-items:flex-start;}
+  .verHead{display:flex; justify-content:space-between; align-items:center; margin:14px 2px 6px; font-size:10.5px; font-weight:700;
+    letter-spacing:.8px; text-transform:uppercase; color:var(--dim);}
+  .verHead:first-child{margin-top:2px;}
+  .verHead b{font-family:var(--mono); font-weight:600; color:var(--faint);}
+  .vrow.ver .vmeta{cursor:pointer;}
+  .vrow.ver.auto{background:var(--panel);}
+  .vk{font-size:9.5px; font-weight:700; letter-spacing:.4px; color:var(--dim); background:var(--panel2);
+    border-radius:5px; padding:1px 6px; margin-left:4px; vertical-align:1px;}
+  .vs{font-family:var(--mono); font-size:11px; color:var(--ink); margin-top:2px;}
+  .vnote{font-size:11.5px; color:var(--dim); margin-top:2px; font-style:italic;}
+  .vc{font-size:11px; color:var(--amber); margin-top:2px;}
+  .vc.same{color:var(--faint);}
+  .vbtns{display:flex; gap:6px; flex:none;}
+  .vdet{width:100%; border-collapse:collapse; margin-top:6px; font-size:11px;}
+  .vdet th,.vdet td{text-align:left; padding:3px 6px; border-top:1px solid var(--hair);}
+  .vdet th{color:var(--faint); font-weight:600;}
+  .vdet td:nth-child(n+2){font-family:var(--mono);}
+  @media (max-width:560px){ .vrow.ver{flex-wrap:wrap;} .vbtns{width:100%; justify-content:flex-end;} }
   /* ================= plans (several PDFs per project) ================= */
   #docChip{gap:5px; flex:none;}
   #docChip #docName{font-size:11.5px; font-weight:600; color:var(--ink); white-space:nowrap;
@@ -420,6 +488,8 @@
     #closeSide{display:block;}
     #listToggle{display:flex;}
     .credit{display:none;}
+    .tbtn{padding:0 10px;}
+    .tbtn .chev{display:none;}
   }
   @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
 </style>
@@ -427,10 +497,12 @@
 <body data-mode="pdf">
 
 <div id="topbar">
-  <button id="appMenuBtn" data-pop="project" title="Project menu">
-    PLAN<span>TAKEOFF</span> <em>2.1</em> <span class="chev">▾</span>
+  <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
+    <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+    PLAN<span>TAKEOFF</span> <em>2.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
+  <button id="saveState" class="saveState" hidden></button>
   <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
   <input type="file" id="projInput" accept="application/json" hidden>
   <div id="modeSeg">
@@ -440,8 +512,8 @@
   <div id="topRight">
     <button class="ibtn" id="undoBtn" title="Undo (Cmd/Ctrl+Z)" disabled>↶</button>
     <button class="ibtn" id="redoBtn" title="Redo (Shift+Cmd/Ctrl+Z)" disabled>↷</button>
-    <button class="ibtn" id="cloudBtn" title="Cloud projects — save & open online">☁️</button>
-    <button class="ibtn" id="shareBtn" data-pop="share" title="Export">⤴</button>
+    <button class="tbtn primary" id="saveBtn" title="Save (⌘S)">Save</button>
+    <button class="tbtn" id="shareBtn" data-pop="share" title="Export, print or copy your takeoff">Export <span class="chev">▾</span></button>
     <button class="ibtn" id="settingsBtn" data-pop="settings" title="Settings">⚙️</button>
     <button class="ibtn" id="themeBtn" title="Light / dark mode" style="display:none">☀️</button>
     <button class="ibtn" id="helpBtn" data-pop="help" title="Tools & shortcuts" style="display:none">?</button>
@@ -451,29 +523,30 @@
 
 <!-- popover menus -->
 <div class="pop" id="pop-project">
-  <button class="mi" id="newBtn">New Project <span class="k">⌘N</span></button>
+  <button class="mi" id="newBtn">＋ New project <span class="k">⌘N</span></button>
   <div class="sep"></div>
   <button class="mi" id="openBtn">Add PDF plans…</button>
   <button class="mi" id="cloudMenuOpen">☁️ Cloud projects…</button>
-  <button class="mi" id="loadProj">💻 Open from computer…</button>
   <button class="mi" id="saveProj">Save <span class="k">⌘S</span></button>
-  <button class="mi" id="saveAsBtn">💻 Save to computer… <span class="k">⇧⌘S</span></button>
-  <button class="mi" id="verBtn">Versions…</button>
+  <button class="mi" id="verBtn">🕘 Project versions…</button>
   <div class="sep"></div>
   <button class="mi" id="clearBtn">Clear measurements…</button>
+  <div class="sep"></div>
+  <div class="menuFoot madeUS"><svg class="usFlag" viewBox="0 0 19 10" aria-hidden="true"><rect width="19" height="10" fill="#b22234"/><path d="M0 1.15h19M0 2.69h19M0 4.23h19M0 5.77h19M0 7.31h19M0 8.85h19" stroke="#fff" stroke-width=".77"/><rect width="7.6" height="5.38" fill="#3c3b6e"/></svg> Made in the USA</div>
 </div>
 <div class="pop" id="pop-share">
-  <button class="mi" id="copyBtn">Copy for LMN <span class="k">⇧⌘C</span></button>
+  <button class="mi" id="copyBtn">Copy project measurements <span class="k">⇧⌘C</span></button>
   <button class="mi" id="exportBtn">Export CSV <span class="k">⌘E</span></button>
   <button class="mi" id="printBtn">Print report…</button>
   <div class="sep"></div>
-  <button class="mi" id="markBtn">⬇ Marked-up PDF</button>
-  <button class="mi" id="markAllBtn" style="display:none">⬇ Marked-up PDF — all plans</button>
+  <button class="mi" id="markBtn">⬇ Export PDF</button>
+  <button class="mi" id="markAllBtn" style="display:none">⬇ Export PDF — all plans</button>
+  <label class="mchk" title="On: your measurements drawn on the plan, plus a takeoff summary page. Off: the plans as they came."><input type="checkbox" id="pdfMarks" checked> Include markups</label>
 </div>
 <div class="pop" id="pop-help" style="min-width:300px">
   <div class="ph">TOOLS</div>
   <div class="hrow"><span>Select / edit shapes</span><b>V</b></div>
-  <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
+  <div class="hrow"><span>Linear · Curve · Area · Count</span><b>L · U · A · K</b></div>
   <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
@@ -481,15 +554,18 @@
   <div class="hrow"><span>Move whole shape</span><b>drag inside it</b></div>
   <div class="ph">VIEW</div>
   <div class="hrow"><span>Fit page · zoom</span><b>F · + −</b></div>
-  <div class="hrow"><span>Pages · lock page</span><b>← → · P</b></div>
+  <div class="hrow"><span>Change page</span><b>‹ › · Page Up / Down</b></div>
+  <div class="hrow"><span>Move around the plan</span><b>arrow keys · Space + drag</b></div>
   <div class="hrow"><span>Switch plans · add PDFs</span><b>📄 bottom bar</b></div>
   <div class="hrow"><span>Hide category / item</span><b>👁 in list</b></div>
   <div class="hrow"><span>Show ONLY one category</span><b>Alt + 👁</b></div>
+  <div class="hrow"><span>Hide / show everything</span><b>Hide all</b></div>
   <div class="ph">PROJECT</div>
   <div class="hrow"><span>Undo · Redo</span><b>⌘Z · ⇧⌘Z</b></div>
-  <div class="hrow"><span>Save · Save As</span><b>⌘S · ⇧⌘S</b></div>
-  <div class="hrow"><span>Copy for LMN · CSV</span><b>⇧⌘C · ⌘E</b></div>
-  <div class="hrow"><span>Plan with your markups</span><b>⤴ Marked-up PDF</b></div>
+  <div class="hrow"><span>Take back the last point while drawing</span><b>⌘Z · Backspace</b></div>
+  <div class="hrow"><span>Save</span><b>⌘S</b></div>
+  <div class="hrow"><span>Copy measurements · CSV</span><b>⇧⌘C · ⌘E</b></div>
+  <div class="hrow"><span>Plan with your markups</span><b>Export → Export PDF</b></div>
 </div>
 <div class="pop" id="pop-scale">
   <div class="ph">SET SCALE</div>
@@ -560,6 +636,10 @@
     <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M6.2 17.8L17.8 6.2"/></svg>
     <span class="tip" id="tipLine">Linear — LF (L)</span>
   </button>
+  <button class="tool" data-tool="curve" aria-label="Curved measure">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M5 17.3C5 10.5 10.5 5 17.3 5"/></svg>
+    <span class="tip" id="tipCurve">Curve — LF (U)</span>
+  </button>
   <button class="tool" data-tool="area" aria-label="Area measure">
     <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
     <span class="tip" id="tipArea">Area — SF (A)</span>
@@ -574,10 +654,9 @@
 <div class="pill pdfOnly" id="navPill">
   <button class="pbtn" id="docChip" data-pop="docs" title="Plans in this project" style="display:none">📄 <span id="docName">Plans</span><span class="chev">▾</span></button>
   <div class="pdiv" id="docDiv" style="display:none"></div>
-  <button class="pbtn" id="prevPg" title="Previous page (←)">‹</button>
+  <button class="pbtn" id="prevPg" title="Previous page (Page Up)">‹</button>
   <div id="pageInfo">– / –</div>
-  <button class="pbtn" id="nextPg" title="Next page (→)">›</button>
-  <button class="pbtn" id="lockPg" title="Lock page (P)">🔓</button>
+  <button class="pbtn" id="nextPg" title="Next page (Page Down)">›</button>
   <div class="pdiv"></div>
   <button class="pbtn" id="zoomOut" title="Zoom out (−)">−</button>
   <button class="pbtn" id="zoomFit" title="Fit page (F)"><span id="zoomInfo">100%</span></button>
@@ -601,10 +680,10 @@
 <div id="side">
   <div id="sideHead">
     <h2>Takeoff</h2>
+    <button id="hideAllBtn" class="hideAll" title="Hide or show every measurement on the plan and map" style="display:none">🙈 Hide all</button>
     <select id="filterSel">
       <option value="all">Everything</option>
-      <option value="page">This page</option>
-      <option value="map">Map only</option>
+      <option value="view">This page</option>
     </select>
     <button id="closeSide" aria-label="Close panel">✕</button>
   </div>
@@ -619,7 +698,7 @@
   <div id="totals"></div>
 </div>
 
-<span class="credit">made by Stephan Bluitt</span>
+<span class="credit">made by Stephan Bluitt · <span class="madeUS"><svg class="usFlag" viewBox="0 0 19 10" aria-hidden="true"><rect width="19" height="10" fill="#b22234"/><path d="M0 1.15h19M0 2.69h19M0 4.23h19M0 5.77h19M0 7.31h19M0 8.85h19" stroke="#fff" stroke-width=".77"/><rect width="7.6" height="5.38" fill="#3c3b6e"/></svg> Made in the USA</span></span>
 
 <!-- calibration modal -->
 <div class="modalBack" id="calibBack">
@@ -702,7 +781,7 @@
     <div class="frow"><label for="ceDepth" id="ceDepthLbl">Depth (in)</label><input type="number" id="ceDepth" min="0" step="any" placeholder="optional — e.g. 3 for mulch"></div>
     <div class="frow"><label for="ceWaste">Waste %</label><input type="number" id="ceWaste" min="0" step="any" placeholder="optional — e.g. 10"></div>
     <div class="frow" style="align-items:flex-start"><label style="padding-top:6px" for="ceNotes">Notes</label>
-      <textarea id="ceNotes" placeholder="Scope notes — included in Copy for LMN"></textarea>
+      <textarea id="ceNotes" placeholder="Scope notes — included when you copy project measurements"></textarea>
     </div>
     <p id="ceHelp" style="margin:2px 0 10px; font-size:11px;">Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.</p>
     <div class="actions" style="justify-content:space-between">
@@ -728,14 +807,16 @@
   </div>
 </div>
 
-<!-- versions modal -->
+<!-- project versions modal -->
 <div class="modalBack" id="verBack">
-  <div class="modal">
-    <h3>Project versions</h3>
-    <p>Snapshots stored inside this project file. Save milestones — "Bid v1", "Revised scope" — and jump back anytime.</p>
-    <div class="frow"><label for="verName">Name</label><input type="text" id="verName" placeholder="e.g. Bid v1">
+  <div class="modal" style="width:560px;max-width:96vw">
+    <h3>🕘 Project versions</h3>
+    <p>Snapshots of this project: measurements, categories, scales and plans. Save one at milestones like "Bid v1" or "Revised scope".
+      Autosaves are kept too — every 10 minutes while you work, and before big changes. Restore any of them anytime.</p>
+    <div class="frow"><label for="verName">Name</label><input type="text" id="verName" placeholder="e.g. Bid v1" maxlength="80"></div>
+    <div class="frow"><label for="verNote">Note</label><input type="text" id="verNote" placeholder="optional — e.g. sent to the client" maxlength="200">
       <button class="btn primary" id="verSave" style="flex:none">Save version</button></div>
-    <div id="verList" style="max-height:42vh;overflow-y:auto;margin:2px 0 10px"></div>
+    <div id="verList" style="max-height:46vh;overflow-y:auto;margin:2px 0 10px"></div>
     <div class="actions"><button class="btn" id="verClose">Close</button></div>
   </div>
 </div>
@@ -755,7 +836,7 @@
     <div class="actions">
       <button class="btn" id="cloudSignout">Sign out</button>
       <button class="btn" id="cloudSettings">Settings</button>
-      <button class="btn" id="cloudNew">🆕 New project</button>
+      <button class="btn" id="cloudNew">＋ New project</button>
       <button class="btn primary" id="cloudClose">Close</button>
     </div>
   </div>
@@ -845,9 +926,9 @@ let editDrag = null, selVertex = null;
 let collapsedCats = new Set(), hiddenCats = new Set(), hiddenItems = new Set();
 let fileHandle = null;   // File System Access handle — lets Save write back to the opened file
 let versions = [];       // named snapshots stored inside the project file
-let nextId = 1, pageLocked = false;
+let nextId = 1;
 let projectName = "", lastAddress = "";
-const counters = {line:1, area:1, count:1};
+const counters = {line:1, curve:1, area:1, count:1};
 const COLORS = {line:"#0aa2e6", area:"#2fae3f", count:"#e6479a", calibrate:"#ffb224"};
 const PALETTE = ["#0aa2e6","#2fae3f","#e6479a","#ffb224","#9b6bff","#ff7a45","#19c3b1","#e8e6e1"];
 
@@ -862,6 +943,10 @@ let baseCache = new Map(); // pageNum -> {canvas, scale}
 let baseBusy = false, baseQueued = false, hiTask = null, hiTimer = null;
 const BASE_MAX = 2000; // css px, longest side of the always-ready base layer
 const dpr = window.devicePixelRatio || 1;
+// while measuring: a small crosshair with an open centre, so the plan right under the point stays visible
+var DRAW_CURSOR = 'url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17">'+
+  '<path d="M8.5 1v5M8.5 11v5M1 8.5h5M11 8.5h5" stroke="#fff" stroke-opacity=".9" stroke-width="3"/>'+
+  '<path d="M8.5 1v5M8.5 11v5M1 8.5h5M11 8.5h5" stroke="#000" stroke-width="1"/></svg>')+'") 8 8, crosshair';
 let shiftDown=false, spaceDown=false, panning=false, panStart=null;
 
 // ================= helpers =================
@@ -900,6 +985,44 @@ function polyArea(pts){
   for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; s += a.x*b.y - b.x*a.y; }
   return Math.abs(s)/2;
 }
+// ---- curve tool: a smooth line through every clicked point, measured along the curve. Between two clicks it
+// blends the circle through them and the click before with the circle through them and the click after, so clicks
+// on a round edge give that exact circle (start, middle and end are enough for an arc), and it never kinks.
+// Works on plan points {x,y} and map points {lat,lng}.
+function arcThru(a, b, c, p, q){   // the circle through a, b, c (in drawing order), walked from p to q; null = straight
+  const bx = b.x-a.x, by = b.y-a.y, cx = c.x-a.x, cy = c.y-a.y, d = 2*(bx*cy - by*cx);
+  const b2 = bx*bx+by*by, c2 = cx*cx+cy*cy, L2 = Math.max(b2, c2);
+  if(!L2 || Math.abs(d) < 1e-9*L2) return null;   // in a straight line
+  const ox = a.x+(cy*b2-by*c2)/d, oy = a.y+(bx*c2-cx*b2)/d, dir = d>0 ? 1 : -1;
+  const f = Math.atan2(p.y-oy, p.x-ox);
+  let sw = dir*(Math.atan2(q.y-oy, q.x-ox) - f);
+  while(sw<=0) sw += 2*Math.PI;
+  while(sw>2*Math.PI) sw -= 2*Math.PI;
+  if(sw>Math.PI || sw<1e-7) return null;   // more than half a turn between two clicks (doubling back): keep it straight
+  return {ox, oy, r:Math.hypot(p.x-ox, p.y-oy), f, sw:dir*sw};
+}
+function smoothPts(pts, steps){
+  if(!pts || pts.length<3) return pts || [];
+  steps = steps || 24;
+  const geo = pts[0].lat!=null, kx = geo ? Math.cos(pts[0].lat*Math.PI/180) : 1;
+  const P = geo ? pts.map(p => ({x:p.lng*kx, y:p.lat})) : pts;
+  const n = P.length, out = [];
+  const on = (A, p, q, s) => A ? {x:A.ox+A.r*Math.cos(A.f+A.sw*s), y:A.oy+A.r*Math.sin(A.f+A.sw*s)}
+                               : {x:p.x+(q.x-p.x)*s, y:p.y+(q.y-p.y)*s};
+  for(let i=0; i<n-1; i++){
+    const p = P[i], q = P[i+1];
+    const before = i>0 ? arcThru(P[i-1], p, q, p, q) : undefined, after = i+2<n ? arcThru(p, q, P[i+2], p, q) : undefined;
+    const A = before===undefined ? after : before, B = after===undefined ? before : after;   // the ends have one circle
+    for(let k=0; k<steps; k++){
+      const s = k/steps, w = Math.sin(Math.PI*s/2)**2, u = on(A, p, q, s), v = on(B, p, q, s);
+      out.push({x:u.x+(v.x-u.x)*w, y:u.y+(v.y-u.y)*w});
+    }
+  }
+  out.push(P[n-1]);
+  return geo ? out.map(z => ({lat:z.y, lng:z.x/kx})) : out;
+}
+// the points a shape is drawn and measured along
+function shapePts(m){ return m.curve && m.type==="line" ? smoothPts(m.pts) : m.pts; }
 // --- geodesic (map) math ---
 const R_EARTH = 6378137, M2FT = 3.280839895;
 function havFt(a,b){
@@ -920,11 +1043,11 @@ function geoAreaSF(pts){
 function measureValue(m){
   if(m.type==="count") return m.pts.length;
   if(m.src==="map"){
-    return m.type==="line" ? geoPathFt(m.pts) : geoAreaSF(m.pts);
+    return m.type==="line" ? geoPathFt(shapePts(m)) : geoAreaSF(m.pts);
   }
   const fpu = getFPU(m.page, m.doc);
   if(fpu == null) return null;
-  return m.type==="line" ? pathLen(m.pts)*fpu : polyArea(m.pts)*fpu*fpu;
+  return m.type==="line" ? pathLen(shapePts(m))*fpu : polyArea(m.pts)*fpu*fpu;
 }
 function measurePerim(m){
   if(m.type!=="area" || m.pts.length<3) return null;
@@ -999,11 +1122,19 @@ document.getElementById("activeCat").onchange = e => { activeCatId = e.target.va
 function newName(type){
   const c = catOf(activeCatId);
   if(c) return c.name+" "+(measurements.filter(m=>m.cat===c.id).length+1);
-  return (type==="line"?"Line ":type==="area"?"Area ":"Count ") + (counters[type]++);
+  if(!counters[type]) counters[type] = 1;
+  return (type==="line"?"Line ":type==="curve"?"Curve ":type==="area"?"Area ":"Count ") + (counters[type]++);
 }
 function newColor(type){
   const c = catOf(activeCatId);
   return c ? c.color : COLORS[type];
+}
+// a shape that's being drawn with the current tool (the curve tool draws a line that bends through its points)
+function newDrawing(src){
+  const type = tool==="curve" ? "line" : tool;
+  const d = {src, type, pts:[], color:newColor(type)};
+  if(tool==="curve") d.curve = true;
+  return d;
 }
 
 // ================= undo / redo history =================
@@ -1032,6 +1163,7 @@ function restoreSnapshot(snap){
 window.__undo = () => {
   const ae = document.activeElement;
   if(ae && ["INPUT","TEXTAREA"].includes(ae.tagName)){ document.execCommand("undo"); return; }
+  if(drawing && drawing.pts && drawing.pts.length){ undoPoint(); return; }   // while measuring: take back the last click
   if(!undoStack.length) return;
   redoStack.push(snapshot());
   restoreSnapshot(undoStack.pop());
@@ -1040,6 +1172,7 @@ window.__undo = () => {
 window.__redo = () => {
   const ae = document.activeElement;
   if(ae && ["INPUT","TEXTAREA"].includes(ae.tagName)){ document.execCommand("redo"); return; }
+  if(drawing){ redoPoint(); return; }   // while measuring: put back a click you took back
   if(!redoStack.length) return;
   undoStack.push(snapshot());
   restoreSnapshot(redoStack.pop());
@@ -1065,8 +1198,9 @@ function deleteVertex(m, idx){
   toast("Point removed");
 }
 function updateUndoBtns(){
-  document.getElementById("undoBtn").disabled = !undoStack.length;
-  document.getElementById("redoBtn").disabled = !redoStack.length;
+  const d = drawing && drawing.type!=="count" ? drawing : null;   // while drawing, the buttons work on its points
+  document.getElementById("undoBtn").disabled = d ? !d.pts.length : !undoStack.length;
+  document.getElementById("redoBtn").disabled = d ? !(d.redo && d.redo.length) : !redoStack.length;
 }
 document.getElementById("undoBtn").onclick = () => window.__undo();
 document.getElementById("redoBtn").onclick = () => window.__redo();
@@ -1081,11 +1215,13 @@ function setMode(m){
   if(m==="map"){
     if(tool==="calibrate") setTool("line");
     initMap();
+    map.getContainer().style.cursor = tool==="select" ? "" : DRAW_CURSOR;
     setTimeout(()=>{ map.invalidateSize(); redrawMapLayers(); }, 60);
   } else {
     if(needFit && pdfDoc) fitPage(); else drawOverlay();
   }
   updateFab(); updateLive();
+  syncFilterSel(); renderList(); renderTotals();   // what's on screen comes first in the list; "This page" follows
 }
 document.getElementById("modePdf").onclick = () => setMode("pdf");
 document.getElementById("modeMap").onclick = () => setMode("map");
@@ -1140,9 +1276,9 @@ function mapAddPoint(ll){
     }
     m.pts.push(ll); refreshAll(); return;
   }
-  if(tool==="line" || tool==="area"){
-    if(!drawing) drawing = {src:"map", type:tool, pts:[], color:newColor(tool)};
-    drawing.pts.push(ll); drawTemp(); updateFab(); updateLive();
+  if(tool==="line" || tool==="area" || tool==="curve"){
+    if(!drawing) drawing = newDrawing("map");
+    drawing.pts.push(ll); drawing.redo = []; drawTemp(); updateFab(); updateLive();
   }
 }
 
@@ -1158,7 +1294,7 @@ function enableBodyDrag(layer, m){
     const mv = ev => {
       const dLat = ev.latlng.lat-start.lat, dLng = ev.latlng.lng-start.lng;
       m.pts = orig.map(p=>({lat:p.lat+dLat, lng:p.lng+dLng}));
-      layer.setLatLngs(m.pts); moved = true;
+      layer.setLatLngs(shapePts(m)); moved = true;
       const v = measureValue(m);
       document.getElementById("liveVal").textContent = fQty(m.type, v, 1, 0);
     };
@@ -1177,7 +1313,7 @@ function addVertexHandles(layer, m){
     mk.on("dragstart", ()=>{ pre = snapshot(); });
     mk.on("drag", e => {
       m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng};
-      layer.setLatLngs(m.pts);
+      layer.setLatLngs(shapePts(m));
     });
     mk.on("dragend", ()=>{ if(pre) commitHistory(pre); refreshAll(); });
     mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); deleteVertex(m, i); });
@@ -1193,8 +1329,8 @@ function redrawMapLayers(){
     const hot = m.id===selectedId;
     const style = {color:m.color, weight:hot?4:3, opacity:.95};
     if(m.type==="line" && m.pts.length>1){
-      const pl = L.polyline(m.pts, style).addTo(mapLayerGroup);
-      pl.bindTooltip(m.name+" — "+fLen(geoPathFt(m.pts), 1), {sticky:true});
+      const pl = L.polyline(shapePts(m), style).addTo(mapLayerGroup);
+      pl.bindTooltip(m.name+" — "+fLen(measureValue(m), 1), {sticky:true});
       pl.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); }
     } else if(m.type==="area" && m.pts.length>2){
@@ -1232,7 +1368,7 @@ function drawTemp(){
   if(!drawing || mode!=="map") return;
   const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
   if(drawing.type==="line" && pts.length>1)
-    L.polyline(pts, {color:drawing.color, weight:3, dashArray:"7,5"}).addTo(tempGroup);
+    L.polyline(drawing.curve ? smoothPts(pts) : pts, {color:drawing.color, weight:3, dashArray:"7,5"}).addTo(tempGroup);
   if(drawing.type==="area" && pts.length>1)
     L.polygon(pts, {color:drawing.color, weight:3, dashArray:"7,5", fillOpacity:.15}).addTo(tempGroup);
   for(const p of drawing.pts)
@@ -1560,7 +1696,7 @@ async function showDoc(id, page, opts){
     document.getElementById("dropHint").style.display = "flex";
     refreshAll();
     toast(err && err.message==="missing"
-      ? '"'+shortName(d.name, 30)+'" isn\'t loaded — open the job from ☁️, or add the PDF again'
+      ? '"'+shortName(d.name, 30)+'" isn\'t loaded — open the job from ☁️ Cloud projects, or add the PDF again'
       : "Couldn't load "+shortName(d.name, 30)+" — check connection");
     return false;
   }
@@ -1602,6 +1738,7 @@ function pinJobName(id){
 function removeDoc(id){
   const d = docMeta(id); if(!d) return;
   pinJobName(id);
+  if(measurements.some(m => m.src==="pdf" && m.doc===id)) autoVersion('Before removing plan "'+shortName(d.name, 40)+'"');
   pushHistory();
   const n = measurements.filter(m => m.src==="pdf" && m.doc===id).length;
   docs = docs.filter(x => x.id!==id);
@@ -1630,7 +1767,7 @@ function renderDocList(){
       '<button class="dmain" data-act="open" title="'+esc2(d.name)+'">'+
       '<span class="dn">'+(i+1)+'. '+esc2(shortName(d.name, 60))+'</span>'+
       '<span class="dm">'+pg+n+' item'+(n===1?"":"s")+'</span></button>'+
-      '<button class="dbtn" data-act="dl" title="Download this plan with your markups">⬇</button>'+
+      '<button class="dbtn" data-act="dl" title="'+(pdfMarksOn() ? "Export this plan as PDF with your markups" : "Export this plan as PDF — no markups")+'">⬇</button>'+
       '<button class="dbtn" data-act="ren" title="Rename">✎</button>'+
       '<button class="dbtn danger" data-act="del" title="Remove from this project">'+(docArm===d.id ? "Sure?" : "✕")+'</button></div>';
   }).join("");
@@ -1655,7 +1792,6 @@ document.getElementById("docList").addEventListener("click", e => {
   if(act==="open"){
     closePops();
     if(id===curDocId && pdfDoc) return;
-    if(pageLocked){ toast("Page is locked — press P to unlock it first"); return; }
     showDoc(id, 1, {focus:true, progress:true});
   } else if(act==="dl"){
     closePops(); exportMarked(id);
@@ -1686,7 +1822,7 @@ function updateDocUI(){
   document.getElementById("docName").textContent =
     i<0 ? "Plans" : (docs.length>1 ? (i+1)+"/"+docs.length+" · " : "")+shortName(docs[i].name, 22);
   chip.title = i<0 ? "Plans in this project" : docs[i].name+" — switch plans or add more PDFs";
-  document.getElementById("markBtn").textContent = docs.length>1 ? "⬇ Marked-up PDF — this plan" : "⬇ Marked-up PDF";
+  document.getElementById("markBtn").textContent = docs.length>1 ? "⬇ Export PDF — this plan" : "⬇ Export PDF";
   document.getElementById("markAllBtn").style.display = docs.length>1 ? "" : "none";
   document.getElementById("projTitle").placeholder = lastAddress || (has ? docs[0].name.replace(/\.pdf$/i,"") : "Untitled project");
   document.getElementById("hintBig").textContent = has && !pdfDoc
@@ -1830,13 +1966,14 @@ function drawOverlay(){
   octx.drawImage(staticCanvas,0,0);
   if(editDrag && editDrag.m.src==="pdf") drawMeasure(editDrag.m, true, lw);
   if(drawing && drawing.src!=="map" && drawing.pts.length){
-    const ghost = {type:drawing.type, pts: mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts,
+    const ghost = {type:drawing.type, curve:drawing.curve, pts: mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts,
                    color: drawing.color || COLORS[drawing.type], page:pageNum, src:"pdf"};
     drawMeasure(ghost, true, lw, true);
   }
 }
 function drawMeasure(m, hot, lw, ghost){
   const pts = m.pts.map(pdfToScreen);
+  const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(pdfToScreen) : pts;   // a curve bends through its points
   dctx.lineWidth = hot? lw*1.3 : lw;
   dctx.strokeStyle = m.color; dctx.fillStyle = m.color;
   dctx.setLineDash(ghost ? [6*dpr,4*dpr] : []);
@@ -1851,8 +1988,8 @@ function drawMeasure(m, hot, lw, ghost){
     });
   } else {
     if(pts.length>1){
-      dctx.beginPath(); dctx.moveTo(pts[0].x,pts[0].y);
-      for(let i=1;i<pts.length;i++) dctx.lineTo(pts[i].x,pts[i].y);
+      dctx.beginPath(); dctx.moveTo(path[0].x,path[0].y);
+      for(let i=1;i<path.length;i++) dctx.lineTo(path[i].x,path[i].y);
       if(m.type==="area" && !ghost) dctx.closePath();
       if(m.type==="area"){ dctx.globalAlpha = .18; dctx.fill(); dctx.globalAlpha = 1; }
       dctx.stroke();
@@ -1866,7 +2003,7 @@ function drawMeasure(m, hot, lw, ghost){
       dctx.strokeStyle = m.color; dctx.lineWidth = lw;
     });
     if(!ghost && pts.length>1){
-      const mid = pts[Math.floor(pts.length/2)] || pts[0];
+      const mid = path[Math.floor(path.length/2)] || pts[0];
       const v = measureValue(m);
       const txt = v==null ? "—" : fQty(m.type, v, 1, 0);
       dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
@@ -1900,7 +2037,7 @@ function hitTest(p){
     }
     if(m.type==="area" && m.pts.length>2 &&
        (pointInPoly(p, m.pts) || distToPath(p, m.pts, true) < st)) return {kind:"body", m};
-    if(m.type==="line" && m.pts.length>1 && distToPath(p, m.pts, false) < st) return {kind:"body", m};
+    if(m.type==="line" && m.pts.length>1 && distToPath(p, shapePts(m), false) < st) return {kind:"body", m};
   }
   return null;
 }
@@ -1955,7 +2092,7 @@ window.addEventListener("mouseup", () => {
     if(moved){ commitHistory(pre); refreshAll(); }
     else drawOverlay();
   }
-  if(panning){ panning=false; overlay.style.cursor = tool==="select" ? "grab" : "crosshair"; }
+  if(panning){ panning=false; overlay.style.cursor = tool==="select" ? "grab" : DRAW_CURSOR; }
 });
 overlay.addEventListener("mousemove", e => {
   mousePdf = evtPdf(e);
@@ -1981,9 +2118,9 @@ overlay.addEventListener("click", e => {
     if(drawing.pts.length===2){ calibPts = drawing.pts; drawing = null; openModal("calibBack","calFt"); updateFab(); }
     drawOverlay(); updateFab(); return;
   }
-  if(tool==="line" || tool==="area"){
-    if(!drawing) drawing = {src:"pdf", type:tool, pts:[], color:newColor(tool)};
-    drawing.pts.push(p); drawOverlay(); updateFab(); updateLive();
+  if(tool==="line" || tool==="area" || tool==="curve"){
+    if(!drawing) drawing = newDrawing("pdf");
+    drawing.pts.push(p); drawing.redo = []; drawOverlay(); updateFab(); updateLive();
   }
 });
 overlay.addEventListener("dblclick", e => { e.preventDefault(); finishDrawing(); });
@@ -2032,8 +2169,9 @@ function finishDrawing(){
     pushHistory();
     const m = {
       id: nextId++, src: drawing.src, type: drawing.type, pts: drawing.pts,
-      color: drawing.color, cat: activeCatId, name: newName(drawing.type)
+      color: drawing.color, cat: activeCatId, name: newName(drawing.curve ? "curve" : drawing.type)
     };
+    if(drawing.curve) m.curve = true;
     if(drawing.src==="pdf"){ m.page = pageNum; m.doc = curDocId; }
     measurements.push(m); selectedId = m.id;
   }
@@ -2046,16 +2184,34 @@ function cancelDrawing(){
 }
 function undoPoint(){
   if(!drawing || !drawing.pts.length) return;
-  if(drawing.type==="count"){ pushHistory(); drawing.pts.pop(); refreshAll(); return; }
-  drawing.pts.pop();
+  if(drawing.type==="count"){ countStep(false); return; }
+  (drawing.redo || (drawing.redo = [])).push(drawing.pts.pop());
   if(!drawing.pts.length) drawing = null;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
+}
+function redoPoint(){
+  if(!drawing) return;
+  if(drawing.type==="count"){ countStep(true); return; }
+  if(!drawing.redo || !drawing.redo.length) return;
+  drawing.pts.push(drawing.redo.pop());
+  drawOverlay(); drawTemp(); updateFab(); updateLive();
+}
+// counting: every click is its own undo step — step back or forward and keep counting on the same item
+function countStep(redo){
+  const id = drawing.id, from = redo ? redoStack : undoStack;
+  if(!from.length) return;
+  (redo ? undoStack : redoStack).push(snapshot());
+  restoreSnapshot(from.pop());
+  const m = measurements.find(x => x.id===id);
+  if(m){ drawing = m; selectedId = id; markStatic(); drawOverlay(); redrawMapLayers(); renderList(); updateFab(); }
+  updateUndoBtns();
 }
 document.getElementById("fabDone").onclick = finishDrawing;
 document.getElementById("fabCancel").onclick = cancelDrawing;
 document.getElementById("fabUndo").onclick = undoPoint;
 function updateFab(){
   document.getElementById("fab").classList.toggle("show", !!drawing && drawing.pts && drawing.pts.length>0);
+  updateUndoBtns();
 }
 
 window.addEventListener("keydown", e => {
@@ -2094,12 +2250,11 @@ window.addEventListener("keydown", e => {
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="y"){
     e.preventDefault(); window.__redo(); return;
   }
-  const map_ = {v:"select", c:"calibrate", l:"line", a:"area", k:"count"};
+  const map_ = {v:"select", c:"calibrate", l:"line", u:"curve", a:"area", k:"count"};
   if(map_[e.key.toLowerCase()] && !e.metaKey && !e.ctrlKey){
     if(e.key.toLowerCase()==="c" && mode==="map") return;
     setTool(map_[e.key.toLowerCase()]);
   }
-  if(e.key.toLowerCase()==="p" && !e.metaKey && !e.ctrlKey && pdfDoc && mode==="pdf") togglePageLock();
   if(e.key==="Delete"){
     if(selVertex){
       const m = measurements.find(x=>x.id===selVertex.mId);
@@ -2116,14 +2271,20 @@ window.addEventListener("keydown", e => {
   if(!e.metaKey && !e.ctrlKey && !e.altKey){
     const k = e.key;
     if((k==="f"||k==="F") && mode==="pdf" && pdfDoc){ fitPage(); }
-    if(k==="ArrowLeft" && mode==="pdf") document.getElementById("prevPg").click();
-    if(k==="ArrowRight" && mode==="pdf") document.getElementById("nextPg").click();
+    // the page never changes by accident: arrow keys move around the plan; ‹ › or Page Up / Page Down change pages
+    if(k.startsWith("Arrow") && mode==="pdf" && pdfDoc){
+      const d = e.shiftKey ? 240 : 80;
+      wrap.scrollBy(k==="ArrowLeft" ? -d : k==="ArrowRight" ? d : 0, k==="ArrowUp" ? -d : k==="ArrowDown" ? d : 0);
+      e.preventDefault();
+    }
+    if(k==="PageUp" && mode==="pdf"){ goPage(-1); e.preventDefault(); }
+    if(k==="PageDown" && mode==="pdf"){ goPage(1); e.preventDefault(); }
     if((k==="+"||k==="=") && mode==="pdf") document.getElementById("zoomIn").click();
     if(k==="-" && mode==="pdf") document.getElementById("zoomOut").click();
   }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="s"){
     e.preventDefault();
-    if(e.shiftKey) doSave(true); else doSave(false);
+    doSave(false);
     return;
   }
   if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="e"){
@@ -2186,25 +2347,20 @@ function setTool(t){
   if(drawing && drawing.type!=="count") drawing = null;
   document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active", b.dataset.tool===t));
   const _tn = document.getElementById("toolName"); if(_tn) _tn.textContent = t.toUpperCase();
-  overlay.style.cursor = t==="select" ? "grab" : "crosshair";
+  overlay.style.cursor = t==="select" ? "grab" : DRAW_CURSOR;
   overlay.style.touchAction = t==="select" ? "auto" : "none";
-  if(map) map.getContainer().style.cursor = t==="select" ? "" : "crosshair";
+  if(map) map.getContainer().style.cursor = t==="select" ? "" : DRAW_CURSOR;
+  if(t==="curve" && !curveTipShown){
+    curveTipShown = true;
+    toast("Curve: click points along the edge — the line bends through them. Double-click to finish.");
+  }
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
+var curveTipShown = false;
 document.querySelectorAll(".tool").forEach(b => b.onclick = () => setTool(b.dataset.tool));
 
-function togglePageLock(){
-  pageLocked = !pageLocked;
-  const b = document.getElementById("lockPg");
-  b.textContent = pageLocked ? "🔒" : "🔓";
-  b.classList.toggle("locked", pageLocked);
-  document.getElementById("prevPg").disabled = pageLocked;
-  document.getElementById("nextPg").disabled = pageLocked;
-  toast(pageLocked ? "Page locked" : "Page unlocked");
-}
-document.getElementById("lockPg").onclick = togglePageLock;
 function goPage(delta){
-  if(pageLocked || !pdfDoc) return;
+  if(!pdfDoc) return;
   const np = pageNum + delta;
   if(np>=1 && np<=pageCount){ pageNum = np; drawing = null; renderPage(); refreshAll(); return; }
   const i = docs.findIndex(d => d.id===curDocId), j = i + (delta>0 ? 1 : -1);
@@ -2296,6 +2452,7 @@ document.getElementById("catBack").addEventListener("keydown", e => {
 document.getElementById("clearCancel").onclick = () => closeModal("clearBack");
 document.getElementById("clearApply").onclick = () => {
   closeModal("clearBack");
+  autoVersion("Before clearing measurements");
   pushHistory();
   measurements=[]; selectedId=null; drawing=null; refreshAll();
   toast("All measurements deleted");
@@ -2305,7 +2462,7 @@ document.getElementById("clearBack").addEventListener("keydown", e => {
 });
 
 // ================= side panel =================
-document.getElementById("filterSel").onchange = renderList;
+document.getElementById("filterSel").onchange = () => { renderList(); renderTotals(); };
 function refreshAll(){ markStatic(); updateBar(); updateDocUI(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateFab(); updateLive(); if(typeof scheduleAutosave==="function") scheduleAutosave(); }
 function updateBar(){
   document.getElementById("pageInfo").textContent = pdfDoc ? pageNum+" / "+pageCount : "– / –";
@@ -2332,17 +2489,21 @@ function filterLabel(){
   const filt = document.getElementById("filterSel").value;
   const q = document.getElementById("measSearch").value.trim();
   const parts = [];
-  if(filt==="page") parts.push((docs.length>1 && pdfDoc ? shortName(pdfName, 24)+" p."+pageNum : "Page "+pageNum)+" only");
-  if(filt==="map") parts.push("Map only");
+  if(filt==="view") parts.push(mode==="map" ? "Map only" : (docs.length>1 && pdfDoc ? shortName(pdfName, 24)+" p."+pageNum : "Page "+pageNum)+" only");
   if(q) parts.push('search "'+q+'"');
   return parts.join(", ");
+}
+// "This page" is the plan page on screen — or the map, when you're on the map
+function syncFilterSel(){
+  const o = document.getElementById("filterSel").options[1];
+  const txt = mode==="map" ? "Map only" : "This page";
+  if(o.dataset.txt!==txt){ o.dataset.txt = txt; o.textContent = txt; }
 }
 function visibleMeasurements(){
   const filt = document.getElementById("filterSel").value;
   const q = document.getElementById("measSearch").value.trim().toLowerCase();
   return [...measurements].reverse().filter(m => {
-    if(filt==="page" && !(m.src==="pdf" && m.page===pageNum && m.doc===curDocId)) return false;
-    if(filt==="map" && m.src!=="map") return false;
+    if(filt==="view" && (mode==="map" ? m.src!=="map" : !(m.src==="pdf" && m.page===pageNum && m.doc===curDocId))) return false;
     if(q){
       const c = catOf(m.cat);
       if(!(m.name.toLowerCase().includes(q) || (c && c.name.toLowerCase().includes(q)))) return false;
@@ -2358,6 +2519,22 @@ function renderList(){
     const sm = measurements.find(x=>x.id===selectedId);
     if(sm) collapsedCats.delete(sm.cat||"");
   }
+  // plan and map measurements are listed apart when there are both — what's on screen first
+  const order = mode==="map" ? ["map", "pdf"] : ["pdf", "map"];
+  const parts = order.map(src => ({src, items:visible.filter(m => (m.src==="map" ? "map" : "pdf")===src)})).filter(p => p.items.length);
+  let html = "";
+  for(const p of parts){
+    if(parts.length>1) html += '<div class="srcHead"><span>'+(p.src==="map" ? "🗺️ MAP" : "📄 PLANS")+'</span><b>'+qtyLine(p.items)+'</b></div>';
+    html += listGroupsHTML(p.items);
+  }
+  el.innerHTML = html;
+  syncHideAll();
+  const selEl = el.querySelector(".mitem.sel");
+  if(selEl) selEl.scrollIntoView({block:"nearest"});
+}
+document.getElementById("measSearch").addEventListener("input", () => { renderList(); renderTotals(); });
+// one set of measurements, by category and type
+function listGroupsHTML(visible){
   const groups = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
   for(const m of visible){
     const g = groups.find(g => (g.cat? g.cat.id : "") === (m.cat||""));
@@ -2392,11 +2569,28 @@ function renderList(){
       for(const {m,v} of sub) html += itemHTML(m, v, isChildCat(g.cat));
     }
   }
-  el.innerHTML = html;
-  const selEl = el.querySelector(".mitem.sel");
-  if(selEl) selEl.scrollIntoView({block:"nearest"});
+  return html;
 }
-document.getElementById("measSearch").addEventListener("input", renderList);
+// totals of a set of measurements (material volume from categories that have a depth)
+function sumOf(list){
+  const r = {line:0, area:0, count:0, cy:0, pending:false}, catSF = {};
+  for(const m of list){
+    const v = measureValue(m);
+    if(v==null){ r.pending = true; continue; }
+    r[m.type] += v;
+    if(m.type==="area" && m.cat) catSF[m.cat] = (catSF[m.cat]||0) + v;
+  }
+  for(const id in catSF){ const cy = catCY(catOf(id), catSF[id]); if(cy) r.cy += cy.withWaste; }
+  return r;
+}
+function qtyLine(list){
+  const r = sumOf(list), p = [];
+  if(r.area) p.push(fArea(r.area, 0));
+  if(r.line) p.push(fLen(r.line, 1));
+  if(r.count) p.push(r.count+" EA");
+  if(r.cy) p.push(fVol(r.cy, 1));
+  return p.join(" · ") || "—";
+}
 function itemHTML(m, v, child){
   const perim = measurePerim(m);
   const qty = v==null ? "needs scale" : fQty(m.type, v, 2, 1);
@@ -2474,7 +2668,6 @@ function itemHTML(m, v, child){
       if(mode!=="pdf") setMode("pdf");
       if(m.doc!==curDocId || m.page!==pageNum || !pdfDoc){
         if(!docMeta(m.doc)){ toast("That plan was removed from this project"); refreshAll(); return; }
-        if(pageLocked){ toast("Page is locked — item is on "+locLabel(m, true)); refreshAll(); return; }
         if(m.doc!==curDocId || !pdfDoc){ showDoc(m.doc, m.page, {progress:true}); refreshAll(); return; }
         pageNum=m.page; renderPage();
       }
@@ -2494,29 +2687,47 @@ function itemHTML(m, v, child){
     }
   });
 })();
+// ---- hide / show everything at once (the 👁 buttons do one category or one item) ----
+function allHidden(){ return measurements.length>0 && measurements.every(m => hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)); }
+function syncHideAll(){
+  const b = document.getElementById("hideAllBtn");
+  if(!b) return;
+  b.style.display = measurements.length ? "" : "none";
+  const all = allHidden();
+  if(b.dataset.all!==String(all)){ b.dataset.all = all; b.textContent = all ? "👁 Show all" : "🙈 Hide all"; }
+  b.classList.toggle("on", all);
+}
+document.getElementById("hideAllBtn").onclick = () => {
+  if(allHidden()){ hiddenCats.clear(); hiddenItems.clear(); }
+  else{
+    for(const m of measurements) if(m!==drawing) hiddenItems.add(m.id);   // a count still being clicked stays visible
+    if(!(drawing && drawing.id===selectedId)){ selectedId = null; selVertex = null; }
+  }
+  markStatic(); renderList(); drawOverlay(); redrawMapLayers();
+};
 function renderTotals(){
-  const t = {line:0, area:0, count:0}; let pending=false;
-  for(const m of measurements){
-    const v = measureValue(m);
-    if(v==null){ pending=true; continue; }
-    t[m.type]+=v;
+  const pool = visibleMeasurements(), fl = filterLabel();
+  const plan = pool.filter(m => m.src!=="map"), onMap = pool.filter(m => m.src==="map");
+  let html = fl ? '<div class="tcap">'+esc2(fl)+'</div>' : '', pending = false;
+  if(plan.length && onMap.length){
+    const a = sumOf(plan), b = sumOf(onMap);
+    pending = a.pending || b.pending;
+    const row = (lbl, x, y) => '<tr><td>'+lbl+'</td><td>'+x+'</td><td>'+y+'</td></tr>';
+    html += '<table class="ttab"><tr><th></th><th>📄 Plans</th><th>🗺️ Map</th></tr>'+
+      row("Linear", fLen(a.line, 2), fLen(b.line, 2))+
+      row("Area", fArea(a.area, 1), fArea(b.area, 1))+
+      row("Count", a.count+" EA", b.count+" EA")+
+      (a.cy || b.cy ? row("Volume", a.cy ? fVol(a.cy, 1) : "—", b.cy ? fVol(b.cy, 1) : "—") : "")+'</table>';
+  } else {
+    const r = sumOf(pool);
+    pending = r.pending;
+    html += '<div class="trow"><span>Total linear</span><b>'+fLen(r.line, 2)+'</b></div>'+
+      '<div class="trow"><span>Total area</span><b>'+fArea(r.area, 1)+'</b></div>'+
+      '<div class="trow"><span>Total count</span><b>'+r.count+' EA</b></div>'+
+      (r.cy>0 ? '<div class="trow"><span>Material volume</span><b>'+fVol(r.cy, 1)+'</b></div>' : '');
   }
-  let cyTotal = 0;
-  for(const c of categories){
-    if(!(c.depth>0)) continue;
-    let sf = 0;
-    for(const m of measurements){
-      if(m.cat!==c.id || m.type!=="area") continue;
-      const v = measureValue(m); if(v!=null) sf += v;
-    }
-    const cy = catCY(c, sf); if(cy) cyTotal += cy.withWaste;
-  }
-  document.getElementById("totals").innerHTML =
-    '<div class="trow"><span>Total linear</span><b>'+fLen(t.line, 2)+'</b></div>'+
-    '<div class="trow"><span>Total area</span><b>'+fArea(t.area, 1)+'</b></div>'+
-    '<div class="trow"><span>Total count</span><b>'+t.count+' EA</b></div>'+
-    (cyTotal>0?'<div class="trow"><span>Material volume</span><b>'+fVol(cyTotal, 1)+'</b></div>':'')+
-    (pending?'<div class="trow" style="color:#ff7a6b">Some items need scale</div>':'');
+  if(pending) html += '<div class="trow" style="color:#ff7a6b">Some items need scale</div>';
+  document.getElementById("totals").innerHTML = html;
 }
 function updateLive(){
   const live = document.getElementById("liveVal");
@@ -2525,14 +2736,14 @@ function updateLive(){
   if(drawing){
     if(drawing.src==="map"){
       const pts = mouseLL && drawing.type!=="count" ? [...drawing.pts, mouseLL] : drawing.pts;
-      if(drawing.type==="line" && pts.length>1) txt = fLen(geoPathFt(pts), 1);
+      if(drawing.type==="line" && pts.length>1) txt = fLen(geoPathFt(drawing.curve ? smoothPts(pts) : pts), 1);
       else if(drawing.type==="area" && pts.length>2) txt = fArea(geoAreaSF(pts), 0);
       else if(drawing.type==="count") txt = drawing.pts.length+" EA";
     } else {
       const fpu = getFPU();
       const pts = mousePdf ? [...drawing.pts, snap(mousePdf)] : drawing.pts;
       if(drawing.type==="calibrate" || drawing.type==="line"){
-        txt = fpu!=null && pts.length>1 ? fmtLen(pathLen(pts)*fpu)
+        txt = fpu!=null && pts.length>1 ? fmtLen(pathLen(drawing.curve ? smoothPts(pts) : pts)*fpu)
           : drawing.type==="calibrate" ? "pick 2 points on a known dimension" : "scale not set";
       } else if(drawing.type==="area"){
         txt = fpu!=null && pts.length>2 ? fArea(polyArea(pts)*fpu*fpu, 1) : (fpu==null?"scale not set":"");
@@ -2561,8 +2772,9 @@ function drawMeasureOn(ctx, m, sc, k){
     return;
   }
   if(pts.length>1){
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+    const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(p=>({x:p.x*sc, y:p.y*sc})) : pts;
+    ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
+    for(let i=1;i<path.length;i++) ctx.lineTo(path[i].x,path[i].y);
     if(m.type==="area"){ ctx.closePath(); ctx.globalAlpha=.16; ctx.fill(); ctx.globalAlpha=1; }
     ctx.stroke();
   }
@@ -2615,16 +2827,11 @@ async function pageSnapshot(docId, pageNo){
   return c.toDataURL("image/jpeg", 0.82);
 }
 function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
-document.getElementById("printBtn").onclick = async () => {
-  if(!measurements.length){ toast("Nothing to print"); return; }
-  toast("Building report…");
-  const title = defaultProjectName();
-  let body = '<h1>'+esc(title)+'</h1>'+
-    '<div class="meta">Plan Takeoff report · '+new Date().toLocaleDateString()+
-    (docs.length? ' · '+esc(docs.map(d=>shortName(d.name, 60)).join(", ")):'')+'</div>';
-  // tables per category
+// the report's tables for one set of measurements, by category
+function reportTables(list){
+  let body = "";
   const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
-  for(const m of measurements){
+  for(const m of list){
     const b = buckets.find(b => (b.cat? b.cat.id : "") === (m.cat||""));
     (b || buckets[buckets.length-1]).items.push(m);
   }
@@ -2652,6 +2859,21 @@ document.getElementById("printBtn").onclick = async () => {
         (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+fVol(cy.withWaste, 2)+')':''):'')+'</div>'+
       (b.cat && b.cat.notes? '<div class="notes">Notes: '+esc(b.cat.notes)+'</div>':'');
   }
+  return body;
+}
+document.getElementById("printBtn").onclick = async () => {
+  if(!measurements.length){ toast("Nothing to print"); return; }
+  toast("Building report…");
+  const title = defaultProjectName();
+  let body = '<h1>'+esc(title)+'</h1>'+
+    '<div class="meta">Plan Takeoff report · '+new Date().toLocaleDateString()+
+    (docs.length? ' · '+esc(docs.map(d=>shortName(d.name, 60)).join(", ")):'')+'</div>';
+  // tables per category — plan and map measurements apart when the project has both
+  const srcLists = ["pdf", "map"].map(src => measurements.filter(m => (m.src==="map" ? "map" : "pdf")===src)).filter(a => a.length);
+  for(const list of srcLists){
+    if(srcLists.length>1) body += '<h2 class="srcH">'+esc(word(list[0].src==="map" ? "Map measurements" : "Plan measurements"))+'</h2>';
+    body += reportTables(list);
+  }
   // page snapshots — every plan page that has measurements
   for(const d of docs){
     const pages = [...new Set(measurements.filter(m=>m.src==="pdf" && m.doc===d.id).map(m=>m.page))].sort((a,b)=>a-b);
@@ -2675,6 +2897,7 @@ document.getElementById("printBtn").onclick = async () => {
     'th{background:#f1f1f1;} .sub{font-family:monospace;font-size:11.5px;margin:6px 0 2px;font-weight:600;}'+
     '.notes{font-size:11.5px;color:#555;margin:2px 0 8px;}'+
     'img.plan{width:100%;border:1px solid #ccc;margin-top:6px;}'+
+    'h2.srcH{font-size:17px;margin:28px 0 4px;padding-bottom:5px;border-bottom:2px solid #1c1f24;}'+
     '.pagebreak{page-break-before:always;}'+
     '@media print{body{margin:12mm;}}'+
     '</style></head><body>'+body+'</body></html>';
@@ -2764,8 +2987,8 @@ function labelSpots(m, w, h, g, r){
       at(cx, cy, cx, cy);
     }
   } else if(m.type==="line"){
-    const segs = [];
-    for(let i=1; i<m.pts.length; i++) segs.push([m.pts[i-1], m.pts[i]]);
+    const segs = [], lp = m.curve ? smoothPts(m.pts, 4) : m.pts;   // a curve: beside its bends
+    for(let i=1; i<lp.length; i++) segs.push([lp[i-1], lp[i]]);
     segs.sort((a, b) => dist(b[0], b[1]) - dist(a[0], a[1]));
     for(const [a, b] of segs.slice(0, 6)){
       // beside the line, pushed out along its normal just far enough that the box clears it
@@ -2819,7 +3042,7 @@ function layoutLabels(reqs, W, H, g, r, all){
   for(const m of all){
     if(!m.pts || !m.pts.length) continue;
     if(m.type==="count"){ for(const p of m.pts) add({x:p.x-r, y:p.y-r, w:2*r, h:2*r, owner:m.id, wt:3}); continue; }
-    const pts = m.type==="area" && m.pts.length>2 ? [...m.pts, m.pts[0]] : m.pts;
+    const pts = m.type==="area" && m.pts.length>2 ? [...m.pts, m.pts[0]] : shapePts(m);
     for(let i=1; i<pts.length; i++){
       const a = pts[i-1], b = pts[i], n = Math.max(1, Math.ceil(dist(a, b)/step));
       for(let k=0; k<=n; k++) add({x:a.x+(b.x-a.x)*k/n-0.5, y:a.y+(b.y-a.y)*k/n-0.5, w:1, h:1, owner:m.id, wt:1});
@@ -2835,7 +3058,7 @@ function layoutLabels(reqs, W, H, g, r, all){
     cx0 /= reqs.length; cy0 /= reqs.length;
   }
   // the tightest shapes pick first: counts, then short lines, then small areas
-  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(m.pts) : Math.sqrt(polyArea(m.pts));
+  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(shapePts(m)) : Math.sqrt(polyArea(m.pts));
   const order = reqs.map((q, i) => ({q, i, s:size(q.m)})).sort((a, b) => a.s - b.s || a.i - b.i);
   for(const {q} of order){
     const {w, h} = q, id = q.m.id;
@@ -2891,8 +3114,9 @@ function drawPageMarkups(L, page, items, vp, rot, font){
     }
     if(m.pts.length < 2) continue;
     const pts = m.pts.map(p => P(p.x, p.y));
+    const path = m.curve && m.type==="line" ? smoothPts(m.pts).map(p => P(p.x, p.y)) : pts;
     // pdf-lib reads SVG paths with y pointing down, so PDF y values go in negated
-    const d = pts.map((q, i) => (i ? "L" : "M")+q.x.toFixed(2)+" "+(-q.y).toFixed(2)).join(" ")+(m.type==="area" ? " Z" : "");
+    const d = path.map((q, i) => (i ? "L" : "M")+q.x.toFixed(2)+" "+(-q.y).toFixed(2)).join(" ")+(m.type==="area" ? " Z" : "");
     if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
     else page.drawSvgPath(d, {x:0, y:0, borderColor:col, borderWidth:lw, borderOpacity:0.95});
     for(const q of pts) page.drawCircle({x:q.x, y:q.y, size:lw*1.15, color:white, borderColor:col, borderWidth:lw*0.6});
@@ -3044,39 +3268,56 @@ function downloadBlob(blob, fname){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 30000);
 }
-// which: "cur" (plan on screen), "all" (every plan in one file) or a plan id
+// Export PDF. "Include markups" (Export menu, on by default): your measurements drawn on the plans, plus a takeoff
+// summary page. Off: the plans exactly as they came. which: "cur" (plan on screen), "all" (every plan in one file) or a plan id
+function pdfMarksOn(){ const c = document.getElementById("pdfMarks"); return !c || c.checked; }
+// a plan as it came, ready to go into one file with the others (secured plans become page images)
+async function plainPlanDoc(L, docId){
+  const st = await ensureDoc(docId);
+  try{ return await L.PDFDocument.load(st.data.slice(0), {updateMetadata:false}); }
+  catch(err){ const pdf = await L.PDFDocument.create(); await rasterPages(L, pdf, st, []); return pdf; }
+}
 async function exportMarked(which){
   if(!docs.length){ toast("Add a PDF plan first"); return; }
   const ids = which==="all" ? docs.map(d => d.id) : [which==="cur" ? curDocId : which];
   if(!ids[0] || !docMeta(ids[0])){ toast("Open a plan first"); return; }
   if(markBusy){ toast("Still building the last PDF…"); return; }
+  const marks = pdfMarksOn();
   markBusy = true;
-  toast("Building marked-up PDF…");
+  toast(marks ? "Building PDF with your markups…" : "Building PDF…");
   try{
-    const L = await loadPdfLib();
-    let bytes;
-    if(ids.length===1) bytes = await markedPlanBytes(L, ids[0], true);
-    else{
-      const out = await L.PDFDocument.create();
-      const all = [];
-      for(let i=0; i<ids.length; i++){
-        toast("Building marked-up PDF — plan "+(i+1)+" of "+ids.length+"…");
-        const src = await L.PDFDocument.load(await markedPlanBytes(L, ids[i], false));
-        (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
-        all.push(...exportItems(ids[i]));
+    let bytes, fname;
+    if(ids.length===1 && !marks){
+      bytes = (await ensureDoc(ids[0])).data.slice(0);   // the plan exactly as it was added
+      fname = docMeta(ids[0]).name.replace(/\.pdf$/i, "")+".pdf";
+    } else {
+      const L = await loadPdfLib();
+      if(ids.length===1) bytes = await markedPlanBytes(L, ids[0], true);
+      else{
+        const out = await L.PDFDocument.create();
+        const all = [];
+        for(let i=0; i<ids.length; i++){
+          toast("Building PDF — plan "+(i+1)+" of "+ids.length+"…");
+          const src = marks ? await L.PDFDocument.load(await markedPlanBytes(L, ids[i], false)) : await plainPlanDoc(L, ids[i]);
+          (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
+          if(marks) all.push(...exportItems(ids[i]));
+        }
+        if(marks) addSummaryPages(L, out, await out.embedFont(L.StandardFonts.Helvetica),
+          await out.embedFont(L.StandardFonts.HelveticaBold), all, ids.length+" plans");
+        bytes = await out.save();
       }
-      addSummaryPages(L, out, await out.embedFont(L.StandardFonts.Helvetica),
-        await out.embedFont(L.StandardFonts.HelveticaBold), all, ids.length+" plans");
-      bytes = await out.save();
+      const pslug = slug(docMeta(ids[0]).name.replace(/\.pdf$/i, ""));
+      const tag = ids.length===1 && docs.length>1 && pslug!==slug(defaultProjectName()) ? "-"+pslug : "";
+      fname = slug(defaultProjectName())+tag+(marks ? "-marked-up.pdf" : "-plans.pdf");
     }
-    const pslug = slug(docMeta(ids[0]).name.replace(/\.pdf$/i, ""));
-    const tag = ids.length===1 && docs.length>1 && pslug!==slug(defaultProjectName()) ? "-"+pslug : "";
-    downloadBlob(new Blob([bytes], {type:"application/pdf"}), slug(defaultProjectName())+tag+"-marked-up.pdf");
-    toast("Marked-up PDF downloaded"+(hiddenCats.size || hiddenItems.size ? " — hidden items left out" : ""));
+    downloadBlob(new Blob([bytes], {type:"application/pdf"}), fname);
+    toast(marks ? "PDF downloaded with your markups"+(hiddenCats.size || hiddenItems.size ? " — hidden items left out" : "")
+      : "PDF downloaded — no markups");
   }catch(e){
     toast("Couldn't build the PDF"+(e && e.message==="missing" ? " — that plan isn't loaded" : e && e.message ? " — "+e.message : ""));
   }finally{ markBusy = false; }
 }
+document.getElementById("pdfMarks").addEventListener("change", e => e.target.blur());   // keyboard shortcuts keep working
 document.getElementById("markBtn").onclick = () => exportMarked("cur");
 document.getElementById("markAllBtn").onclick = () => exportMarked("all");
 
@@ -3097,11 +3338,11 @@ document.getElementById("exportBtn").onclick = () => {
   a.download = slug(defaultProjectName())+"-takeoff.csv";
   a.click(); URL.revokeObjectURL(a.href);
 };
-document.getElementById("copyBtn").onclick = async () => {
-  const pool = visibleMeasurements();
-  if(!pool.length){ toast("Nothing to copy with the current filter"); return; }
-  const fl = filterLabel();
-  let txt = "TAKEOFF QUANTITIES — "+defaultProjectName()+(fl? " ("+fl+")":"")+"\n\n";
+// words in copied text and reports (the Spanish edition translates them)
+function word(s){ return s; }
+// copied quantities for one set of measurements, by category
+function copyBlock(pool){
+  let txt = "";
   const buckets = [...orderedCats().map(c=>({cat:c, items:[]})), {cat:null, items:[]}];
   for(const m of pool){
     const v = measureValue(m); if(v==null) continue;
@@ -3109,44 +3350,55 @@ document.getElementById("copyBtn").onclick = async () => {
     (b || buckets[buckets.length-1]).items.push({m,v});
   }
   const grand = {line:0, area:0, count:0};
-  const ORDER = [["area","AREAS"],["line","LINEAR"],["count","COUNTS"]];
+  const ORDER = [["area",word("AREAS")],["line",word("LINEAR")],["count",word("COUNTS")]];
   for(const b of buckets){
     if(!b.items.length) continue;
-    txt += (b.cat ? catLabel(b.cat).toUpperCase() : "GENERAL")+"\n";
+    txt += (b.cat ? catLabel(b.cat).toUpperCase() : word("GENERAL"))+"\n";
     const typesPresent = new Set(b.items.map(x=>x.m.type));
     const sub = {line:0, area:0, count:0};
-    for(const [t,label] of ORDER){
-      const rows = b.items.filter(x=>x.m.type===t);
+    for(const [ty,label] of ORDER){
+      const rows = b.items.filter(x=>x.m.type===ty);
       if(!rows.length) continue;
       if(typesPresent.size > 1) txt += label+"\n";
       let tTot = 0;
       for(const {m,v} of rows){
-        sub[t]+=v; grand[t]+=v; tTot+=v;
+        sub[ty]+=v; grand[ty]+=v; tTot+=v;
         const p = measurePerim(m);
-        if(t==="area") txt += "- "+m.name+": "+fArea(v, 0)+(p?" (perimeter "+fLen(p, 0)+")":"")+"\n";
-        else if(t==="line") txt += "- "+m.name+": "+fLen(v, 1)+"\n";
+        if(ty==="area") txt += "- "+m.name+": "+fArea(v, 0)+(p?" ("+word("perimeter")+" "+fLen(p, 0)+")":"")+"\n";
+        else if(ty==="line") txt += "- "+m.name+": "+fLen(v, 1)+"\n";
         else txt += "- "+m.name+": "+v+" EA\n";
       }
-      if(typesPresent.size > 1){
-        txt += "Subtotal "+label.toLowerCase()+": "+
-          fQty(t, tTot, 1, 0)+"\n";
-      }
+      if(typesPresent.size > 1) txt += word("Subtotal")+" "+label.toLowerCase()+": "+fQty(ty, tTot, 1, 0)+"\n";
     }
     const parts = [];
     if(sub.area) parts.push(fArea(sub.area, 0));
     if(sub.line) parts.push(fLen(sub.line, 1));
     if(sub.count) parts.push(sub.count+" EA");
-    txt += "Category total: "+parts.join(" · ")+"\n";
+    txt += word("Category total")+": "+parts.join(" · ")+"\n";
     const cy = catCY(b.cat, sub.area);
     if(cy){
-      txt += "Material @ "+fDepth(b.cat.depth)+" depth: "+fVol(cy.base, 2)+
-        (b.cat.waste>0 ? " · +"+b.cat.waste+"% waste = "+fVol(cy.withWaste, 2) : "")+"\n";
+      txt += word("Material @")+" "+fDepth(b.cat.depth)+" "+word("depth")+": "+fVol(cy.base, 2)+
+        (b.cat.waste>0 ? " · +"+b.cat.waste+"% "+word("waste")+" = "+fVol(cy.withWaste, 2) : "")+"\n";
     }
-    if(b.cat && b.cat.notes) txt += "Notes: "+b.cat.notes+"\n";
+    if(b.cat && b.cat.notes) txt += word("Notes")+": "+b.cat.notes+"\n";
     txt += "\n";
   }
-  txt += "GRAND TOTALS: "+fArea(grand.area, 0)+" · "+fLen(grand.line, 1)+" · "+grand.count+" EA\n";
-  try{ await navigator.clipboard.writeText(txt); toast("Copied"+(fl? " ("+fl+")":"")+" — paste into LMN"); }
+  return {txt, grand};
+}
+document.getElementById("copyBtn").onclick = async () => {
+  const pool = visibleMeasurements();
+  if(!pool.length){ toast("Nothing to copy with the current filter"); return; }
+  const fl = filterLabel();
+  let txt = word("TAKEOFF QUANTITIES")+" — "+defaultProjectName()+(fl? " ("+fl+")":"")+"\n\n";
+  // plans and map stay apart when the project has both, so nothing gets counted twice
+  const lists = ["pdf", "map"].map(src => pool.filter(m => (m.src==="map" ? "map" : "pdf")===src)).filter(a => a.length);
+  for(const list of lists){
+    const onMap = list[0].src==="map", r = copyBlock(list);
+    if(lists.length>1) txt += "== "+word(onMap ? "MAP" : "PLANS")+" ==\n\n";
+    txt += r.txt+(lists.length>1 ? word(onMap ? "MAP TOTAL" : "PLANS TOTAL") : word("GRAND TOTALS"))+": "+
+      fArea(r.grand.area, 0)+" · "+fLen(r.grand.line, 1)+" · "+r.grand.count+" EA\n"+(lists.length>1 ? "\n" : "");
+  }
+  try{ await navigator.clipboard.writeText(txt); toast("Copied"+(fl? " ("+fl+")":"")+" — paste into your estimate or spreadsheet"); }
   catch{ toast("Copy blocked by browser — use Export CSV"); }
 };
 function defaultProjectName(){
@@ -3178,7 +3430,9 @@ function normMeas(arr){
   return (arr||[]).map(m => { const x = {src:"pdf", ...m}; if(x.src==="pdf" && !x.doc) x.doc = "d1"; return x; });
 }
 // load a project's data; its plans are fetched afterwards by the caller (openLoadedProject)
+var verClockStart = Date.now();   // var: used by the session restore while the page loads
 function applyProject(data){
+  verClockStart = Date.now();
   docStore.clear(); baseCache.clear();
   undoStack.length = 0; redoStack.length = 0; updateUndoBtns();   // a different job starts a fresh undo history
   projectName = data.projectName||"";
@@ -3246,7 +3500,10 @@ function afterSave(label){
 async function doSave(asNew){
   // on the website, plain Save goes straight to the cloud (falls back to download if cloud not ready)
   if(!asNew && typeof window.__cloudQuickSave==="function" && window.__cloudQuickSave.enabled()){
-    if(await window.__cloudQuickSave()) return;
+    if(await window.__cloudQuickSave()){
+      if(pendingNew){ pendingNew = false; setTimeout(resetProject, 250); }
+      return;
+    }
   }
   // real Save: write straight back to the file we opened, no dialog
   if(!asNew && fileHandle){
@@ -3265,7 +3522,7 @@ async function doSave(asNew){
   document.getElementById("savePdfInc").checked = lastIncludePdf && docs.length>0;
 }
 document.getElementById("saveProj").onclick = () => doSave(false);
-document.getElementById("saveAsBtn").onclick = () => doSave(true);
+document.getElementById("saveBtn").onclick = () => doSave(false);
 document.getElementById("saveCancel").onclick = () => { pendingNew = false; closeModal("saveBack"); };
 document.getElementById("saveApply").onclick = async () => {
   projectName = document.getElementById("projName").value.trim() || defaultProjectName();
@@ -3302,18 +3559,6 @@ document.getElementById("saveBack").addEventListener("keydown", e => {
   if(e.key==="Enter") document.getElementById("saveApply").click();
   if(e.key==="Escape") closeModal("saveBack");
 });
-document.getElementById("loadProj").onclick = async () => {
-  if(window.showOpenFilePicker){
-    try{
-      const [h] = await showOpenFilePicker({types:[{description:"Plan Takeoff project", accept:{"application/json":[".json"]}}]});
-      const f = await h.getFile();
-      await loadProjectFile(f);
-      fileHandle = h;
-      return;
-    }catch(e){ if(e && e.name==="AbortError") return; }
-  }
-  document.getElementById("projInput").click();
-};
 document.getElementById("projInput").onchange = e => {
   if(e.target.files[0]){ fileHandle = null; loadProjectFile(e.target.files[0]); }
 };
@@ -3426,7 +3671,7 @@ let pendingNew = false;
 function resetProject(){
   pushHistory(); // one undo step brings the measurements, scales and plans back
   measurements=[]; categories=[]; activeCatId=""; nextCatId=1; nextId=1;
-  counters.line=1; counters.area=1; counters.count=1;
+  counters.line=1; counters.curve=1; counters.area=1; counters.count=1;
   projectName=""; lastAddress="";
   ftPerUnit={}; docScale={}; scaleLabels={}; scaleLabel="NOT SET";
   selectedId=null; selVertex=null; drawing=null; calibPts=null;
@@ -3437,11 +3682,22 @@ function resetProject(){
   collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
   document.getElementById("measSearch").value="";
   document.getElementById("filterSel").value="all";
-  if(pageLocked) togglePageLock();
   refreshCatSelect(); syncTitle(); refreshAll();
   storeDel(AS_KEY);
   window.__isDirty=false;
   toast("New project started");
+}
+// a clean, empty project without asking — used at start, once the last session is safe in the cloud
+function startFresh(){
+  applyProject({});
+  lastAddress = ""; fileHandle = null;
+  collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
+  document.getElementById("measSearch").value = "";
+  document.getElementById("filterSel").value = "all";
+  syncTitle(); refreshAll();
+  storeDel(AS_KEY);
+  window.__isDirty = false;
+  updateSaveState();
 }
 function askNewProject(){
   if(measurements.length || categories.length || docs.length) openModal2("newBack");
@@ -3474,8 +3730,10 @@ function scheduleAutosave(){
   autosaveTimer = setTimeout(()=>{
     const hasScale = Object.keys(docScale).length>0 || Object.keys(ftPerUnit).length>0;
     if(!measurements.length && !categories.length && !hasScale && !versions.length && !docs.length) storeDel(AS_KEY);
-    else storeSet(AS_KEY, JSON.stringify(serializeProject()));
+    else storeSet(AS_KEY, JSON.stringify(Object.assign(serializeProject(), {_dirty:!!window.__isDirty})));
   }, 800);
+  scheduleCloudSave();
+  updateSaveState();
 }
 // hooks used by the desktop app's close dialog
 window.__measCount = () => measurements.length;
@@ -3490,7 +3748,8 @@ const IS_DESKTOP_APP = /Electron/i.test(navigator.userAgent);
 window.addEventListener("beforeunload", e => {
   // flush the latest state no matter what
   clearTimeout(autosaveTimer);
-  if(measurements.length || categories.length || docs.length) storeSet(AS_KEY, JSON.stringify(serializeProject()));
+  if(measurements.length || categories.length || docs.length)
+    storeSet(AS_KEY, JSON.stringify(Object.assign(serializeProject(), {_dirty:!!window.__isDirty})));
   if(!IS_DESKTOP_APP && window.__isDirty && (measurements.length || docs.length)){
     e.preventDefault();
     e.returnValue = "";
@@ -3498,6 +3757,7 @@ window.addEventListener("beforeunload", e => {
 });
 
 // auto-restore the last session silently (no banner, no questions)
+var restoredMsg = "";
 (function(){
   const raw = storeGet(AS_KEY);
   if(!raw) return;
@@ -3508,10 +3768,57 @@ window.addEventListener("beforeunload", e => {
     const nDocs = (d.docs||[]).length || (d.pdfName ? 1 : 0);
     if(!count && !(d.categories||[]).length && !hasScale && !nDocs) return;
     applyProject(d);
-    window.__isDirty = false;
-    toast("Last session restored"+(nDocs ? " — reopen the job from ☁️ to see the plan"+(nDocs>1?"s":"") : ""));
+    window.__isDirty = !!d._dirty;   // changes that never reached the cloud get saved at start
+    restoredMsg = "Last session restored"+(nDocs ? " — reopen the job from ☁️ Cloud projects to see the plan"+(nDocs>1?"s":"") : "");
   }catch{}
 })();
+
+// ================= cloud autosave & save indicator =================
+// Saves to the cloud about 30 s after you stop changing things, when you switch to another tab or app,
+// and every 3 minutes as a fallback (in the cloud section). The label next to the project name shows where it stands.
+// var, not let: the session restore above already touches these while the page is still loading
+var cloudSaveTimer = null, cloudSaving = false, cloudSavedAt = 0, cloudSaveErr = "";
+function cloudOn(){ return typeof window.__cloudQuickSave==="function" && window.__cloudQuickSave.enabled(); }
+function cloudSaveDue(){ return window.__isDirty && (measurements.length || docs.length) && cloudOn(); }
+function scheduleCloudSave(ms){
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(runCloudAutosave, ms==null ? 30000 : ms);
+}
+function runCloudAutosave(){
+  if(!cloudSaveDue()) return;
+  // not in the middle of drawing or a dialog — try again shortly
+  if(drawing || editDrag || document.querySelector(".modalBack.open")){ scheduleCloudSave(10000); return; }
+  window.__cloudQuickSave(true);
+}
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState==="hidden" && cloudSaveDue() && !drawing) window.__cloudQuickSave(true);
+});
+function setCloudSaving(on, ok){
+  cloudSaving = on;
+  if(!on){
+    if(ok){ cloudSavedAt = Date.now(); cloudSaveErr = ""; }
+    else cloudSaveErr = navigator.onLine===false ? "offline" : "not reachable";
+  }
+  updateSaveState();
+}
+function updateSaveState(){
+  const el = document.getElementById("saveState");
+  if(!el) return;
+  const has = measurements.length || docs.length || categories.length;
+  let txt = "", cls = "", tip = "";
+  if(!cloudOn() || (!has && !cloudSaving)){ el.hidden = true; return; }
+  if(cloudSaving){ txt = "Saving…"; cls = "busy"; }
+  else if(window.__isDirty && cloudSaveErr){ txt = "Not saved"; cls = "err"; tip = "Couldn't save to the cloud ("+cloudSaveErr+") — click to try again"; }
+  else if(window.__isDirty){ txt = "Unsaved changes"; cls = "dirty"; tip = "Saves to the cloud by itself in a moment — click to save now"; }
+  else if(cloudSavedAt){ txt = "✓ Saved"; cls = "ok"; tip = "Saved to the cloud at "+new Date(cloudSavedAt).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); }
+  else { el.hidden = true; return; }
+  el.hidden = false;
+  if(el.textContent!==txt) el.textContent = txt;
+  el.className = "saveState "+cls;
+  if(el.title!==tip) el.title = tip;
+}
+setInterval(updateSaveState, 1500);
+document.getElementById("saveState").onclick = () => { if(window.__isDirty && cloudOn() && !cloudSaving) window.__cloudQuickSave(false); };
 
 // ================= themes =================
 const THEME_KEY = "plantakeoff_theme", PDFINV_KEY = "plantakeoff_pdfinv";
@@ -3545,67 +3852,213 @@ const _pdfInvSt = storeGet(PDFINV_KEY);
 if(_pdfInvSt==="1") applyPdfInvert(true, false);
 else if(_pdfInvSt==="0") applyPdfInvert(false, false);
 
-// ================= versions =================
-let verDelArm = null;
+// ================= project versions =================
+// Snapshots kept inside the project (so they're saved to the cloud with it): the ones you name, plus autosaves —
+// one per 10 minutes of work and one before each big change (restoring, clearing, removing a plan).
+const VER_KEEP_MINE = 50, VER_KEEP_AUTO = 20, VER_AUTO_EVERY = 10*60000;
+// (verClockStart: when this project was opened — the first autosave comes 10 minutes after that)
+let verDelArm = null, verRen = null, verOpen = null;
 function verSnap(){
-  return JSON.parse(JSON.stringify({measurements, categories, counters, nextId, nextCatId, activeCatId, ftPerUnit, docScale, scaleLabels}));
+  return JSON.parse(JSON.stringify({measurements, categories, counters, nextId, nextCatId, activeCatId, ftPerUnit, docScale, scaleLabels,
+    docs: docs.map(d => { const st = docStore.get(d.id) || {}; return {id:d.id, name:d.name, pages:d.pages||0, ref:st.ref||null, parts:st.parts||0}; })}));
 }
-function renderVersions(){
-  const el = document.getElementById("verList");
-  if(!versions.length){
-    el.innerHTML = '<div style="color:var(--faint);font-size:12px;padding:8px 2px">No versions yet — name one above and hit Save version.</div>';
-    return;
+// totals right now, overall and by category — what a version shows and compares against
+function verStats(){
+  const tot = {area:0, line:0, count:0}, cats = {};
+  for(const m of measurements){
+    const v = measureValue(m); if(v==null) continue;
+    const c = catOf(m.cat), k = c ? catLabel(c) : "";
+    const o = cats[k] || (cats[k] = {area:0, line:0, count:0});
+    o[m.type] += v; tot[m.type] += v;
   }
-  el.innerHTML = [...versions].reverse().map(v =>
-    '<div class="vrow" data-vid="'+v.id+'"><div class="vmeta">'+
-    '<div class="vn">'+esc2(v.name)+'</div>'+
-    '<div class="vd">'+new Date(v.ts).toLocaleString()+' · '+(v.snap.measurements||[]).length+' items</div></div>'+
-    '<button class="btn" data-act="restore">Restore</button>'+
-    '<button class="btn danger" data-act="del">'+(verDelArm===v.id?"Sure?":"✕")+'</button></div>').join("");
+  return {n:measurements.length, plans:docs.length, tot, cats};
+}
+function pruneVersions(){
+  let auto = versions.filter(v => v.kind==="auto");
+  const mine = versions.filter(v => v.kind!=="auto");
+  const drop = new Set(mine.slice(0, Math.max(0, mine.length-VER_KEEP_MINE)));
+  // too many autosaves: let go of the one closest in time to the one before it — the last hours stay close together,
+  // older days thin out (like a backup history). The newest 3 always stay; "before …" ones are held on to longer.
+  while(auto.length > VER_KEEP_AUTO){
+    let bi = 1, bg = Infinity;
+    for(let i=1; i<auto.length-3; i++){
+      const g = (Date.parse(auto[i].ts) - Date.parse(auto[i-1].ts)) * (auto[i].name==="Autosave" ? 1 : 4);
+      if(g < bg){ bg = g; bi = i; }
+    }
+    drop.add(auto[bi]); auto = auto.filter((v, i) => i!==bi);
+  }
+  if(drop.size) versions = versions.filter(v => !drop.has(v));
+}
+function addVersion(name, kind, note){
+  const v = {id:Date.now()*1000 + Math.floor(Math.random()*1000), name, note:note||"", kind:kind||"mine",
+    ts:new Date().toISOString(), snap:verSnap(), stats:verStats()};
+  versions.push(v);
+  pruneVersions();
+  if(typeof scheduleAutosave==="function") scheduleAutosave();
+  return v;
+}
+function autoVersion(name){ return measurements.length ? addVersion(name, "auto") : null; }
+function sameAsNewest(){
+  const nv = versions[versions.length-1];
+  return !!nv && JSON.stringify(nv.snap.measurements)===JSON.stringify(measurements);
+}
+// run before each cloud save: one autosave version per 10 minutes of changes
+function maybeAutoCheckpoint(){
+  if(!window.__isDirty || !measurements.length || sameAsNewest()) return;
+  const last = versions.filter(v => v.kind==="auto").pop();
+  if(Date.now() - (last ? Date.parse(last.ts) : verClockStart) < VER_AUTO_EVERY) return;
+  autoVersion("Autosave");
+}
+// plan files the versions still point to — the cloud clean-up keeps them so a restore can bring the plan back
+function versionRefs(){
+  const out = [];
+  for(const v of versions) for(const d of ((v.snap && v.snap.docs) || [])) if(d.ref) out.push({ref:d.ref, parts:d.parts||0});
+  return out;
+}
+function fmtAgo(ts){
+  const sec = Math.max(0, (Date.now() - Date.parse(ts))/1000);
+  if(sec < 60) return "just now";
+  if(sec < 3600) return Math.round(sec/60)+" min ago";
+  if(sec < 86400) return Math.round(sec/3600)+" h ago";
+  const d = Math.round(sec/86400);
+  return d===1 ? "yesterday" : d+" days ago";
+}
+function statLine(tt){
+  const p = [];
+  if(tt.area >= 0.5) p.push(fArea(tt.area, 0));
+  if(tt.line >= 0.5) p.push(fLen(tt.line, 0));
+  if(tt.count) p.push(Math.round(tt.count)+" EA");
+  return p.join(" · ");
+}
+function plural(n, one, many){ return n+" "+(n===1 ? one : many); }
+function sinceParts(v, now){
+  if(!v.stats) return null;
+  const p = [], sg = x => (x>0 ? "+" : "−");
+  const dn = now.n - v.stats.n;
+  if(dn) p.push(sg(dn)+plural(Math.abs(dn), "item", "items"));
+  const da = now.tot.area - v.stats.tot.area, dl = now.tot.line - v.stats.tot.line, dc = now.tot.count - v.stats.tot.count;
+  if(Math.abs(da) >= 0.5) p.push(sg(da)+fArea(Math.abs(da), 0));
+  if(Math.abs(dl) >= 0.5) p.push(sg(dl)+fLen(Math.abs(dl), 0));
+  if(Math.round(dc)) p.push(sg(dc)+Math.abs(Math.round(dc))+" EA");
+  const dp = now.plans - v.stats.plans;
+  if(dp) p.push(sg(dp)+plural(Math.abs(dp), "plan", "plans"));
+  return p;
+}
+function verDetail(v, now){
+  if(!v.stats) return "";
+  const keys = [...new Set([...Object.keys(v.stats.cats), ...Object.keys(now.cats)])];
+  if(!keys.length) return "";
+  const z = {area:0, line:0, count:0};
+  return '<table class="vdet"><tr><th>Category</th><th>Then</th><th>Now</th></tr>'+keys.map(k =>
+    '<tr>'+(k ? '<td data-nt>'+esc2(k)+'</td>' : '<td>Uncategorized</td>')+
+    '<td>'+(statLine(v.stats.cats[k] || z) || "—")+'</td><td>'+(statLine(now.cats[k] || z) || "—")+'</td></tr>').join("")+'</table>';
+}
+function verRow(v, now){
+  if(verRen===v.id) return '<div class="vrow ver" data-vid="'+v.id+'">'+
+    '<input class="rnIn" value="'+esc2(v.name)+'" maxlength="80" style="flex:1;min-width:0">'+
+    '<button class="btn primary" data-act="rensave">Save</button><button class="btn" data-act="rencancel">✕</button></div>';
+  const n = v.stats ? v.stats.n : (v.snap.measurements||[]).length;
+  const pl = v.stats ? v.stats.plans : (v.snap.docs||[]).length;
+  const st = v.stats ? statLine(v.stats.tot) : "";
+  const since = sinceParts(v, now);
+  return '<div class="vrow ver'+(v.kind==="auto" ? " auto" : "")+'" data-vid="'+v.id+'">'+
+    '<div class="vmeta" data-act="more" title="Show the totals by category">'+
+      '<div class="vn"><span'+(v.kind==="auto" ? '' : ' data-nt')+'>'+esc2(v.name)+'</span></div>'+
+      '<div class="vd"><span title="'+esc2(new Date(v.ts).toLocaleString())+'">'+fmtAgo(v.ts)+'</span> · <span>'+plural(n, "item", "items")+'</span>'+
+        (pl ? ' · <span>'+plural(pl, "plan", "plans")+'</span>' : '')+'</div>'+
+      (st ? '<div class="vs">'+st+'</div>' : '')+
+      (v.note ? '<div class="vnote" data-nt>'+esc2(v.note)+'</div>' : '')+
+      (since ? (since.length ? '<div class="vc"><span>Since then:</span> '+since.map(x => '<span>'+x+'</span>').join(", ")+'</div>'
+        : '<div class="vc same">Same as now</div>') : '')+
+      (verOpen===v.id ? verDetail(v, now) : '')+
+    '</div>'+
+    '<div class="vbtns"><button class="btn" data-act="restore">Restore</button>'+
+    '<button class="btn" data-act="ren" title="Rename">✎</button>'+
+    '<button class="btn danger" data-act="del" title="Delete">'+(verDelArm===v.id ? "Sure?" : "✕")+'</button></div></div>';
+}
+// the versions you saved, and the autosaves, listed apart (newest first)
+function renderVersions(){
+  const el = document.getElementById("verList"), now = verStats();
+  const mine = versions.filter(v => v.kind!=="auto").reverse(), auto = versions.filter(v => v.kind==="auto").reverse();
+  el.innerHTML =
+    '<div class="verHead"><span>Saved by you</span><b>'+mine.length+'</b></div>'+
+    (mine.length ? mine.map(v => verRow(v, now)).join("") : '<div class="cloudMsg">None yet — name one above and press Save version.</div>')+
+    '<div class="verHead"><span>Autosaves</span><b>'+auto.length+'</b></div>'+
+    (auto.length ? auto.map(v => verRow(v, now)).join("")
+      : '<div class="cloudMsg">None yet — one is kept every 10 minutes while you work, and before big changes.</div>');
+}
+function restoreVersion(v){
+  autoVersion('Before restoring "'+v.name+'"');   // so this restore can be undone even after closing
+  pushHistory();
+  const p = JSON.parse(JSON.stringify(v.snap));
+  measurements = normMeas(p.measurements); categories = p.categories||[];
+  Object.assign(counters, p.counters||{});
+  nextId = p.nextId||measurements.length+1; nextCatId = p.nextCatId||categories.length+1;
+  activeCatId = p.activeCatId||"";
+  const sc = normScales(p);
+  ftPerUnit = sc.ftPerUnit; docScale = sc.docScale; scaleLabels = sc.scaleLabels;
+  scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
+  if(Array.isArray(p.docs)){   // the plan list as it was; plans that aren't open yet load from the cloud
+    docs = p.docs.map(d => ({id:String(d.id), name:d.name, pages:d.pages||0}));
+    for(const d of p.docs){ const st = docStoreOf(String(d.id)); if(!st.ref && !st.data && d.ref){ st.ref = d.ref; st.parts = d.parts||0; } }
+    nextDocNum = Math.max(nextDocNum, ...docs.map(d => (parseInt(d.id.slice(1), 10)||0)+1));
+  }
+  selectedId = null; drawing = null;
+  refreshCatSelect(); refreshAll(); syncDocView();
+  closeModal("verBack");
+  toast('Restored "'+v.name+'" — ⌘Z undoes this');
 }
 document.getElementById("verBtn").onclick = () => {
-  verDelArm = null; renderVersions();
+  verDelArm = null; verRen = null; verOpen = null;
+  renderVersions();
   document.getElementById("verName").value = "";
+  document.getElementById("verNote").value = "";
   openModal2("verBack");
+  if(matchMedia("(hover:hover) and (pointer:fine)").matches) document.getElementById("verName").focus();
 };
 document.getElementById("verClose").onclick = () => closeModal("verBack");
 document.getElementById("verSave").onclick = () => {
-  const name = document.getElementById("verName").value.trim() || ("Version "+(versions.length+1));
-  versions.push({id:Date.now(), name, ts:new Date().toISOString(), snap:verSnap()});
-  if(versions.length>25) versions.shift();
+  if(!measurements.length && !docs.length && !categories.length){ toast("Nothing to save yet"); return; }
+  const name = document.getElementById("verName").value.trim() || ("Version "+(versions.filter(v => v.kind!=="auto").length+1));
+  addVersion(name, "mine", document.getElementById("verNote").value.trim());
   document.getElementById("verName").value = "";
-  verDelArm = null; renderVersions();
-  if(typeof scheduleAutosave==="function") scheduleAutosave();
+  document.getElementById("verNote").value = "";
+  verDelArm = null; verRen = null;
+  renderVersions();
   window.__isDirty = true;
-  toast('Version "'+name+'" saved — write it to disk with ⌘S');
+  toast('Version "'+name+'" saved');
 };
 document.getElementById("verList").addEventListener("click", e => {
   const row = e.target.closest(".vrow"); if(!row) return;
-  const v = versions.find(x=>x.id===+row.dataset.vid); if(!v) return;
-  const act = e.target.dataset && e.target.dataset.act;
-  if(act==="restore"){
-    pushHistory();
-    const p = JSON.parse(JSON.stringify(v.snap));
-    measurements = normMeas(p.measurements); categories = p.categories||[];
-    Object.assign(counters, p.counters||{});
-    nextId = p.nextId||measurements.length+1; nextCatId = p.nextCatId||categories.length+1;
-    activeCatId = p.activeCatId||"";
-    const sc = normScales(p);
-    ftPerUnit = sc.ftPerUnit; docScale = sc.docScale; scaleLabels = sc.scaleLabels;
-    scaleLabel = Object.values(scaleLabels)[0] || scaleLabel;
-    refreshCatSelect(); refreshAll();
-    closeModal("verBack");
-    toast('Restored "'+v.name+'" — ⌘Z undoes this');
-  } else if(act==="del"){
+  const v = versions.find(x => String(x.id)===row.dataset.vid); if(!v) return;
+  const hit = e.target.closest("[data-act]"), act = hit && hit.dataset.act;
+  if(act==="restore") restoreVersion(v);
+  else if(act==="more"){ verOpen = verOpen===v.id ? null : v.id; renderVersions(); }
+  else if(act==="ren"){
+    verRen = v.id; verDelArm = null; renderVersions();
+    const inp = document.querySelector("#verList .rnIn"); if(inp){ inp.focus(); inp.select(); }
+  }
+  else if(act==="rencancel"){ verRen = null; renderVersions(); }
+  else if(act==="rensave"){
+    const inp = row.querySelector(".rnIn"), nm = (inp && inp.value || "").trim();
+    if(!nm){ toast("Type a name"); return; }
+    v.name = nm; verRen = null; renderVersions();
+    if(typeof scheduleAutosave==="function") scheduleAutosave();
+  }
+  else if(act==="del"){
     if(verDelArm!==v.id){ verDelArm = v.id; renderVersions(); return; }
-    versions = versions.filter(x=>x.id!==v.id);
+    versions = versions.filter(x => x!==v);
     verDelArm = null; renderVersions();
     if(typeof scheduleAutosave==="function") scheduleAutosave();
+    toast("Version deleted");
   }
 });
 document.getElementById("verBack").addEventListener("keydown", e => {
-  if(e.key==="Escape") closeModal("verBack");
-  if(e.key==="Enter" && e.target.id==="verName") document.getElementById("verSave").click();
+  if(e.key==="Escape"){ if(verRen){ verRen = null; renderVersions(); } else closeModal("verBack"); }
+  if(e.key==="Enter" && (e.target.id==="verName" || e.target.id==="verNote")) document.getElementById("verSave").click();
+  if(e.key==="Enter" && e.target.classList && e.target.classList.contains("rnIn")){
+    const b = e.target.closest(".vrow").querySelector('[data-act="rensave"]'); if(b) b.click();
+  }
 });
 
 // ================= historical imagery (Esri Wayback) =================
@@ -3748,6 +4201,7 @@ function applyUnitsUI(){
   document.getElementById("setUnitsUS").textContent = (met ? "" : "✓ ")+"US — feet (LF · SF · CY)";
   document.getElementById("setUnitsMetric").textContent = (met ? "✓ " : "")+"Metric — metres (m · m² · m³)";
   document.getElementById("tipLine").textContent = "Linear — "+uLen()+" (L)";
+  document.getElementById("tipCurve").textContent = "Curve — "+uLen()+" (U)";
   document.getElementById("tipArea").textContent = "Area — "+uArea()+" (A)";
   document.querySelector('label[for="calFt"]').textContent = met ? "Metres" : "Feet";
   document.querySelector('label[for="calIn"]').textContent = met ? "Centimetres" : "Inches";
@@ -3956,7 +4410,7 @@ document.getElementById("gSetupGo").onclick = async () => {
     gate.classList.remove("show");
     toast("Storage connected"+note);
     gateNext = null;
-    openCloud();
+    startupList();
     syncSearchKey();
   }catch(e){ err.textContent = e.message || "Couldn't connect"; err.style.display = ""; }
   b.disabled = false; b.textContent = "Connect";
@@ -3976,7 +4430,7 @@ async function gateLoginGo(){
     if(!cloudReady()) await restoreAccess(passKeyMem);
     document.getElementById("gPass").value = "";
     if(!cloudReady()){ updateGate("setup"); }
-    else { keepStorage(); gate.classList.remove("show"); openCloud(); syncSearchKey(); }
+    else { keepStorage(); gate.classList.remove("show"); startupList(); syncSearchKey(); }
   } else {
     err.textContent = "Wrong password"; err.style.display = "";
   }
@@ -4144,7 +4598,15 @@ document.getElementById("cloudSearch").addEventListener("input", () => { cloudAr
 
 function ghSave(quiet){ return cloudSerial(() => ghSaveNow(quiet)); }
 async function ghSaveNow(quiet){
+  setCloudSaving(true);
+  let ok = false;
+  try{ ok = await ghSaveCore(quiet); }
+  finally{ setCloudSaving(false, ok); }
+  return ok;
+}
+async function ghSaveCore(quiet){
   if(!projectName){ projectName = defaultProjectName(); syncTitle(); }   // keeps saving to the same cloud file
+  maybeAutoCheckpoint();
   const fbase = slug(defaultProjectName());
   const fname = fbase+".json";
   let listing = [];
@@ -4172,7 +4634,7 @@ async function ghSaveNow(quiet){
     return false;
   }
   window.__isDirty = false;
-  toast('Saved to cloud — "'+defaultProjectName()+'"'+(!docs.length ? ""
+  if(!quiet || failed) toast('Saved to cloud — "'+defaultProjectName()+'"'+(!docs.length ? ""
     : failed ? " ("+failed+" plan PDF upload"+(failed>1?"s":"")+" failed — will retry next save)"
     : missing ? " ("+missing+" plan"+(missing>1?"s aren't":" isn't")+" loaded — add the PDF again)"
     : " ("+(docs.length>1 ? docs.length+" plan PDFs" : "PDF")+" included)"));
@@ -4180,6 +4642,7 @@ async function ghSaveNow(quiet){
   try{
     const keep = new Set();
     for(const d of data.docs) if(d.ref) refFiles(d.ref, d.parts).forEach(n => keep.add(n));
+    for(const r of versionRefs()) refFiles(r.ref, r.parts).forEach(n => keep.add(n));   // plans a version can bring back
     const gone = [];
     for(const f of await ghList()){
       if(f.type!=="file" || keep.has(f.name) || !ownsFile(fbase, f.name)) continue;
@@ -4204,7 +4667,21 @@ setInterval(() => {
     ghSave(true);
   }
 }, 180000);
-document.getElementById("cloudBtn").onclick = openCloud;
+// start of a session: last session's unsaved changes go to the cloud first, then a fresh project with the list on top
+let startupDone = false;
+async function startupList(){
+  if(startupDone){ openCloud(); return; }
+  startupDone = true;
+  if(measurements.length || docs.length || categories.length){
+    if(window.__isDirty && (measurements.length || docs.length)){
+      if(!window.__cloudQuickSave.enabled()){ if(restoredMsg) toast(restoredMsg); openCloud(); return; }
+      toast("Saving your last session to the cloud…");
+      if(!(await ghSave(true))){ toast("Your last session couldn't be saved to the cloud — it's still open"); openCloud(); return; }
+    }
+    startFresh();
+  }
+  openCloud();
+}
 document.getElementById("cloudMenuOpen").onclick = openCloud;
 document.getElementById("cloudClose").onclick = () => closeModal("cloudBack");
 document.getElementById("cloudNew").onclick = () => {
@@ -4427,7 +4904,8 @@ document.getElementById("gkeyBack").addEventListener("keydown", e => {
 
 updateGate();
 // always land on the projects list when the storage is already connected
-if(cloudReady() && (!IS_WEB || gateOn())){ setTimeout(openCloud, 400); syncSearchKey(); }
+if(cloudReady() && (!IS_WEB || gateOn())){ setTimeout(startupList, 400); syncSearchKey(); }
+else if(restoredMsg && !IS_WEB) toast(restoredMsg);
 
 setTool("select");
 refreshCatSelect();
