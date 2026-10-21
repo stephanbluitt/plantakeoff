@@ -408,6 +408,15 @@
   .swRow{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
   .sw{width:26px; height:26px; border-radius:8px; cursor:pointer; border:2px solid transparent; padding:0;}
   .sw.on{border-color:var(--solid); box-shadow:0 0 0 2px var(--amber);}
+  .swRow .sw{width:24px; height:24px;}
+  .sw.cust{position:relative; overflow:hidden; display:inline-block; box-sizing:border-box;
+    background:conic-gradient(#e5493a,#ffd60a,#2fae3f,#00e5ff,#1f5fd6,#9b6bff,#e6479a,#e5493a);}
+  .sw.cust input{position:absolute; inset:-4px; width:calc(100% + 8px); height:calc(100% + 8px); opacity:0; cursor:pointer; border:0; padding:0;}
+  #colorPop{position:fixed; z-index:9999; display:none; grid-template-columns:repeat(9, 24px); gap:6px; padding:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.35);}
+  #colorPop.open{display:grid;}
+  #colorPop .sw{width:24px; height:24px;}
+  #colorPop .sw:not(.on), .swRow .sw:not(.on){border-color:rgba(127,127,127,.35);}
   #toast{
     position:fixed; bottom:calc(58px + var(--sab)); left:50%; transform:translateX(-50%);
     background:var(--solid); border:1px solid var(--hair); color:var(--ink);
@@ -517,7 +526,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.3</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.4</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -948,7 +957,30 @@ let nextId = 1;
 let projectName = "", lastAddress = "";
 const counters = {line:1, curve:1, area:1, count:1};
 const COLORS = {line:"#0aa2e6", area:"#2fae3f", count:"#e6479a", calibrate:"#ffb224"};
-const PALETTE = ["#0aa2e6","#2fae3f","#e6479a","#ffb224","#9b6bff","#ff7a45","#19c3b1","#e8e6e1"];
+const PALETTE = ["#0aa2e6","#2fae3f","#e6479a","#ffb224","#9b6bff","#ff7a45","#19c3b1","#e8e6e1",
+  "#e5493a","#1f5fd6","#7cc700","#c2185b","#ffd60a","#5e35b1","#00897b","#8d6e63",
+  "#00e5ff","#ff80ab","#33691e","#ff9100","#3f51b5","#b388ff","#546e7a","#212121"];
+// color chooser: the 24 colors plus any custom color
+function colorGrid(current){
+  const cur = String(current||"").toLowerCase();
+  return PALETTE.map(c => '<button type="button" class="sw'+(c===cur?" on":"")+'" data-c="'+c+'" style="background:'+c+'" title="'+c+'"></button>').join("") +
+    '<label class="sw cust'+(cur && !PALETTE.includes(cur) ? " on" : "")+'" title="Custom color"><input type="color" value="'+(/^#[0-9a-f]{6}$/.test(cur) ? cur : "#0aa2e6")+'"></label>';
+}
+function openColorPop(anchor, current, onPick){
+  let pop = document.getElementById("colorPop");
+  if(!pop){
+    pop = document.createElement("div"); pop.id = "colorPop"; document.body.appendChild(pop);
+    document.addEventListener("mousedown", e => { if(pop.classList.contains("open") && !pop.contains(e.target) && !e.target.closest(".swatch")) pop.classList.remove("open"); });
+    document.addEventListener("keydown", e => { if(e.key==="Escape") pop.classList.remove("open"); });
+  }
+  pop.innerHTML = colorGrid(current);
+  pop.querySelectorAll("button.sw").forEach(b => b.onclick = () => { pop.classList.remove("open"); onPick(b.dataset.c); });
+  const inp = pop.querySelector("input"); inp.onchange = () => { pop.classList.remove("open"); onPick(inp.value.toLowerCase()); };
+  pop.classList.add("open");
+  const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + "px";
+  pop.style.top = (r.bottom + h + 8 > innerHeight ? Math.max(8, r.top - h - 6) : r.bottom + 6) + "px";
+}
 
 const wrap = document.getElementById("canvasWrap");
 const stage = document.getElementById("stage");
@@ -2971,10 +3003,11 @@ function itemHTML(m, v, child){
       refreshAll(); return;
     }
     if(e.target.closest(".swatch")){
-      pushHistory();
-      const i = PALETTE.indexOf(m.color);
-      m.color = PALETTE[(i+1) % PALETTE.length];
-      refreshAll(); return;
+      openColorPop(e.target.closest(".swatch"), m.color, col => {
+        if(col===m.color) return;
+        pushHistory(); m.color = col; refreshAll();
+      });
+      return;
     }
     if(e.target.closest(".iEye")){
       hiddenItems.has(m.id) ? hiddenItems.delete(m.id) : hiddenItems.add(m.id);
@@ -3935,12 +3968,16 @@ function openCatEditor(c){
   ps.title = hasKids ? "This category has sub-categories, so it stays top level" : "Nest this category under another one";
   document.getElementById("ceDelete").textContent = "Delete category";
   const row = document.getElementById("ceColors");
-  row.innerHTML = PALETTE.map(col =>
-    '<button class="sw'+(col===ceColor?" on":"")+'" data-c="'+col+'" style="background:'+col+'"></button>').join("");
-  row.querySelectorAll(".sw").forEach(b => b.onclick = () => {
+  row.innerHTML = colorGrid(ceColor);
+  row.querySelectorAll("button.sw").forEach(b => b.onclick = () => {
     ceColor = b.dataset.c;
     row.querySelectorAll(".sw").forEach(x=>x.classList.toggle("on", x===b));
   });
+  const cin = row.querySelector(".cust input");
+  cin.oninput = cin.onchange = () => {
+    ceColor = cin.value.toLowerCase();
+    row.querySelectorAll(".sw").forEach(x=>x.classList.toggle("on", x===cin.parentNode));
+  };
   openModal2("catEditBack");
   document.getElementById("ceName").focus();
 }
