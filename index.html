@@ -152,7 +152,7 @@
   #pdfCanvas{display:block; background:#fff; border-radius:3px;}
   #pdfCanvas.inverted, #hiCanvas.inverted{filter:invert(0.93) hue-rotate(180deg);}
   #hiCanvas{position:absolute; pointer-events:none; display:none;}
-  #overlay{position:absolute; inset:0; cursor:grab;}
+  #overlay{position:absolute; left:0; top:0; cursor:grab;}
   #dropHint{
     position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
     align-items:center; justify-content:center; color:var(--faint); text-align:center; padding:20px;
@@ -2104,8 +2104,7 @@ async function renderPage(){
   const vp1 = page.getViewport({scale:1});
   const cssW = vp1.width*zoom, cssH = vp1.height*zoom;
   pdfCanvas.style.width = cssW+"px"; pdfCanvas.style.height = cssH+"px";
-  overlay.width = Math.floor(cssW*dpr); overlay.height = Math.floor(cssH*dpr);
-  overlay.style.width = cssW+"px"; overlay.style.height = cssH+"px";
+  pageW = cssW; pageH = cssH; markStatic();
   hiCanvas.style.display = "none";
   let base = baseCache.get(key);
   if(!base){
@@ -2171,7 +2170,8 @@ async function updateHi(){
   }catch(e){ /* cancelled mid-flight — a newer render took over */ }
   if(hiTask===task) hiTask = null;
 }
-wrap.addEventListener("scroll", ()=>scheduleHi(110), {passive:true});
+wrap.addEventListener("scroll", ()=>{ if(pdfDoc && mode==="pdf") drawOverlay(); scheduleHi(110); }, {passive:true});
+addEventListener("resize", ()=>{ if(pdfDoc && mode==="pdf") drawOverlay(); });
 async function fitPage(){
   if(!pdfDoc) return;
   if(!wrap.clientWidth){ needFit = true; return; }   // plan view hidden (map mode) — fit once it shows
@@ -2184,11 +2184,28 @@ async function fitPage(){
 }
 
 // ================= overlay drawing (PDF) =================
-function pdfToScreen(p){ return {x:p.x*zoom*dpr, y:p.y*zoom*dpr}; }
-// Committed shapes render once into an offscreen cache; per-frame work is a
-// single blit plus only what's actually moving (ghost / dragged shape).
+// The overlay only covers the part of the page in view (plus a margin) and moves with the scroll. A canvas the size of
+// the whole page goes past what browsers allow at high zoom (a big sheet at 500% = 400+ million pixels): it went blank,
+// so the measurements vanished, and every redraw got slow. org = top-left of the canvas being drawn, page css px.
+const OV_PAD = 120, ST_PAD = 400;
+let pageW = 0, pageH = 0, ovX = 0, ovY = 0, ovW = 0, ovH = 0, orgX = 0, orgY = 0;
+function pdfToScreen(p){ return {x:(p.x*zoom-orgX)*dpr, y:(p.y*zoom-orgY)*dpr}; }
+const devPx = v => Math.round(v*dpr)/dpr;   // keeps the canvases on whole device pixels, so blits line up exactly
+function placeOverlay(){
+  const w = Math.min(pageW, Math.ceil(wrap.clientWidth + OV_PAD*2)), h = Math.min(pageH, Math.ceil(wrap.clientHeight + OV_PAD*2));
+  const x = devPx(Math.max(0, Math.min(pageW - w, wrap.scrollLeft - stage.offsetLeft - OV_PAD)));
+  const y = devPx(Math.max(0, Math.min(pageH - h, wrap.scrollTop  - stage.offsetTop  - OV_PAD)));
+  const bw = Math.max(0, Math.round(w*dpr)), bh = Math.max(0, Math.round(h*dpr));
+  if(overlay.width!==bw || overlay.height!==bh){ overlay.width = bw; overlay.height = bh; }
+  if(x!==ovX || w!==ovW){ overlay.style.left = x+"px"; overlay.style.width = w+"px"; }
+  if(y!==ovY || h!==ovH){ overlay.style.top = y+"px"; overlay.style.height = h+"px"; }
+  ovX = x; ovY = y; ovW = w; ovH = h; orgX = x; orgY = y;
+}
+// Committed shapes render once into an offscreen cache (the view plus ST_PAD around it, rebuilt when the view
+// leaves it); per-frame work is a single blit plus only what's actually moving (ghost / dragged shape).
 const staticCanvas = document.createElement("canvas");
 let dctx = octx, staticDirty = true, staticExclude = null, rafPending = false;
+let stX = 0, stY = 0, stW = 0, stH = 0, stZoom = 0;
 function markStatic(){ staticDirty = true; }
 function requestDraw(){
   if(rafPending) return;
@@ -2196,8 +2213,12 @@ function requestDraw(){
   requestAnimationFrame(()=>{ rafPending = false; drawOverlay(); });
 }
 function rebuildStatic(lw){
-  staticCanvas.width = overlay.width; staticCanvas.height = overlay.height;
+  stX = Math.max(0, ovX-ST_PAD); stY = Math.max(0, ovY-ST_PAD);
+  stW = Math.min(pageW, ovX+ovW+ST_PAD) - stX; stH = Math.min(pageH, ovY+ovH+ST_PAD) - stY;
+  stZoom = zoom;
+  staticCanvas.width = Math.max(0, Math.round(stW*dpr)); staticCanvas.height = Math.max(0, Math.round(stH*dpr));
   dctx = staticCanvas.getContext("2d");
+  orgX = stX; orgY = stY;
   for(const m of measurements){
     if(m.src!=="pdf" || m.page !== pageNum || m.doc !== curDocId) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
@@ -2205,13 +2226,15 @@ function rebuildStatic(lw){
     drawMeasure(m, m.id===selectedId, lw);
   }
   dctx = octx; staticDirty = false;
+  orgX = ovX; orgY = ovY;
 }
 function drawOverlay(){
   const lw = Math.max(1.5, 2*dpr);
-  if(staticDirty || staticCanvas.width!==overlay.width || staticCanvas.height!==overlay.height)
+  placeOverlay();
+  if(staticDirty || stZoom!==zoom || ovX<stX || ovY<stY || ovX+ovW>stX+stW+0.01 || ovY+ovH>stY+stH+0.01)
     rebuildStatic(lw);
   octx.clearRect(0,0,overlay.width,overlay.height);
-  octx.drawImage(staticCanvas,0,0);
+  if(staticCanvas.width && staticCanvas.height) octx.drawImage(staticCanvas, Math.round((stX-ovX)*dpr), Math.round((stY-ovY)*dpr));
   if(editDrag && editDrag.m.src==="pdf") drawMeasure(editDrag.m, true, lw);
   if(drawing && drawing.src!=="map" && drawing.pts.length){
     const g = drawingShape(drawing, drawCursor(drawing));
@@ -2286,7 +2309,7 @@ function drawBendDots(m, nb, closed){
 
 // ================= PDF mouse & touch =================
 function evtPdf(e){
-  const r = overlay.getBoundingClientRect();
+  const r = pdfCanvas.getBoundingClientRect();   // the whole page (the overlay only covers the part in view)
   return {x:(e.clientX-r.left)/zoom, y:(e.clientY-r.top)/zoom};
 }
 function snap(p){
