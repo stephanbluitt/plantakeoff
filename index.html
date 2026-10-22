@@ -1263,13 +1263,18 @@ function createCategoryFromModal(){
   closeModal("catBack");
   pushHistory();
   const c = {id:"c"+(nextCatId++), name, color:PALETTE[(categories.length)%PALETTE.length]};
-  categories.push(c); activeCatId = c.id;
+  categories.push(c); setActiveCat(c.id);
   refreshCatSelect(); renderList();
   if(typeof scheduleAutosave==="function") scheduleAutosave();
   toast('Category "'+name+'" active');
 }
 document.getElementById("addCat").onclick = addCategory;
-document.getElementById("activeCat").onchange = e => { activeCatId = e.target.value; };
+document.getElementById("activeCat").onchange = e => { setActiveCat(e.target.value); };
+// a new active category ends the count in progress, so the next click starts a count in that category
+function setActiveCat(id){
+  if(drawing && drawing.type==="count" && id!==activeCatId) finishDrawing();
+  activeCatId = id;
+}
 function newName(type){
   const c = catOf(activeCatId);
   if(c) return c.name+" "+(measurements.filter(m=>m.cat===c.id).length+1);
