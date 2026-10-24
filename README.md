@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v2.4
+# PLAN TAKEOFF v2.5
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -15,10 +15,16 @@ Measure construction plans and real properties, get instant quantities for estim
 - **Projects** — everything saves to the cloud by itself (a few seconds after you stop, when you switch away, and every 3 minutes), with a Saved / Unsaved label next to the project name. Project versions: your named snapshots with notes, and autosaves (every 10 minutes of work and before big changes) listed apart, each showing its totals and what changed since; restore any of them. 60-step undo/redo.
 - **Cloud** — log in and save projects (plan PDFs included) to a private cloud; search, open, rename or delete them from any computer. The app opens on your project list over a fresh, empty project. The password alone reconnects storage on any computer.
 
+- **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
+- **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Labels on screen (v2.5)** — measurement labels on the plan are spread out together so they never sit on top of each other, with a thin leader line when one has to move.
+- **Cleaner marked-up PDFs (v2.5)** — crowded sheets get numbered tags in each category's color plus a key page after the sheet (Export → Labels: Auto / Name and quantity / Numbers + key page).
+
 ## Versions
 
 The live app is always `index.html`. Earlier versions are kept as full working copies:
 
+- **v2.4** — `v2.4.html` → https://stephanbluitt.github.io/plantakeoff/v2.4.html
 - **v2.3** — `v2.3.html` → https://stephanbluitt.github.io/plantakeoff/v2.3.html
 - **v2.2** — `v2.2.html` → https://stephanbluitt.github.io/plantakeoff/v2.2.html
 - **v2.1** — `v2.1.html` → https://stephanbluitt.github.io/plantakeoff/v2.1.html

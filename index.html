@@ -141,6 +141,9 @@
   .pop .mchk{display:flex; align-items:center; gap:0; padding:6px 10px 7px; font-size:12.5px; color:var(--dim);
     cursor:pointer; user-select:none; -webkit-user-select:none;}
   .pop .mchk:hover{color:var(--ink);}
+  .pop .mchk select{margin-left:6px; font:inherit; font-size:12px; padding:2px 4px; border-radius:5px; border:1px solid var(--line, #d6d6d6); background:transparent; color:inherit;}
+  .ceEst{margin:2px 0 8px; padding:8px 10px; border-radius:8px; background:rgba(31,138,76,.09); font-size:12.5px; line-height:1.45;}
+  .ceEst:empty{display:none;}
   .pop .mchk input{width:16px; height:16px; margin:0 4px 0 0; flex:none; accent-color:var(--amber); cursor:pointer;}
   #pop-scale{max-height:70vh; overflow-y:auto; min-width:230px;}
   /* ================= canvas & map ================= */
@@ -526,7 +529,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.4</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.5</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -569,6 +572,7 @@
   <button class="mi" id="markBtn">⬇️ Export PDF</button>
   <button class="mi" id="markAllBtn" style="display:none">⬇️ Export PDF — all plans</button>
   <label class="mchk" title="On: your measurements drawn on the plan, plus a takeoff summary page. Off: the plans as they came."><input type="checkbox" id="pdfMarks" checked> Include markups</label>
+  <label class="mchk" title="Crowded sheets read better with numbered tags and a key page right after the sheet.">Labels <select id="pdfLabels"><option value="auto">Auto</option><option value="full">Name and quantity</option><option value="num">Numbers + key page</option></select></label>
 </div>
 <div class="pop" id="pop-help" style="min-width:300px">
   <div class="ph">TOOLS</div>
@@ -732,7 +736,7 @@
   <div class="modal">
     <h3>Calibrate scale</h3>
     <p>Enter the real-world length of the line you just drew on the plan.</p>
-    <div class="frow"><label for="calFt">Feet</label><input type="number" id="calFt" min="0" step="any" placeholder="0"></div>
+    <div class="frow"><label for="calFt">Feet</label><input type="text" inputmode="decimal" id="calFt" placeholder="0 — or type 12'6&quot;"></div>
     <div class="frow"><label for="calIn">Inches</label><input type="number" id="calIn" min="0" step="any" placeholder="0"></div>
     <div class="actions">
       <button class="btn" id="calCancel">Cancel</button>
@@ -805,8 +809,46 @@
       <div class="swRow" id="ceColors" style="margin-bottom:0"></div>
     </div>
     <div class="frow"><label for="ceParent">Inside of</label><select id="ceParent" style="flex:1"></select></div>
-    <div class="frow"><label for="ceDepth" id="ceDepthLbl">Depth (in)</label><input type="number" id="ceDepth" min="0" step="any" placeholder="optional — e.g. 3 for mulch"></div>
-    <div class="frow"><label for="ceWaste">Waste %</label><input type="number" id="ceWaste" min="0" step="any" placeholder="optional — e.g. 10"></div>
+    <div class="frow"><label for="ceKind">Estimate</label><select id="ceKind" style="flex:1">
+      <option value="">Measure only</option>
+      <option value="bulk">Bulk material by depth — soil, mulch, gravel, stone, sand, asphalt</option>
+      <option value="concrete">Concrete — slabs, footings, curbs</option>
+      <option value="pavers">Pavers, tiles or blocks</option>
+      <option value="sod">Sod</option>
+      <option value="seed">Seed, fertilizer or lime — spread rate</option>
+      <option value="pieces">Pieces along a length — edging, fence panels, curb</option>
+      <option value="wall">Wall blocks — retaining or garden walls</option>
+      <option value="peritem">Amount per item — bags per tree, stakes per shrub…</option>
+    </select></div>
+    <div class="frow ek ek-bulk"><label for="ceMat">Material</label><select id="ceMat" style="flex:1; min-width:0; width:0"><option value="">Custom</option><option value="topsoil">Topsoil</option><option value="compost">Garden soil / compost</option><option value="mulch">Mulch</option><option value="chips">Wood chips</option><option value="gravel">Gravel</option><option value="stone">Crushed stone</option><option value="pea">Pea gravel</option><option value="river">River rock</option><option value="sand">Sand</option><option value="dg">Decomposed granite</option><option value="base">Road base / crusher run</option><option value="asphalt">Asphalt</option></select></div>
+    <div class="frow ek ek-bulk"><label for="ceDepth" id="ceDepthLbl">Depth (in)</label><input type="text" inputmode="decimal" id="ceDepth" placeholder="optional — e.g. 3 for mulch"></div>
+    <div class="frow ek ek-bulk"><label for="ceTons" data-u="t_cy">Tons per CY</label><input type="number" id="ceTons" min="0" step="any" placeholder="optional — e.g. 1.4 for gravel"></div>
+    <div class="frow ek ek-bulk"><label for="ceBag" data-u="cuft">Bag size (cu ft)</label><input type="number" id="ceBag" min="0" step="any" placeholder="optional — e.g. 2 for bagged mulch"></div>
+    <div class="frow ek ek-pavers"><label for="cePavL" data-u="in">Paver size (in)</label><span style="flex:1; display:flex; gap:6px; align-items:center"><input type="text" inputmode="decimal" id="cePavL" placeholder="length" style="flex:1; min-width:0"> × <input type="text" inputmode="decimal" id="cePavW" placeholder="width" style="flex:1; min-width:0"></span></div>
+    <div class="frow ek ek-pavers"><label for="cePavPal">Pieces per pallet</label><input type="number" id="cePavPal" min="0" step="any" placeholder="optional — from the supplier"></div>
+    <div class="frow ek ek-pavers"><label for="cePavPalSF" data-u="sf">…or SF per pallet</label><input type="number" id="cePavPalSF" min="0" step="any" placeholder="optional — e.g. 120"></div>
+    <div class="frow ek ek-pavers"><label for="cePavBase" data-u="in">Base depth (in)</label><input type="text" inputmode="decimal" id="cePavBase" placeholder="optional — gravel base, e.g. 4"></div>
+    <div class="frow ek ek-sod"><label for="ceSodPal" data-u="sf">SF per pallet</label><input type="number" id="ceSodPal" min="0" step="any" placeholder="e.g. 450"></div>
+    <div class="frow ek ek-sod"><label for="ceSodPc" data-u="sf">SF per roll / slab</label><input type="number" id="ceSodPc" min="0" step="any" placeholder="optional — e.g. 10"></div>
+    <div class="frow ek ek-seed"><label for="ceSeedRate" data-u="lb1000">lb per 1,000 SF</label><input type="number" id="ceSeedRate" min="0" step="any" placeholder="e.g. 5"></div>
+    <div class="frow ek ek-seed"><label for="ceSeedBag" data-u="lb">Bag size (lb)</label><input type="number" id="ceSeedBag" min="0" step="any" placeholder="optional — e.g. 50"></div>
+    <div class="frow ek ek-pieces"><label for="cePcLen" data-u="ft">Piece length (ft)</label><input type="text" inputmode="decimal" id="cePcLen" placeholder="e.g. 20 for edging, 8 for fence panels"></div>
+    <label class="frow ek ek-pieces" style="gap:8px; font-size:12.5px"><input type="checkbox" id="cePosts" style="width:auto; flex:none"> Count posts too (one more than pieces)</label>
+    <div class="frow ek ek-concrete"><label for="ceCDepth" data-us="Slab thickness (in)" data-m="Slab thickness (cm)">Slab thickness (in)</label><input type="text" inputmode="decimal" id="ceCDepth" placeholder="e.g. 4 — for areas"></div>
+    <div class="frow ek ek-concrete"><label for="ceFootW" data-us="Footing width × depth (in)" data-m="Footing width × depth (cm)">Footing width × depth (in)</label><span style="flex:1; min-width:0; display:flex; gap:6px; align-items:center"><input type="text" inputmode="decimal" id="ceFootW" placeholder="width" style="flex:1; min-width:0; width:0"> × <input type="text" inputmode="decimal" id="ceFootD" placeholder="depth" style="flex:1; min-width:0; width:0"></span></div>
+    <div class="frow ek ek-concrete"><label for="ceBagLb">Bags (if mixing)</label><select id="ceBagLb" style="flex:1; min-width:0; width:0"><option value="">Ready-mix truck only</option><option value="40">40 lb (18 kg) bags</option><option value="60">60 lb (27 kg) bags</option><option value="80">80 lb (36 kg) bags</option></select></div>
+    <div class="frow ek ek-concrete"><label for="ceRebar" data-us="Rebar spacing (in)" data-m="Rebar spacing (cm)">Rebar spacing (in)</label><input type="text" inputmode="decimal" id="ceRebar" placeholder="optional — e.g. 18"></div>
+    <label class="frow ek ek-concrete" style="gap:8px; font-size:12.5px"><input type="checkbox" id="ceMesh" style="width:auto; flex:none"> Wire mesh sheets (5 × 10 ft)</label>
+    <div class="frow ek ek-concrete"><label for="ceCBase" data-us="Gravel base (in)" data-m="Gravel base (cm)">Gravel base (in)</label><input type="text" inputmode="decimal" id="ceCBase" placeholder="optional — e.g. 4"></div>
+    <div class="frow ek ek-wall"><label for="ceWallH" data-us="Wall height (in)" data-m="Wall height (cm)">Wall height (in)</label><input type="text" inputmode="decimal" id="ceWallH" placeholder="e.g. 36 or 3'"></div>
+    <div class="frow ek ek-wall"><label for="ceBlkL" data-us="Block face (in)" data-m="Block face (cm)">Block face (in)</label><span style="flex:1; min-width:0; display:flex; gap:6px; align-items:center"><input type="text" inputmode="decimal" id="ceBlkL" placeholder="length" style="flex:1; min-width:0; width:0"> × <input type="text" inputmode="decimal" id="ceBlkH" placeholder="height" style="flex:1; min-width:0; width:0"></span></div>
+    <div class="frow ek ek-wall"><label for="ceCapL" data-us="Cap length (in)" data-m="Cap length (cm)">Cap length (in)</label><input type="text" inputmode="decimal" id="ceCapL" placeholder="optional — e.g. 16"></div>
+    <div class="frow ek ek-wall"><label for="ceDrainW" data-us="Drain gravel width (in)" data-m="Drain gravel width (cm)">Drain gravel width (in)</label><input type="text" inputmode="decimal" id="ceDrainW" placeholder="optional — e.g. 12"></div>
+    <div class="frow ek ek-peritem"><label for="cePerQty">Amount per item</label><input type="number" id="cePerQty" min="0" step="any" placeholder="e.g. 2"></div>
+    <div class="frow ek ek-peritem"><label for="cePerUnit">Unit</label><input type="text" id="cePerUnit" maxlength="40" placeholder="e.g. bags of soil"></div>
+    <div class="frow ek ek-bulk ek-pavers ek-sod ek-seed ek-pieces ek-concrete ek-wall ek-peritem"><label for="ceWaste">Waste %</label><input type="number" id="ceWaste" min="0" step="any" placeholder="optional — e.g. 10"></div>
+    <p id="ceEstOut" class="ceEst" data-nt></p>
+    <p id="ceUnitTip" class="ek ek-bulk ek-pavers ek-concrete ek-wall ek-pieces" style="margin:-2px 0 8px; font-size:11px; opacity:.75">Type sizes any way: 4, 4in, 10cm, 3'6", 3 1/2</p>
     <div class="frow" style="align-items:flex-start"><label style="padding-top:6px" for="ceNotes">Notes</label>
       <textarea id="ceNotes" placeholder="Scope notes — included when you copy project measurements"></textarea>
     </div>
@@ -917,6 +959,11 @@
   <div class="ph">UNITS</div>
   <button class="mi sel" id="setUnitsUS">📏 US — feet (LF · SF · CY)</button>
   <button class="mi" id="setUnitsMetric">🌍 Metric — metres (m · m² · m³)</button>
+  <div class="ph">US LENGTHS</div>
+  <button class="mi" id="setLenDec">5.5 LF — decimal feet</button>
+  <button class="mi" id="setLenFtIn">5'-6" — feet and inches</button>
+  <button class="mi" id="setLenIn">66" — inches</button>
+  <button class="mi" id="setBoth">⇄ Show US and metric together</button>
   <div class="ph">SEARCH</div>
   <button class="mi" id="setGkey">🔎 Google address search…</button>
   <div class="ph">STORAGE</div>
@@ -1218,9 +1265,37 @@ function unitOf(t){ return t==="line" ? uLen() : t==="area" ? uArea() : "EA"; }
 // d = decimals in US units; metric gets one more (a metre is ~3 ft, a m² ~11 SF)
 function nLen(ft, d){ return (isMetric() ? ft*FT_M : ft).toFixed(d + (isMetric() ? 1 : 0)); }
 function nArea(sf, d){ return (isMetric() ? sf*SF_M2 : sf).toFixed(d + (isMetric() ? 1 : 0)); }
-function fLen(ft, d){ return nLen(ft, d)+" "+uLen(); }
-function fArea(sf, d){ return nArea(sf, d)+" "+uArea(); }
-function fVol(cy, d){ return (isMetric() ? cy*CY_M3 : cy).toFixed(d)+" "+uVol(); }
+// how US lengths read: decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"); "both" adds the other system in brackets
+const LENFMT_KEY = "tt.lenFmt", BOTH_KEY = "tt.bothUnits";
+let lenFmt = ["dec", "ftin", "in"].includes(storeGet(LENFMT_KEY)) ? storeGet(LENFMT_KEY) : "dec";
+let bothUnits = storeGet(BOTH_KEY)==="1";
+function inchText(inch){   // nearest 1/4 inch: 6, 6 1/4, 1/2
+  const q = Math.round(inch*4), w = Math.floor(q/4), r = q%4;
+  return (w || !r ? w.toLocaleString("en-US") : "") + (r ? (w ? " " : "") + ["", "1/4", "1/2", "3/4"][r] : "");
+}
+function ftInText(ft){
+  const q = Math.round(Math.abs(ft)*48), f = Math.floor(q/48);   // quarter inches
+  return (ft<0 ? "-" : "") + f.toLocaleString("en-US") + "'-" + inchText((q - f*48)/4) + '"';
+}
+function usLen(ft, d){ return lenFmt==="ftin" ? ftInText(ft) : lenFmt==="in" ? (ft<0 ? "-" : "")+inchText(Math.abs(ft)*12)+'"' : (+ft).toFixed(d)+" LF"; }
+function both(us, m){ return isMetric() ? m + (bothUnits ? " ("+us+")" : "") : us + (bothUnits ? " ("+m+")" : ""); }
+function fLen(ft, d){ return both(usLen(ft, d), (ft*FT_M).toFixed(d+1)+" m"); }
+function fArea(sf, d){ return both((+sf).toFixed(d)+" SF", (sf*SF_M2).toFixed(d+1)+" m²"); }
+function fVol(cy, d){ return both((+cy).toFixed(d)+" CY", (cy*CY_M3).toFixed(d)+" m³"); }
+// sizes typed any way: 5'6", 5' 6 1/2", 5ft 6in, 66", 66 in, 3/4, 8cm, 1.68 m — plain numbers use defUnit
+const LEN_UNITS = {"'":1, ft:1, feet:1, foot:1, pie:1, pies:1, '"':1/12, in:1/12, inch:1/12, inches:1/12, pulg:1/12, m:1/FT_M, cm:0.01/FT_M, mm:0.001/FT_M};
+function parseLength(str, defUnit){
+  const s = String(str==null ? "" : str).trim().toLowerCase().replace(/,/g, ".").replace(/[′’‘]/g, "'").replace(/[″”“]/g, '"').replace(/''/g, '"');
+  if(!s) return NaN;
+  let m = s.match(/^(-?\d+(?:\.\d+)?)\s*(?:'|ft|feet|foot|pies?)\s*-?\s*(?:(\d+(?:\.\d+)?)?(?:\s*(\d+)\/(\d+))?\s*(?:"|in|inch|inches|pulg)?)?$/);
+  if(m) return +m[1] + ((+m[2]||0) + (m[3] ? m[3]/m[4] : 0))/12;
+  m = s.match(/^(-?\d+(?:\.\d+)?)?(?:\s*(\d+)\/(\d+))?\s*([a-z"']*)$/);
+  if(!m || (m[1]==null && !m[2])) return NaN;
+  const k = LEN_UNITS[m[4] || defUnit];
+  return k ? ((+m[1]||0) + (m[2] ? m[2]/m[3] : 0))*k : NaN;
+}
+function parseLenFt(s){ return parseLength(s, isMetric() ? "m" : "ft"); }
+function parseLenIn(s){ return parseLength(s, isMetric() ? "cm" : "in")*12; }
 function fQty(type, v, dl, da){ return type==="count" ? v+" EA" : type==="line" ? fLen(v, dl) : fArea(v, da); }
 function fDepth(inch){ return isMetric() ? +(inch*IN_CM).toFixed(1)+" cm" : +(+inch).toFixed(2)+'"'; }
 function toast(msg, ms){
@@ -2212,6 +2287,29 @@ function requestDraw(){
   rafPending = true;
   requestAnimationFrame(()=>{ rafPending = false; drawOverlay(); });
 }
+// labels of the shapes on the page, collected while the static layer is drawn and placed together at the end
+let labelQueue = null;
+function drawScreenLabels(queue, items){
+  if(!queue.length) return;
+  const k = zoom*dpr;   // plan units → canvas pixels
+  dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
+  const bh = 16*dpr, pad = 5*dpr;
+  const reqs = queue.map(o => ({m:o.m, text:o.text, w:(dctx.measureText(o.text).width + pad*2)/k, h:bh/k}));
+  const laid = layoutLabels(reqs, pageW/zoom, pageH/zoom, 3/zoom, 7/zoom, items);
+  for(const q of laid) if(q.leader){   // thin line back to a label that had to move away
+    const b = q.box, a = pdfToScreen({x:q.ax, y:q.ay}), e = pdfToScreen({x:clamp(q.ax, b.x, b.x+b.w), y:clamp(q.ay, b.y, b.y+b.h)});
+    dctx.strokeStyle = q.m.color; dctx.lineWidth = 1.2*dpr; dctx.globalAlpha = .9;
+    dctx.beginPath(); dctx.moveTo(a.x, a.y); dctx.lineTo(e.x, e.y); dctx.stroke();
+    dctx.beginPath(); dctx.arc(a.x, a.y, 2.2*dpr, 0, 7); dctx.fillStyle = q.m.color; dctx.fill(); dctx.globalAlpha = 1;
+  }
+  for(const q of laid){
+    const o = pdfToScreen({x:q.box.x, y:q.box.y});
+    dctx.fillStyle = "rgba(20,22,26,.85)";
+    dctx.fillRect(o.x, o.y, q.box.w*k, bh);
+    dctx.fillStyle = q.m.color;
+    dctx.fillText(q.text, o.x + pad, o.y + bh - 4.5*dpr);
+  }
+}
 function rebuildStatic(lw){
   stX = Math.max(0, ovX-ST_PAD); stY = Math.max(0, ovY-ST_PAD);
   stW = Math.min(pageW, ovX+ovW+ST_PAD) - stX; stH = Math.min(pageH, ovY+ovH+ST_PAD) - stY;
@@ -2219,12 +2317,17 @@ function rebuildStatic(lw){
   staticCanvas.width = Math.max(0, Math.round(stW*dpr)); staticCanvas.height = Math.max(0, Math.round(stH*dpr));
   dctx = staticCanvas.getContext("2d");
   orgX = stX; orgY = stY;
+  labelQueue = [];
+  const drawn = [];
   for(const m of measurements){
     if(m.src!=="pdf" || m.page !== pageNum || m.doc !== curDocId) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     if(staticExclude === m.id) continue;
     drawMeasure(m, m.id===selectedId, lw);
+    drawn.push(m);
   }
+  const queue = labelQueue; labelQueue = null;
+  try{ drawScreenLabels(queue, drawn); }catch(e){ console.warn("labels", e); }
   dctx = octx; staticDirty = false;
   orgX = ovX; orgY = ovY;
 }
@@ -2282,6 +2385,7 @@ function drawMeasure(m, hot, lw, ghost){
       const mid = path[Math.floor(path.length/2)] || pts[0];
       const v = measureValue(m);
       const txt = v==null ? "—" : fQty(m.type, v, 1, 0);
+      if(labelQueue){ labelQueue.push({m, text:txt}); dctx.setLineDash([]); return; }   // the page's labels are placed together afterwards
       dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
       const w = dctx.measureText(txt).width;
       dctx.fillStyle = "rgba(20,22,26,.85)";
@@ -2786,9 +2890,11 @@ document.querySelectorAll(".modalBack").forEach(mb => {
 });
 document.getElementById("calCancel").onclick = () => { closeModal("calibBack"); calibPts=null; drawOverlay(); };
 document.getElementById("calApply").onclick = () => {
-  const a = parseFloat(document.getElementById("calFt").value)||0;
+  const rawA = document.getElementById("calFt").value.trim();
+  const typed = /[a-z'"\/]/i.test(rawA) ? parseLenFt(rawA) : NaN;   // 12'6", 150in, 3.8 m…
+  const a = parseFloat(rawA)||0;
   const b = parseFloat(document.getElementById("calIn").value)||0;
-  const real = isMetric() ? (a + b/100)/FT_M : a + b/12;   // feet
+  const real = !isNaN(typed) ? typed + (isMetric() ? b/100/FT_M : b/12) : isMetric() ? (a + b/100)/FT_M : a + b/12;   // feet
   if(real<=0 || !calibPts){ closeModal("calibBack"); return; }
   const d = dist(calibPts[0], calibPts[1]);
   const fpu = real/d;
@@ -2867,6 +2973,8 @@ function catSubtotal(items, cat){
   if(t.count) parts.push(t.count+" EA");
   const cy = catCY(cat, t.area);
   if(cy) parts.push(fVol(cy.withWaste, 1));
+  const ex = estText(cat, t);
+  if(ex) parts.push(ex);
   return parts.join(" · ") || "—";
 }
 function filterLabel(){
@@ -3242,6 +3350,7 @@ function reportTables(list){
       '<div class="sub">Total: '+tParts.join(" · ")+
       (cy? ' &nbsp;·&nbsp; Material @ '+esc(fDepth(b.cat.depth))+' depth: '+fVol(cy.base, 2)+
         (b.cat.waste>0? ' (+'+b.cat.waste+'% waste = '+fVol(cy.withWaste, 2)+')':''):'')+'</div>'+
+      (estText(b.cat, sub)? '<div class="sub">Estimate: '+esc(estText(b.cat, sub))+(cy? '' : b.cat.waste>0? ' (incl. '+b.cat.waste+'% waste)' : '')+'</div>' : '')+
       (b.cat && b.cat.notes? '<div class="notes">Notes: '+esc(b.cat.notes)+'</div>':'');
   }
   return body;
@@ -3477,12 +3586,29 @@ function layoutLabels(reqs, W, H, g, r, all){
 // vp = the pdf.js page viewport at scale 1 (the space measurements are stored in), rot = page rotation.
 // Shapes are laid out in on-screen space and mapped into the PDF with vp.convertToPdfPoint; text and
 // label boxes are turned by the page rotation so they read upright, exactly like on screen.
-function drawPageMarkups(L, page, items, vp, rot, font){
+function pdfLabelMode(){ const s = document.getElementById("pdfLabels"); return s ? s.value : "auto"; }
+// mode: "full" names + quantities on the sheet · "num" numbered tags (key page added after) · "auto" picks.
+// Returns the key rows for the sheet when it used numbers.
+function drawPageMarkups(L, page, items, vp, rot, font, mode, bold){
   const P = (x, y) => { const q = vp.convertToPdfPoint(x, y); return {x:q[0], y:q[1]}; };
   const minSide = Math.min(vp.width, vp.height);
   const lw = clamp(minSide/650, 0.9, 3.5), fs = clamp(minSide/100, 7, 16);
   const ang = L.degrees(rot||0), white = L.rgb(1,1,1), ink = L.rgb(0.11,0.11,0.12);
   const r = fs*0.8, pad = fs*0.35, bh = fs*1.35;
+  // full labels first; a crowded sheet (lots of items, or many labels pushed away) switches to numbered tags
+  const fullReqs = [];
+  for(const m of items){
+    if(m.type!=="count" && m.pts.length<2) continue;
+    const v = measureValue(m);
+    const text = pdfTxt(m.name + (v!=null ? " — "+qtyText(m, v) : ""));
+    if(text) fullReqs.push({m, text, w:font.widthOfTextAtSize(text, fs) + pad*2, h:bh});
+  }
+  let numbered = mode==="num", laid = null;
+  if(mode!=="num"){
+    laid = layoutLabels(fullReqs, vp.width, vp.height, fs*0.5, r, items);
+    const pushed = laid.filter(q => q.leader).length;
+    if(mode==="auto" && (laid.length > 14 || pushed > Math.max(3, laid.length*0.25))) numbered = true;
+  }
   // shapes first, so every label sits on top
   for(const m of items){
     const col = pdfColor(L, m.color);
@@ -3491,6 +3617,7 @@ function drawPageMarkups(L, page, items, vp, rot, font){
       m.pts.forEach((p, i) => {
         const c = P(p.x, p.y);
         page.drawCircle({x:c.x, y:c.y, size:r, color:col, opacity:0.28, borderColor:col, borderWidth:lw, borderOpacity:1});
+        if(numbered) return;   // the tag carries the count; dots stay clean
         const n = String(i+1), w = font.widthOfTextAtSize(n, ts);
         const t0 = P(p.x - w/2, p.y + ts*0.36);
         page.drawText(n, {x:t0.x, y:t0.y, size:ts, font, color:ink, rotate:ang});
@@ -3502,19 +3629,19 @@ function drawPageMarkups(L, page, items, vp, rot, font){
     const path = bentPts(m.pts, m.arcs, m.type==="area").map(p => P(p.x, p.y));
     // pdf-lib reads SVG paths with y pointing down, so PDF y values go in negated
     const d = path.map((q, i) => (i ? "L" : "M")+q.x.toFixed(2)+" "+(-q.y).toFixed(2)).join(" ")+(m.type==="area" ? " Z" : "");
-    if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
+    if(m.type==="area") page.drawSvgPath(d, {x:0, y:0, color:col, opacity:numbered ? 0.13 : 0.18, borderColor:col, borderWidth:lw, borderOpacity:0.95});
     else page.drawSvgPath(d, {x:0, y:0, borderColor:col, borderWidth:lw, borderOpacity:0.95});
-    for(const q of pts) page.drawCircle({x:q.x, y:q.y, size:lw*1.15, color:white, borderColor:col, borderWidth:lw*0.6});
+    if(!numbered) for(const q of pts) page.drawCircle({x:q.x, y:q.y, size:lw*1.15, color:white, borderColor:col, borderWidth:lw*0.6});
   }
-  // labels, spread out so they don't cover each other
-  const reqs = [];
-  for(const m of items){
-    if(m.type!=="count" && m.pts.length<2) continue;
-    const v = measureValue(m);
-    const text = pdfTxt(m.name + (v!=null ? " — "+qtyText(m, v) : ""));
-    if(text) reqs.push({m, text, w:font.widthOfTextAtSize(text, fs) + pad*2, h:bh});
+  let key = null;
+  if(numbered){   // short numbered tags, in category order, explained on the key page
+    const rank = new Map(orderedCats().map((c, i) => [c.id, i]));
+    const order = fullReqs.slice().sort((a, b) => (rank.has(a.m.cat) ? rank.get(a.m.cat) : 1e9) - (rank.has(b.m.cat) ? rank.get(b.m.cat) : 1e9));
+    const tf = bold || font;
+    key = order.map((q, i) => ({m:q.m, n:i+1}));
+    const tagReqs = key.map(k => { const s = String(k.n); return {m:k.m, text:s, tag:true, w:Math.max(tf.widthOfTextAtSize(s, fs) + pad*2.4, bh), h:bh}; });
+    laid = layoutLabels(tagReqs, vp.width, vp.height, fs*0.35, r, items);
   }
-  const laid = layoutLabels(reqs, vp.width, vp.height, fs*0.5, r, items);
   for(const q of laid) if(q.leader){   // leader lines first, so they never cross over a label
     const col = pdfColor(L, q.m.color), b = q.box;
     const s0 = P(q.ax, q.ay), e0 = P(clamp(q.ax, b.x, b.x+b.w), clamp(q.ay, b.y, b.y+b.h));
@@ -3524,11 +3651,51 @@ function drawPageMarkups(L, page, items, vp, rot, font){
   for(const q of laid){
     const col = pdfColor(L, q.m.color), b = q.box;
     const c0 = P(b.x, b.y + b.h);   // box bottom-left, on-screen coords (y down)
+    if(q.tag){   // solid tag in the item's color, white number
+      const tf = bold || font, tw = tf.widthOfTextAtSize(q.text, fs);
+      page.drawRectangle({x:c0.x, y:c0.y, width:b.w, height:b.h, rotate:ang, color:col, opacity:0.95, borderColor:white, borderWidth:lw*0.5});
+      const t0 = P(b.x + (b.w - tw)/2, b.y + b.h - (b.h - fs*0.72)/2);
+      page.drawText(q.text, {x:t0.x, y:t0.y, size:fs, font:tf, color:white, rotate:ang});
+      continue;
+    }
     page.drawRectangle({x:c0.x, y:c0.y, width:b.w, height:b.h, rotate:ang, color:white, opacity:0.92,
       borderColor:col, borderWidth:lw*0.6, borderOpacity:0.95});
     const t0 = P(b.x + pad, b.y + b.h - (b.h - fs*0.72)/2);
     page.drawText(q.text, {x:t0.x, y:t0.y, size:fs, font, color:ink, rotate:ang});
   }
+  return key;
+}
+// the key for a sheet that used numbered tags: one row per tag, grouped by category, right after the sheet
+function addKeyPage(L, pdf, at, font, bold, key, title){
+  const W = 612, H = 792, M = 46, ink = L.rgb(0.11,0.11,0.12), dim = L.rgb(0.45,0.45,0.48), hair = L.rgb(0.85,0.85,0.88), white = L.rgb(1,1,1);
+  let page = null, y = 0, idx = at;
+  const fit = (s, size, f, maxW) => { s = pdfTxt(s); if(f.widthOfTextAtSize(s, size) <= maxW) return s;
+    while(s.length>1 && f.widthOfTextAtSize(s+"…", size) > maxW) s = s.slice(0, -1); return s+"…"; };
+  const newPage = () => {
+    page = pdf.insertPage(idx++, [W, H]); y = H - M;
+    page.drawText(fit(t("Key")+" — "+title, 15, bold, W-2*M), {x:M, y, size:15, font:bold, color:ink}); y -= 16;
+    page.drawText(fit(defaultProjectName()+" · "+t("numbers match the tags on the sheet before this page"), 9, font, W-2*M), {x:M, y, size:9, font, color:dim}); y -= 22;
+  };
+  newPage();
+  let lastCat = null;
+  for(const {m, n} of key){
+    const c = catOf(m.cat), cid = c ? c.id : "";
+    if(cid!==lastCat){
+      if(y < M + 40) newPage();
+      lastCat = cid; y -= 4;
+      page.drawText(fit((c ? catLabel(c) : t("Uncategorized")).toUpperCase(), 9.5, bold, W-2*M), {x:M, y, size:9.5, font:bold, color:dim}); y -= 14;
+    }
+    if(y < M + 16) newPage();
+    const col = pdfColor(L, m.color), s = String(n), tw = bold.widthOfTextAtSize(s, 9.5), bw = Math.max(tw + 9, 17);
+    page.drawRectangle({x:M, y:y-3.5, width:bw, height:14, color:col});
+    page.drawText(s, {x:M + (bw - tw)/2, y, size:9.5, font:bold, color:white});
+    const v = measureValue(m), q = v==null ? t("needs scale") : qtyText(m, v), qw = bold.widthOfTextAtSize(pdfTxt(q), 9.5);
+    page.drawText(fit(m.name, 9.5, font, W-2*M-bw-qw-24), {x:M + bw + 10, y, size:9.5, font, color:ink});
+    page.drawText(pdfTxt(q), {x:W - M - qw, y, size:9.5, font:bold, color:ink});
+    page.drawLine({start:{x:M + bw + 10, y:y-5}, end:{x:W-M, y:y-5}, thickness:0.4, color:hair});
+    y -= 17;
+  }
+  return idx - at;   // pages added
 }
 function addSummaryPages(L, pdf, font, bold, items, subtitle){
   if(!items.length) return;
@@ -3591,6 +3758,10 @@ function addSummaryPages(L, pdf, font, bold, items, subtitle){
     text(fit("Total: "+(parts.join(" · ")||"—")+(cy ? "   ·   "+fVol(cy.withWaste, 2)+" @ "+fDepth(b.cat.depth)+
       (b.cat.waste>0 ? " +"+b.cat.waste+"% waste" : "") : ""), 9.5, bold, W-2*M-14), M+14, 9.5, bold);
     y -= 13;
+    const ex = estText(b.cat, sub);
+    if(ex) for(const ln of lines("Estimate: "+ex+(!cy && b.cat.waste>0 ? " (incl. "+b.cat.waste+"% waste)" : ""), 9, font, W-2*M-14)){
+      need(12); text(ln, M+14, 9, font); y -= 11.5;
+    }
     if(b.cat && b.cat.notes){
       for(const ln of lines("Notes: "+b.cat.notes, 8.5, font, W-2*M-14)){ need(12); text(ln, M+14, 8.5, font, dim); y -= 11; }
     }
@@ -3628,15 +3799,19 @@ async function markedPlanBytes(L, docId, withSummary){
   const d = docMeta(docId), sub = d ? shortName(d.name, 60) : "";
   try{
     const pdf = await L.PDFDocument.load(st.data.slice(0), {updateMetadata:false});
-    const font = await pdf.embedFont(L.StandardFonts.Helvetica);
-    const pages = pdf.getPages();
+    const font = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
+    const pages = pdf.getPages(), keys = [], mode = pdfLabelMode();
     for(let pg=1; pg<=Math.min(pages.length, st.pdf.numPages); pg++){
       const mine = items.filter(m => m.page===pg);
       if(!mine.length) continue;
       const jp = await st.pdf.getPage(pg);
-      drawPageMarkups(L, pages[pg-1], mine, jp.getViewport({scale:1}), jp.rotate, font);
+      const key = drawPageMarkups(L, pages[pg-1], mine, jp.getViewport({scale:1}), jp.rotate, font, mode, bold);
+      if(key && key.length) keys.push({pg, key});
     }
-    if(withSummary) addSummaryPages(L, pdf, font, await pdf.embedFont(L.StandardFonts.HelveticaBold), items, sub);
+    // key pages go in right after their sheets (from the back, so earlier positions don't move)
+    for(let i=keys.length-1; i>=0; i--)
+      addKeyPage(L, pdf, keys[i].pg, font, bold, keys[i].key, (sub ? sub+" · " : "")+t("page")+" "+keys[i].pg);
+    if(withSummary) addSummaryPages(L, pdf, font, bold, items, sub);
     return await pdf.save();
   }catch(err){
     const pdf = await L.PDFDocument.create();
@@ -3703,6 +3878,8 @@ async function exportMarked(which){
   }finally{ markBusy = false; }
 }
 document.getElementById("pdfMarks").addEventListener("change", e => e.target.blur());   // keyboard shortcuts keep working
+document.getElementById("pdfLabels").addEventListener("change", e => { storeSet("tt.pdfLabels", e.target.value); e.target.blur(); });
+try{ const v = storeGet("tt.pdfLabels"); if(v) document.getElementById("pdfLabels").value = v; }catch{}
 document.getElementById("markBtn").onclick = () => exportMarked("cur");
 document.getElementById("markAllBtn").onclick = () => exportMarked("all");
 
@@ -3718,6 +3895,15 @@ document.getElementById("exportBtn").onclick = () => {
       (v==null?"":m.type==="count"?v: m.type==="line"? nLen(v, 2) : nArea(v, 2))+','+unitOf(m.type)+','+
       (p!=null?nLen(p, 2):"")+',"'+(m.src==="pdf" && docMeta(m.doc) ? docMeta(m.doc).name.replace(/"/g,'""') : "")+'"\n';
   }
+  // material estimates per category, under the measurements
+  const est = [];
+  for(const c of orderedCats()){
+    const sub = {area:0, line:0, count:0};
+    for(const m of measurements) if(m.cat===c.id){ const v = measureValue(m); if(v!=null) sub[m.type] += v; }
+    const cy = catCY(c, sub.area), ex = estText(c, sub);
+    if(cy || ex) est.push('"'+c.name.replace(/"/g,'""')+'","'+[cy ? fVol(cy.withWaste, 2) : "", ex].filter(Boolean).join(" · ").replace(/"/g,'""')+'"');
+  }
+  if(est.length) csv += "\n"+t("Category")+","+t("Estimate")+"\n"+est.join("\n")+"\n";
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
   a.download = slug(defaultProjectName())+"-takeoff.csv";
@@ -3725,6 +3911,9 @@ document.getElementById("exportBtn").onclick = () => {
 };
 // words in copied text and reports (the Spanish edition translates them)
 function word(s){ return s; }
+// English-only edition: shared code asks for t() and lang
+function t(s){ return s; }
+const lang = "en";
 // copied quantities for one set of measurements, by category
 function copyBlock(pool){
   let txt = "";
@@ -3765,6 +3954,8 @@ function copyBlock(pool){
       txt += word("Material @")+" "+fDepth(b.cat.depth)+" "+word("depth")+": "+fVol(cy.base, 2)+
         (b.cat.waste>0 ? " · +"+b.cat.waste+"% "+word("waste")+" = "+fVol(cy.withWaste, 2) : "")+"\n";
     }
+    const ex = estText(b.cat, sub);
+    if(ex) txt += word("Estimate")+": "+ex+(!cy && b.cat.waste>0 ? " ("+word("incl.")+" "+b.cat.waste+"% "+word("waste")+")" : "")+"\n";
     if(b.cat && b.cat.notes) txt += word("Notes")+": "+b.cat.notes+"\n";
     txt += "\n";
   }
@@ -3975,8 +4166,83 @@ document.getElementById("clearBtn").onclick = () => {
 
 // ================= category editor =================
 let editCatId = null, ceColor = null, ceDelArmed = false;
+// ---- estimating: what a category's measurements turn into (material, pieces, pallets, bags) ----
+// c.est = {kind, …} with every amount kept in US units (in, ft, SF, lb, tons, cu ft); older projects with only a depth are "bulk".
+const EST_UNITS = {   // field unit → [US label, metric label, metric per US unit]
+  in:["in", "cm", IN_CM], ft:["ft", "m", FT_M], sf:["SF", "m²", SF_M2], cuft:["cu ft", "L", 28.3168466], lb:["lb", "kg", 0.45359237],
+  lb1000:["lb per 1,000 SF", "kg per 100 m²", 0.45359237*100/(1000*SF_M2)], t_cy:["tons per CY", "t per m³", 0.90718474/CY_M3]};
+const EST_FIELDS = {ceTons:["tons","t_cy"], ceBag:["bag","cuft"], cePavL:["pavL","in"], cePavW:["pavW","in"], cePavPal:["pavPal",""],
+  cePavPalSF:["pavPalSF","sf"], cePavBase:["pavBase","in"], ceSodPal:["sodPal","sf"], ceSodPc:["sodPc","sf"],
+  ceSeedRate:["seedRate","lb1000"], ceSeedBag:["seedBag","lb"], cePcLen:["pcLen","ft"],
+  ceCDepth:["cDepth","in"], ceFootW:["footW","in"], ceFootD:["footD","in"], ceRebar:["rebar","in"], ceCBase:["cBase","in"],
+  ceWallH:["wallH","in"], ceBlkL:["blkL","in"], ceBlkH:["blkH","in"], ceCapL:["capL","in"], ceDrainW:["drainW","in"], cePerQty:["perQty",""]};
+function estKind(c){ if(!c) return ""; if(c.est && c.est.kind!=null) return c.est.kind; return c.depth>0 ? "bulk" : ""; }
+const nInt = v => Math.ceil(v - 1e-9).toLocaleString(lang==="es" ? "es-US" : "en-US");
+const nDec = (v, d) => (+v.toFixed(d)).toLocaleString(lang==="es" ? "es-US" : "en-US");
+function estAmt(v, u, d){ const U = EST_UNITS[u]; return both(nDec(v, d)+" "+U[0], nDec(v*U[2], d)+" "+U[1]); }
+function fTons(tons){ return both(nDec(tons, 1)+" "+t("tons"), nDec(tons*0.90718474, 1)+" t"); }
+function fLbs(lb){ return both(nInt(lb)+" lb", nInt(lb*0.45359237)+" kg"); }
+function bagLbText(lb){ return both(lb+" lb", Math.round(lb*0.45359237)+" kg"); }
+// bulk presets: [name, tons per CY, usual depth in inches] — typical supplier numbers, edit them per job
+const BULK_MATS = {topsoil:["Topsoil", 1.1, 4], compost:["Garden soil / compost", 0.8, 2], mulch:["Mulch", 0.35, 3], chips:["Wood chips", 0.3, 3],
+  gravel:["Gravel", 1.4, 3], stone:["Crushed stone", 1.35, 4], pea:["Pea gravel", 1.4, 3], river:["River rock", 1.35, 3], sand:["Sand", 1.35, 2],
+  dg:["Decomposed granite", 1.3, 3], base:["Road base / crusher run", 1.5, 4], asphalt:["Asphalt", 2.0, 2]};
+// sub = {area SF, line ft, count} for the category → list of estimate parts, or null
+function catEstimate(c, sub){
+  const k = estKind(c); if(!k || !sub) return null;
+  const e = c.est || {}, w = 1 + (c.waste>0 ? c.waste/100 : 0), A = (sub.area||0)*w, Ln = (sub.line||0)*w, out = [];
+  if(k==="bulk"){
+    const cy = catCY(c, sub.area); if(!cy) return null;
+    if(e.tons>0) out.push(fTons(cy.withWaste*e.tons));
+    if(e.bag>0) out.push(nInt(cy.withWaste*27/e.bag)+" "+t("bags")+" ("+estAmt(e.bag, "cuft", 1)+")");
+  } else if(k==="pavers"){
+    if(!(A>0) || !(e.pavL>0) || !(e.pavW>0)) return null;
+    const pcs = Math.ceil(A*144/(e.pavL*e.pavW) - 1e-9);
+    out.push(nInt(pcs)+" "+t("pavers")+" ("+(isMetric() ? nDec(e.pavL*IN_CM, 1)+" × "+nDec(e.pavW*IN_CM, 1)+" cm" : nDec(e.pavL, 2)+'" × '+nDec(e.pavW, 2)+'"')+")");
+    if(e.pavPal>0) out.push(nInt(pcs/e.pavPal)+" "+t("pallets"));
+    else if(e.pavPalSF>0) out.push(nInt(A/e.pavPalSF)+" "+t("pallets"));
+    if(e.pavBase>0) out.push(fVol(A*e.pavBase/12/27, 1)+" "+t("base gravel"));
+  } else if(k==="sod"){
+    if(!(A>0)) return null;
+    out.push(fArea(A, 0)+" "+t("to order"));
+    if(e.sodPal>0) out.push(nInt(A/e.sodPal)+" "+t("pallets"));
+    if(e.sodPc>0) out.push(nInt(A/e.sodPc)+" "+t("rolls"));
+  } else if(k==="seed"){
+    if(!(A>0) || !(e.seedRate>0)) return null;
+    const lb = A/1000*e.seedRate;
+    out.push(fLbs(lb));
+    if(e.seedBag>0) out.push(nInt(lb/e.seedBag)+" "+t("bags")+" ("+estAmt(e.seedBag, "lb", 1)+")");
+  } else if(k==="pieces"){
+    if(!(Ln>0) || !(e.pcLen>0)) return null;
+    const pcs = Math.ceil(Ln/e.pcLen - 1e-9);
+    out.push(nInt(pcs)+" "+t("pieces")+" ("+estAmt(e.pcLen, "ft", 1)+")");
+    if(e.posts) out.push(nInt(pcs+1)+" "+t("posts"));
+  } else if(k==="concrete"){   // slabs from areas, footings and curbs from lines
+    const slab = e.cDepth>0 ? A*e.cDepth/12/27 : 0, foot = e.footW>0 && e.footD>0 ? Ln*e.footW/12*e.footD/12/27 : 0, cy = slab + foot;
+    if(!(cy>0)) return null;
+    out.push(fVol(cy, 2)+" "+t("concrete")+" — "+t("order")+" "+fVol(Math.ceil(cy*4 - 1e-9)/4, 2));
+    const yieldCuFt = {40:0.30, 60:0.45, 80:0.60}[e.bagLb||0];
+    if(yieldCuFt) out.push(t("or")+" "+nInt(cy*27/yieldCuFt)+" × "+bagLbText(e.bagLb)+" "+t("bags"));
+    if(e.rebar>0 && A>0){ const lf = 2*A/(e.rebar/12); out.push(fLen(lf, 0)+" "+t("rebar")+" ("+nInt(lf*1.1/20)+" × 20 ft "+t("bars")+")"); }
+    if(e.mesh && A>0) out.push(nInt(A/50)+" "+t("wire mesh sheets")+" (5 × 10 ft)");
+    if(e.cBase>0 && A>0) out.push(fVol(A*e.cBase/12/27, 1)+" "+t("base gravel"));
+  } else if(k==="wall"){   // retaining or garden walls from line measurements
+    if(!(Ln>0) || !(e.wallH>0) || !(e.blkL>0) || !(e.blkH>0)) return null;
+    const rows = Math.ceil(e.wallH/e.blkH - 1e-9);
+    out.push(nInt(Ln*12/e.blkL*rows)+" "+t("blocks")+" ("+rows+" "+t(rows===1 ? "course" : "courses")+")");
+    out.push(fArea(sub.line*e.wallH/12, 0)+" "+t("wall face"));
+    if(e.capL>0) out.push(nInt(Ln*12/e.capL)+" "+t("caps"));
+    if(e.drainW>0) out.push(fVol(Ln*(e.wallH/12)*(e.drainW/12)/27, 1)+" "+t("drain gravel"));
+  } else if(k==="peritem"){   // so much per counted item: bags per tree, stakes per shrub…
+    if(!(sub.count>0) || !(e.perQty>0)) return null;
+    const n = sub.count*e.perQty*w;
+    out.push((Number.isInteger(e.perQty) ? nInt(n) : nDec(n, 2))+" "+(e.perUnit || t("units"))+" ("+sub.count+" × "+nDec(e.perQty, 2)+")");
+  }
+  return out.length ? out : null;
+}
+function estText(c, sub){ const a = catEstimate(c, sub); return a ? a.join(" · ") : ""; }
 function catCY(c, sf){
-  if(!c || !(c.depth>0) || !(sf>0)) return null;
+  if(!c || estKind(c)!=="bulk" || !(c.depth>0) || !(sf>0)) return null;
   const base = sf * c.depth / 12 / 27;
   const w = c.waste>0 ? base*(1+c.waste/100) : base;
   return {base, withWaste:w};
@@ -3987,6 +4253,18 @@ function openCatEditor(c){
   document.getElementById("ceDepth").value = c.depth>0 ? +(isMetric() ? c.depth*IN_CM : c.depth).toFixed(2) : "";
   document.getElementById("ceWaste").value = c.waste>0 ? c.waste : "";
   document.getElementById("ceNotes").value = c.notes || "";
+  const est = c.est || {};
+  document.getElementById("ceKind").value = estKind(c);
+  for(const id in EST_FIELDS){
+    const [key, u] = EST_FIELDS[id], v = est[key];
+    document.getElementById(id).value = v>0 ? +(isMetric() && u ? v*EST_UNITS[u][2] : v).toFixed(3) : "";
+  }
+  document.getElementById("cePosts").checked = !!est.posts;
+  document.getElementById("ceMesh").checked = !!est.mesh;
+  document.getElementById("ceMat").value = est.mat && BULK_MATS[est.mat] ? est.mat : "";
+  document.getElementById("ceBagLb").value = est.bagLb ? String(est.bagLb) : "";
+  document.getElementById("cePerUnit").value = est.perUnit || "";
+  ceShowKind();
   const hasKids = categories.some(x=>x.parent===c.id);
   const ps = document.getElementById("ceParent");
   ps.innerHTML = '<option value="">— top level —</option>' +
@@ -4009,6 +4287,73 @@ function openCatEditor(c){
   openModal2("catEditBack");
   document.getElementById("ceName").focus();
 }
+// field labels follow the units in Settings; only the fields for the chosen estimate show
+function ceUnitLabels(){
+  const met = isMetric();
+  document.querySelectorAll("#catEditBack label[data-u]").forEach(l => {
+    if(!l.dataset.base) l.dataset.base = l.textContent;
+    const U = EST_UNITS[l.dataset.u];
+    l.textContent = t(met ? l.dataset.base.replace(/\(?(in|ft|SF|cu ft|lb)\)?$/, m => m.startsWith("(") ? "("+U[1]+")" : U[1])
+      .replace("lb per 1,000 SF", U[1]).replace("Tons per CY", "t per m³") : l.dataset.base);
+  });
+}
+function ceShowKind(){
+  const k = document.getElementById("ceKind").value;
+  document.querySelectorAll("#catEditBack .ek").forEach(r => { r.style.display = k && r.classList.contains("ek-"+k) ? "" : "none"; });
+  document.getElementById("ceHelp").style.display = k==="bulk" ? "" : "none";
+  ceUnitLabels(); cePreview();
+}
+// what the editor would save, from the fields (US units)
+function ceRead(){
+  const est = {kind: document.getElementById("ceKind").value};
+  for(const id in EST_FIELDS){
+    const [key, u] = EST_FIELDS[id], raw = document.getElementById(id).value;
+    if(u==="in" || u==="ft"){ const v = u==="in" ? parseLenIn(raw) : parseLenFt(raw); if(v>0) est[key] = v; continue; }   // already US
+    const v = parseFloat(raw);
+    if(v>0) est[key] = isMetric() && u ? v/EST_UNITS[u][2] : v;
+  }
+  if(document.getElementById("cePosts").checked) est.posts = true;
+  if(document.getElementById("ceMesh").checked) est.mesh = true;
+  const mat = document.getElementById("ceMat").value; if(mat) est.mat = mat;
+  const bl = +document.getElementById("ceBagLb").value; if(bl) est.bagLb = bl;
+  const pu = document.getElementById("cePerUnit").value.trim(); if(pu) est.perUnit = pu.slice(0, 40);
+  const dv = parseLenIn(document.getElementById("ceDepth").value);
+  return {est, depth: dv>0 ? dv : 0, waste: parseFloat(document.getElementById("ceWaste").value)||0};
+}
+// live answer under the fields, from this category's measurements so far
+function cePreview(){
+  const out = document.getElementById("ceEstOut"), c = catOf(editCatId);
+  if(!c){ out.textContent = ""; return; }
+  const r = ceRead(), sub = {area:0, line:0, count:0};
+  for(const m of measurements) if(m.cat===c.id){ const v = measureValue(m); if(v!=null) sub[m.type] += v; }
+  const tmp = {...c, est:r.est, depth:r.depth, waste:r.waste};
+  if(!r.est.kind){ out.textContent = ""; return; }
+  const parts = [];
+  const cy = catCY(tmp, sub.area);
+  if(cy) parts.push(fVol(cy.withWaste, 2));
+  const ex = catEstimate(tmp, sub);
+  if(ex) parts.push(...ex);
+  const k = r.est.kind, ar = sub.area ? fArea(sub.area, 0) : "", ln = sub.line ? fLen(sub.line, 1) : "";
+  const have = k==="pieces" || k==="wall" ? ln : k==="peritem" ? (sub.count ? sub.count+" EA" : "") : k==="concrete" ? [ar, ln].filter(Boolean).join(" + ") : ar;
+  out.textContent = parts.length ? t("With what's measured now")+" ("+have+"): "+parts.join(" · ")
+    : have ? t("Fill in the sizes above to see the estimate.") : t("Measure something in this category to see the estimate.");
+}
+document.getElementById("ceKind").onchange = ceShowKind;
+// picking a material fills in its usual weight and depth (only empty depth is filled)
+document.getElementById("ceMat").onchange = () => {
+  const p = BULK_MATS[document.getElementById("ceMat").value];
+  if(p){
+    document.getElementById("ceTons").value = isMetric() ? +(p[1]*EST_UNITS.t_cy[2]).toFixed(2) : p[1];
+    const d = document.getElementById("ceDepth");
+    if(!d.value.trim()) d.value = isMetric() ? +(p[2]*IN_CM).toFixed(1) : p[2];
+    const nm = document.getElementById("ceName");
+    if(/^(new category|category \d+)$/i.test(nm.value.trim())) nm.value = t(p[0]);
+  }
+  cePreview();
+};
+["ceBagLb", "ceMesh"].forEach(id => document.getElementById(id).addEventListener("change", cePreview));
+document.querySelectorAll("#catEditBack input").forEach(i => i.addEventListener("input", cePreview));
+document.getElementById("cePosts").addEventListener("change", cePreview);
 document.getElementById("ceCancel").onclick = () => closeModal("catEditBack");
 document.getElementById("ceSave").onclick = () => {
   const c = catOf(editCatId); if(!c){ closeModal("catEditBack"); return; }
@@ -4018,9 +4363,10 @@ document.getElementById("ceSave").onclick = () => {
   c.name = name;
   const psv = document.getElementById("ceParent");
   if(!psv.disabled) c.parent = psv.value || "";
-  const dv = parseFloat(document.getElementById("ceDepth").value)||0;
-  c.depth = isMetric() ? dv/IN_CM : dv;   // always kept in inches
-  c.waste = parseFloat(document.getElementById("ceWaste").value)||0;
+  const r = ceRead();
+  c.est = r.est;
+  c.depth = r.est.kind==="bulk" ? r.depth : 0;   // always kept in inches
+  c.waste = r.est.kind ? r.waste : 0;
   c.notes = document.getElementById("ceNotes").value.trim();
   if(ceColor && ceColor!==c.color){
     c.color = ceColor;
@@ -4615,6 +4961,9 @@ function applyUnitsUI(){
   document.getElementById("ceHelp").textContent = met
     ? "Depth turns this category's total m² into cubic metres automatically (m² × depth ÷ 100), plus waste if set."
     : "Depth turns this category's total SF into cubic yards automatically (SF × depth ÷ 12 ÷ 27), plus waste if set.";
+  ceUnitLabels();
+  [["setLenDec","dec"],["setLenFtIn","ftin"],["setLenIn","in"]].forEach(([id, f]) => document.getElementById(id).classList.toggle("sel", lenFmt===f));
+  document.getElementById("setBoth").classList.toggle("sel", bothUnits);
   buildScaleList();
 }
 function setUnits(u){
@@ -4626,6 +4975,18 @@ function setUnits(u){
 }
 document.getElementById("setUnitsUS").onclick = () => setUnits("us");
 document.getElementById("setUnitsMetric").onclick = () => setUnits("metric");
+function unitsRedraw(){ applyUnitsUI(); markStatic(); updateBar(); drawOverlay(); redrawMapLayers(); renderList(); renderTotals(); updateLive(); }
+function setLenFmt(f){
+  lenFmt = f; storeSet(LENFMT_KEY, f); unitsRedraw();
+  toast(f==="ftin" ? "Lengths: feet and inches (5'-6\")" : f==="in" ? "Lengths: inches (66\")" : "Lengths: decimal feet (5.5 LF)");
+}
+document.getElementById("setLenDec").onclick = () => setLenFmt("dec");
+document.getElementById("setLenFtIn").onclick = () => setLenFmt("ftin");
+document.getElementById("setLenIn").onclick = () => setLenFmt("in");
+document.getElementById("setBoth").onclick = () => {
+  bothUnits = !bothUnits; storeSet(BOTH_KEY, bothUnits ? "1" : "0"); unitsRedraw();
+  toast(bothUnits ? "Showing US and metric together" : "Showing one unit system");
+};
 applyUnitsUI();
 document.getElementById("scCustom").onclick = () => openModal("customBack","cusPaper");
 document.getElementById("scCalib").onclick = () => {
