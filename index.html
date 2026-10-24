@@ -530,7 +530,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.6</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.7</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -3609,6 +3609,107 @@ function layoutLabels(reqs, W, H, g, r, all){
 // vp = the pdf.js page viewport at scale 1 (the space measurements are stored in), rot = page rotation.
 // Shapes are laid out in on-screen space and mapped into the PDF with vp.convertToPdfPoint; text and
 // label boxes are turned by the page rotation so they read upright, exactly like on screen.
+// Numbered tags: each one gets a spot of its own — on its shape if free, otherwise the nearest free spot,
+// searching outward over the whole page — so tags never sit on top of each other. Plan units, y down.
+function tagAnchors(m){
+  if(m.type==="count") return m.pts.slice(0, 8);
+  if(m.type==="area"){
+    const sp = shapePts(m), inner = interiorSpots(sp, 8);
+    if(inner.length) return inner;
+    return [{x:sp.reduce((a, p) => a+p.x, 0)/sp.length, y:sp.reduce((a, p) => a+p.y, 0)/sp.length}];
+  }
+  const lp = shapePts(m, true), segs = [];
+  for(let i=1; i<lp.length; i++) segs.push([lp[i-1], lp[i]]);
+  segs.sort((a, b) => dist(b[0], b[1]) - dist(a[0], a[1]));
+  const out = [];
+  for(const [a, b] of segs.slice(0, 4)) for(const t of [0.5, 0.25, 0.75]) out.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+  return out.length ? out : [lp[0]];
+}
+function layoutTags(reqs, W, H, gap){
+  const h0 = reqs.length ? reqs[0].h : 10, cell = Math.max(4, h0*2);
+  const tagGrid = new Map(), inkGrid = new Map();
+  const cellsOf = (b, pad, fn) => {
+    const c0 = Math.floor((b.x-pad)/cell), c1 = Math.floor((b.x+b.w+pad)/cell), r0 = Math.floor((b.y-pad)/cell), r1 = Math.floor((b.y+b.h+pad)/cell);
+    for(let i=c0; i<=c1; i++) for(let j=r0; j<=r1; j++) if(fn(i+","+j)) return true;
+    return false;
+  };
+  const tagHit = b => cellsOf(b, gap, k => { const a = tagGrid.get(k); if(a) for(const o of a)
+    if(b.x < o.x+o.w+gap && o.x < b.x+b.w+gap && b.y < o.y+o.h+gap && o.y < b.y+b.h+gap) return true; return false; });
+  // linework of every measurement (outline samples + count dots), so tags can keep clear of the drawing
+  const inkHit = (b, own) => cellsOf(b, 0, k => { const a = inkGrid.get(k); if(a) for(const o of a)
+    if(o.id!==own && o.x >= b.x && o.x <= b.x+b.w && o.y >= b.y && o.y <= b.y+b.h) return true; return false; });
+  const ink = (x, y, id) => { const k = Math.floor(x/cell)+","+Math.floor(y/cell); let a = inkGrid.get(k); if(!a) inkGrid.set(k, a = []); a.push({x, y, id}); };
+  const step = Math.max(h0*0.35, 1);
+  for(const q of reqs){
+    const m = q.m;
+    if(m.type==="count"){ for(const p of m.pts){ ink(p.x, p.y, m.id); ink(p.x-h0*0.4, p.y, m.id); ink(p.x+h0*0.4, p.y, m.id); ink(p.x, p.y-h0*0.4, m.id); ink(p.x, p.y+h0*0.4, m.id); } continue; }
+    const sp = shapePts(m), pts = m.type==="area" && sp.length>2 ? [...sp, sp[0]] : sp;
+    for(let i=1; i<pts.length; i++){
+      const a = pts[i-1], b = pts[i], n = Math.max(1, Math.ceil(dist(a, b)/step));
+      for(let k=0; k<=n; k++) ink(a.x+(b.x-a.x)*k/n, a.y+(b.y-a.y)*k/n, m.id);
+    }
+  }
+  const add = b => cellsOf(b, gap, k => { let a = tagGrid.get(k); if(!a) tagGrid.set(k, a = []); a.push(b); return false; });
+  const fitB = (x, y, w, h) => ({x:clamp(x, 0, Math.max(0, W-w)), y:clamp(y, 0, Math.max(0, H-h)), w, h});
+  const place = (q, b, a) => {
+    add(b); q.box = b; q.ax = a.x; q.ay = a.y;
+    const dx = Math.max(b.x - a.x, 0, a.x - (b.x+b.w)), dy = Math.max(b.y - a.y, 0, a.y - (b.y+b.h));
+    q.leader = Math.hypot(dx, dy) > q.h*0.6;
+  };
+  const size = m => m.type==="count" ? 0 : m.type==="line" ? pathLen(shapePts(m)) : Math.sqrt(polyArea(shapePts(m)));
+  // 1) on its own shape, where it covers no other tag and none of the other measurements
+  const rest = [];
+  for(const {q} of reqs.map((q, i) => ({q, i, s:size(q.m)})).sort((a, b) => a.s - b.s || a.i - b.i)){
+    q._anchors = tagAnchors(q.m);
+    let done = false;
+    for(const a of q._anchors){
+      const b = fitB(a.x - q.w/2, a.y - q.h/2, q.w, q.h);
+      if(!tagHit(b) && !inkHit(b, q.m.id)){ place(q, b, a); done = true; break; }
+    }
+    if(!done) rest.push(q);
+  }
+  if(!rest.length) return reqs;
+  // 2) the rest fan out from the middle of the crowd, in angle order, each along its own direction to clear paper
+  let cx = 0, cy = 0;
+  for(const q of rest){ cx += q._anchors[0].x; cy += q._anchors[0].y; }
+  cx /= rest.length; cy /= rest.length;
+  const maxR = Math.hypot(W, H);
+  for(const q of rest) q._ang = Math.atan2(q._anchors[0].y - cy, q._anchors[0].x - cx);
+  rest.sort((a, b) => a._ang - b._ang);
+  for(const q of rest){
+    const a = q._anchors[0], st = q.h*0.8;
+    let found = null;
+    // along its own direction first, widening the angle a little at a time
+    fan: for(const da of [0, 0.12, -0.12, 0.25, -0.25, 0.4, -0.4, 0.6, -0.6, 0.85, -0.85, 1.2, -1.2]){
+      const ang = q._ang + da, ux = Math.cos(ang), uy = Math.sin(ang);
+      for(let r = st; r <= maxR; r += st){
+        const x = a.x + ux*r, y = a.y + uy*r;
+        if(x < -q.w || y < -q.h || x > W+q.w || y > H+q.h) break;
+        const b = fitB(x - q.w/2, y - q.h/2, q.w, q.h);
+        if(!tagHit(b) && !inkHit(b, -1)){ found = b; break fan; }
+      }
+    }
+    // full page rings: clear of tags and linework, then clear of tags only
+    for(const strict of [true, false]){
+      if(found) break;
+      ring: for(let k=1; k*st<=maxR; k++){
+        const rr = k*st, n = Math.max(8, Math.ceil(2*Math.PI*rr/(q.w*0.9)));
+        for(let j=0; j<n; j++){
+          const th = q._ang + (j%2 ? -1 : 1)*Math.ceil(j/2)*(2*Math.PI/n);
+          const b = fitB(a.x + Math.cos(th)*rr - q.w/2, a.y + Math.sin(th)*rr - q.h/2, q.w, q.h);
+          if(!tagHit(b) && (!strict || !inkHit(b, -1))){ found = b; break ring; }
+        }
+      }
+    }
+    place(q, found || fitB(a.x - q.w/2, a.y - q.h/2, q.w, q.h), a);
+  }
+  return reqs;
+}
+// tag size: normal, but smaller on very dense sheets so every tag fits (never below 55%)
+function tagSize(n, fs, W, H, widthAt){
+  const need = n * Math.max(widthAt(String(n), fs) + fs*0.84, fs*1.35) * fs*1.35;
+  return need > W*H*0.05 ? Math.max(fs*0.55, fs*Math.sqrt(W*H*0.05/need)) : fs;
+}
 function pdfLabelMode(){ const s = document.getElementById("pdfLabels"); return s ? s.value : "auto"; }
 // mode: "full" names + quantities on the sheet · "num" numbered tags (key page added after) · "auto" picks.
 // Returns the key rows for the sheet when it used numbers.
@@ -3662,8 +3763,9 @@ function drawPageMarkups(L, page, items, vp, rot, font, mode, bold){
     const order = fullReqs.slice().sort((a, b) => (rank.has(a.m.cat) ? rank.get(a.m.cat) : 1e9) - (rank.has(b.m.cat) ? rank.get(b.m.cat) : 1e9));
     const tf = bold || font;
     key = order.map((q, i) => ({m:q.m, n:i+1}));
-    const tagReqs = key.map(k => { const s = String(k.n); return {m:k.m, text:s, tag:true, w:Math.max(tf.widthOfTextAtSize(s, fs) + pad*2.4, bh), h:bh}; });
-    laid = layoutLabels(tagReqs, vp.width, vp.height, fs*0.35, r, items);
+    const tfs = tagSize(key.length, fs, vp.width, vp.height, (s, z) => tf.widthOfTextAtSize(s, z)), th = tfs*1.35;
+    const tagReqs = key.map(k => { const s = String(k.n); return {m:k.m, text:s, tag:true, fs:tfs, w:Math.max(tf.widthOfTextAtSize(s, tfs) + tfs*0.84, th), h:th}; });
+    laid = layoutTags(tagReqs, vp.width, vp.height, tfs*0.2);
   }
   for(const q of laid) if(q.leader){   // leader lines first, so they never cross over a label
     const col = pdfColor(L, q.m.color), b = q.box;
@@ -3675,10 +3777,10 @@ function drawPageMarkups(L, page, items, vp, rot, font, mode, bold){
     const col = pdfColor(L, q.m.color), b = q.box;
     const c0 = P(b.x, b.y + b.h);   // box bottom-left, on-screen coords (y down)
     if(q.tag){   // solid tag in the item's color, white number
-      const tf = bold || font, tw = tf.widthOfTextAtSize(q.text, fs);
+      const tf = bold || font, z = q.fs || fs, tw = tf.widthOfTextAtSize(q.text, z);
       page.drawRectangle({x:c0.x, y:c0.y, width:b.w, height:b.h, rotate:ang, color:col, opacity:0.95, borderColor:white, borderWidth:lw*0.5});
-      const t0 = P(b.x + (b.w - tw)/2, b.y + b.h - (b.h - fs*0.72)/2);
-      page.drawText(q.text, {x:t0.x, y:t0.y, size:fs, font:tf, color:white, rotate:ang});
+      const t0 = P(b.x + (b.w - tw)/2, b.y + b.h - (b.h - z*0.72)/2);
+      page.drawText(q.text, {x:t0.x, y:t0.y, size:z, font:tf, color:white, rotate:ang});
       continue;
     }
     page.drawRectangle({x:c0.x, y:c0.y, width:b.w, height:b.h, rotate:ang, color:white, opacity:0.92,
@@ -3795,7 +3897,37 @@ function addSummaryPages(L, pdf, font, bold, items, subtitle){
   text("GRAND TOTALS: "+fArea(grand.area, 0)+" · "+fLen(grand.line, 1)+" · "+grand.count+" EA", M, 10.5, bold);
 }
 // fallback for secured plans: page images with the markups baked in
+// numbered tags drawn on a page image (plan units × sc); returns the key rows
+function drawTagsOn(ctx, items, sc, k, W, H){
+  const fs = clamp(Math.min(W, H)/100, 7, 16);
+  ctx.font = "bold "+(fs*sc)+"px Helvetica, Arial, sans-serif";
+  const widthAt = (s, z) => ctx.measureText(s).width/sc*(z/fs);
+  const rank = new Map(orderedCats().map((c, i) => [c.id, i]));
+  const list = items.filter(m => m.type==="count" || m.pts.length>1)
+    .sort((a, b) => (rank.has(a.cat) ? rank.get(a.cat) : 1e9) - (rank.has(b.cat) ? rank.get(b.cat) : 1e9));
+  const key = list.map((m, i) => ({m, n:i+1}));
+  const tfs = tagSize(key.length, fs, W, H, widthAt), th = tfs*1.35;
+  const reqs = key.map(kk => { const s = String(kk.n); return {m:kk.m, text:s, w:Math.max(widthAt(s, tfs) + tfs*0.84, th), h:th}; });
+  layoutTags(reqs, W, H, tfs*0.2);
+  for(const q of reqs) if(q.leader){
+    const b = q.box;
+    ctx.strokeStyle = q.m.color; ctx.lineWidth = Math.max(1, 1.2*k);
+    ctx.beginPath(); ctx.moveTo(q.ax*sc, q.ay*sc); ctx.lineTo(clamp(q.ax, b.x, b.x+b.w)*sc, clamp(q.ay, b.y, b.y+b.h)*sc); ctx.stroke();
+    ctx.fillStyle = q.m.color; ctx.beginPath(); ctx.arc(q.ax*sc, q.ay*sc, 2.2*k, 0, 7); ctx.fill();
+  }
+  ctx.font = "bold "+(tfs*sc)+"px Helvetica, Arial, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for(const q of reqs){
+    const b = q.box;
+    ctx.fillStyle = q.m.color; ctx.fillRect(b.x*sc, b.y*sc, b.w*sc, b.h*sc);
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(1, 0.8*k); ctx.strokeRect(b.x*sc, b.y*sc, b.w*sc, b.h*sc);
+    ctx.fillStyle = "#fff"; ctx.fillText(q.text, (b.x + b.w/2)*sc, (b.y + b.h/2)*sc);
+  }
+  ctx.textAlign = "start"; ctx.textBaseline = "alphabetic";
+  return key;
+}
 async function rasterPages(L, pdf, st, items){
+  const mode = pdfLabelMode();
+  let fonts = null;
   for(let pg=1; pg<=st.pdf.numPages; pg++){
     const page = await st.pdf.getPage(pg);
     const vp1 = page.getViewport({scale:1});
@@ -3809,11 +3941,19 @@ async function rasterPages(L, pdf, st, items){
     const k = clamp(Math.min(vp1.width, vp1.height)/100, 7, 16)*sc/11;   // same label size as the vector version
     const mine = items.filter(m => m.page===pg);
     for(const m of mine) drawMeasureOn(ctx, m, sc, k);
-    drawLabelsOn(ctx, mine, sc, k, vp1.width, vp1.height);
+    const labelled = mine.filter(m => m.type==="count" || m.pts.length>1).length;
+    const numbered = mode==="num" || (mode==="auto" && labelled > 14);
+    const key = mine.length && numbered ? drawTagsOn(ctx, mine, sc, k, vp1.width, vp1.height) : null;
+    if(!numbered) drawLabelsOn(ctx, mine, sc, k, vp1.width, vp1.height);
     const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
     const img = await pdf.embedJpg(new Uint8Array(await blob.arrayBuffer()));
     pdf.addPage([vp1.width, vp1.height]).drawImage(img, {x:0, y:0, width:vp1.width, height:vp1.height});
     c.width = c.height = 0;
+    if(key && key.length){   // the key right after its sheet
+      if(!fonts) fonts = [await pdf.embedFont(L.StandardFonts.Helvetica), await pdf.embedFont(L.StandardFonts.HelveticaBold)];
+      const d = docMeta(st.id || curDocId);
+      addKeyPage(L, pdf, pdf.getPageCount(), fonts[0], fonts[1], key, (d ? shortName(d.name, 60)+" · " : "")+t("page")+" "+pg);
+    }
   }
 }
 async function markedPlanBytes(L, docId, withSummary){
