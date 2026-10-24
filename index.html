@@ -302,7 +302,8 @@
     grid-area:side; background:var(--panel);
     border-left:1px solid var(--hair); display:flex; flex-direction:column; min-height:0;
   }
-  #sideHead{display:flex; align-items:center; gap:8px; padding:13px 14px 8px;}
+  #sideHead{display:flex; align-items:center; flex-wrap:wrap; gap:6px 8px; padding:13px 14px 8px;}
+  #sideHead h2{margin-right:auto;}
   #side h2{font-size:13px; font-weight:700; letter-spacing:.2px; margin-right:auto;}
   #filterSel{font-size:11.5px; padding:4px 7px; border-radius:8px;}
   .hideAll{background:var(--solid); border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:4px 8px;
@@ -529,7 +530,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.5</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.6</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -712,6 +713,7 @@
   <div id="sideHead">
     <h2>Takeoff</h2>
     <button id="hideAllBtn" class="hideAll" title="Hide or show every measurement on the plan and map" style="display:none">🙈 Hide all</button>
+    <button id="collapseAllBtn" class="hideAll" title="Fold or unfold every category in the list" style="display:none">▸ Collapse all</button>
     <select id="filterSel">
       <option value="all">Everything</option>
       <option value="view">This page</option>
@@ -3038,14 +3040,14 @@ function listGroupsHTML(visible){
     if(!g.items.length) continue;
     const key = g.cat ? g.cat.id : "";
     const isCol = collapsedCats.has(key);
-    const isHid = hiddenCats.has(key);
+    const isHid = hiddenCats.has(key) || g.items.every(x => hiddenItems.has(x.m.id));
     if(g.cat || categories.length){
       html += '<div class="catHead'+(isChildCat(g.cat)?" child":"")+'" data-key="'+key+'" style="color:'+(g.cat?g.cat.color:"var(--faint)")+'">'+
         '<span class="cname"><button class="catTog" title="Collapse / expand">'+(isCol?"▸":"▾")+'</button>'+
         '<span class="cdot" style="background:'+(g.cat?g.cat.color:"var(--faint)")+'"></span>'+
         (g.cat? esc2(g.cat.name) : "Uncategorized")+
         (g.cat? '<button class="catEdit" title="Edit category — name, color, depth, notes">✎</button>' : '')+
-        '<button class="catEye'+(isHid?" off":"")+'" title="Show / hide on the plan and map">'+(isHid?"🙈":"👁")+'</button></span>'+
+        '<button class="catEye'+(isHid?" off":"")+'" title="Show / hide all measurements in this category (Alt-click: show only this one)">'+(isHid?"🙈":"👁")+'</button></span>'+
         '<span class="csub">'+catSubtotal(g.items, g.cat)+'</span></div>';
     }
     if(isCol) continue;
@@ -3123,7 +3125,11 @@ function itemHTML(m, v, child){
           if(isSolo) hiddenCats.clear();
           else hiddenCats = new Set(others);
         } else {
-          hiddenCats.has(key) ? hiddenCats.delete(key) : hiddenCats.add(key);
+          const inCat = measurements.filter(m => (m.cat||"")===key);
+          const shown = !hiddenCats.has(key) && inCat.some(m => !hiddenItems.has(m.id));
+          if(shown) hiddenCats.add(key);
+          else{ hiddenCats.delete(key); for(const m of inCat) hiddenItems.delete(m.id); }
+          toast(t(shown ? "Category hidden on the plan and map" : "Everything in this category is showing"));
         }
         markStatic(); renderList(); drawOverlay(); redrawMapLayers(); return;
       }
@@ -3182,7 +3188,24 @@ function itemHTML(m, v, child){
 })();
 // ---- hide / show everything at once (the 👁 buttons do one category or one item) ----
 function allHidden(){ return measurements.length>0 && measurements.every(m => hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)); }
+// ---- fold / unfold every category in the list at once (the ▾ arrows do one category) ----
+function listCatKeys(){ return [...new Set(measurements.map(m => m.cat||""))]; }
+function allCollapsed(){ const ks = listCatKeys(); return ks.length>0 && ks.every(k => collapsedCats.has(k)); }
+function syncCollapseAll(){
+  const b = document.getElementById("collapseAllBtn");
+  if(!b) return;
+  b.style.display = measurements.length && categories.length ? "" : "none";
+  const all = allCollapsed();
+  const txt = t(all ? "▾ Expand all" : "▸ Collapse all");
+  if(b.textContent!==txt) b.textContent = txt;
+}
+document.getElementById("collapseAllBtn").onclick = () => {
+  if(allCollapsed()) collapsedCats.clear();
+  else for(const k of listCatKeys()) collapsedCats.add(k);
+  renderList();
+};
 function syncHideAll(){
+  syncCollapseAll();
   const b = document.getElementById("hideAllBtn");
   if(!b) return;
   b.style.display = measurements.length ? "" : "none";
