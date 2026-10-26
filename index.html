@@ -530,7 +530,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.7</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.8</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -1974,7 +1974,7 @@ function ensureDoc(id, progress){
         st.data = await ghFetchPdf(st.ref, st.parts, progress);
         st.refBytes = st.data.byteLength;
       }
-      st.pdf = await pdfjsLib.getDocument({data: st.data.slice(0)}).promise;  // pdf.js keeps the copy
+      st.pdf = await pdfjsLib.getDocument({data: st.data.slice(0), isEvalSupported: false}).promise;  // pdf.js keeps the copy; no eval, so a crafted PDF can't run code (CVE-2024-4367)
       const d = docMeta(id); if(d) d.pages = st.pdf.numPages;
       return st;
     })();
