@@ -569,7 +569,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.3</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.4</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -630,7 +630,7 @@
   <div class="hrow"><span>Move whole shape</span><b>Select + drag inside</b></div>
   <div class="hrow"><span>Magnet: snap to the plan's lines</span><b>M · Magnet on the left</b></div>
   <div class="hrow"><span>Snap onto corners · place freely</span><b>automatic · hold ⌘ / Ctrl</b></div>
-  <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
+  <div class="hrow"><span>Straight lines while drawing (beats the Magnet)</span><b>hold Shift</b></div>
   <div class="hrow"><span>Curve the last segment while drawing</span><b>⌒ Curve · U · Alt + click</b></div>
   <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
   <div class="ph">VIEW</div>
@@ -6037,6 +6037,7 @@ function closesOnFirst(d, p){
 function shownOnPage(m){ return m.src==="pdf" && m.page===pageNum && m.doc===curDocId && !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id); }
 function cornerSnapPdf(p){
   if(!p || altHeld || freeHeld || !(tool==="line" || tool==="area" || tool==="calibrate")) return null;
+  if(shiftDown && drawing && drawing.src!=="map" && drawing.pts.length) return null;   // shift wins: a straight line, no snapping
   if(tool!=="calibrate" && snapOn()){
     let best = null, bd = 9/zoom;
     const look = q => { const d = dist(p, q); if(d < bd){ bd = d; best = q; } };
@@ -6667,6 +6668,9 @@ addEventListener("mousemove", setFree, true);
 addEventListener("keydown", setFree, true);
 addEventListener("keyup", setFree, true);
 addEventListener("blur", () => { freeHeld = false; });
+// Shift pressed or let go: the snap ring and the straight preview update right away
+addEventListener("keydown", e => { if(e.key==="Shift" && drawing) requestDraw(); });
+addEventListener("keyup", e => { if(e.key==="Shift" && drawing) requestDraw(); });
 addEventListener("mouseup", () => { if(dragSnapAt){ dragSnapAt = null; requestDraw(); } });
 // M = magnet on / off (plans)
 addEventListener("keydown", e => {
