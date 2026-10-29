@@ -333,6 +333,11 @@
   .catTog:hover,.catEye:hover,.catEdit:hover{color:var(--amber); background:var(--panel2);}
   .catEye.off{opacity:.4;}
   .catTog,.catEye,.catEdit{font-size:12px;}
+  .iCut{background:none; border:none; color:var(--faint); cursor:pointer; font-size:11px; padding:2px 4px; border-radius:6px; opacity:.55;}
+  .iCut:hover{opacity:1; background:var(--panel2);}
+  .iCut.on{opacity:1; background:var(--amber); color:#fff;}
+  .mitem.cut .qty{color:var(--dim);}
+  .mitem.cut .name{font-style:italic;}
   .iEye{background:none; border:none; color:var(--faint); cursor:pointer;
     font-size:12px; padding:1px 4px; border-radius:5px;}
   .iEye:hover{color:var(--amber); background:var(--panel2);}
@@ -577,7 +582,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.9</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -634,7 +639,8 @@
   <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
-  <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag the corner</b></div>
+  <div class="hrow"><span>Start measuring from another corner</span><b>click it</b></div>
+  <div class="hrow"><span>Adjust a corner (any tool)</span><b>hold it ½ s, then drag</b></div>
   <div class="hrow"><span>Adjust a curve (any tool)</span><b>drag its ◆</b></div>
   <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
   <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
@@ -678,7 +684,7 @@
     <div class="big" id="hintBig">Drop PDF plans here (several at once is fine), or add them from the menu</div>
     <div>Or switch to <b>Map</b> to measure any property from satellite</div>
     <div>Finish shapes with <kbd>double-click</kbd> / <kbd>Enter</kbd> · <kbd>⌘Z</kbd> undo · <kbd>⌘S</kbd> save</div>
-    <div>Right-click anywhere for options · drag any corner to adjust it, in any tool</div>
+    <div>Right-click anywhere for options · hold a corner, then drag it to adjust it, in any tool</div>
   </div>
   <div id="stage">
     <canvas id="pdfCanvas"></canvas>
@@ -776,6 +782,7 @@
 <div id="fab">
   <button class="btn" id="fabUndo" title="Undo last point">↩</button>
   <span id="fabVal"></span>
+  <button class="btn" id="fabCut" title="Make this shape a cut-out: it's subtracted from the category (a patio inside a lawn)">➖ Cut-out</button>
   <button class="btn" id="fabCurve" title="Curve the last segment (U): then click on the curve — or hold Alt / Option and click">⌒ Curve</button>
   <button class="btn primary" id="fabDone">✓ Done</button>
   <button class="btn" id="fabCancel">✕</button>
@@ -1120,6 +1127,7 @@ const hiCanvas = document.getElementById("hiCanvas");
 const hictx = hiCanvas.getContext("2d");
 let baseCache = new Map(); // pageNum -> {canvas, scale}
 let baseBusy = false, baseQueued = false, hiTask = null, hiTimer = null;
+var MAX_ZOOM = 64;   // 6400% — the sharp layer only ever draws the part in view, so deep zoom stays light
 const BASE_MAX = 2000; // css px, longest side of the always-ready base layer
 const dpr = window.devicePixelRatio || 1;
 // while measuring: a small crosshair with an open centre, so the plan right under the point stays visible
@@ -1694,14 +1702,14 @@ function redrawMapLayers(){
     if(m.src!=="map") continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
     const hot = m.id===selectedId;
-    const style = {color:m.color, weight:hot?4:3, opacity:.95, smoothFactor:0};   // keep curves round (no simplifying)
+    const style = {color:m.color, weight:hot?4:3, opacity:.95, smoothFactor:0, dashArray: m.sub ? "7,6" : null};   // keep curves round (no simplifying)
     if(m.type==="line" && m.pts.length>1){
       const pl = L.polyline(shapePts(m), style).addTo(mapLayerGroup);
       pl.bindTooltip(m.name+" — "+fLen(measureValue(m), 1), {sticky:true});
       pl.on("click", e=>{ if(tool!=="select") return; L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); addBendHandles(pl, m); }
     } else if(m.type==="area" && m.pts.length>2){
-      const pg = L.polygon(shapePts(m), {...style, fillOpacity:.22}).addTo(mapLayerGroup);
+      const pg = L.polygon(shapePts(m), {...style, fillOpacity: m.sub ? .07 : .22}).addTo(mapLayerGroup);
       pg.bindTooltip(m.name+" — "+fArea(measureValue(m), 0), {sticky:true});
       pg.on("click", e=>{ if(tool!=="select") return; L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); addBendHandles(pg, m); }
@@ -2387,7 +2395,7 @@ async function fitPage(){
   const page = await pdfDoc.getPage(pageNum);
   const vp = page.getViewport({scale:1});
   zoom = Math.min((wrap.clientWidth-40)/vp.width, (wrap.clientHeight-40)/vp.height);
-  zoom = Math.max(0.2, Math.min(zoom, 6));
+  zoom = Math.max(0.2, Math.min(zoom, MAX_ZOOM));
   await renderPage(); updateBar();
 }
 
@@ -2485,7 +2493,7 @@ function drawMeasure(m, hot, lw, ghost){
   const path = m.type==="count" ? pts : bentPts(m.pts, m.arcs, m.type==="area" && !ghost).map(pdfToScreen);
   dctx.lineWidth = hot? lw*1.3 : lw;
   dctx.strokeStyle = m.color; dctx.fillStyle = m.color;
-  dctx.setLineDash(ghost ? [6*dpr,4*dpr] : []);
+  dctx.setLineDash(ghost ? [6*dpr,4*dpr] : m.sub ? [5*dpr,4*dpr] : []);
   if(m.type==="count"){
     pts.forEach((p,idx)=>{
       dctx.beginPath(); dctx.arc(p.x,p.y,7*dpr,0,7); dctx.globalAlpha=.25; dctx.fill();
@@ -2500,8 +2508,9 @@ function drawMeasure(m, hot, lw, ghost){
       dctx.beginPath(); dctx.moveTo(path[0].x,path[0].y);
       for(let i=1;i<path.length;i++) dctx.lineTo(path[i].x,path[i].y);
       if(m.type==="area" && !ghost) dctx.closePath();
-      if(m.type==="area"){ dctx.globalAlpha = .18; dctx.fill(); dctx.globalAlpha = 1; }
+      if(m.type==="area"){ dctx.globalAlpha = m.sub ? .06 : .18; dctx.fill(); dctx.globalAlpha = 1; }
       dctx.stroke();
+      if(m.sub && m.type==="area" && !ghost) hatchCut(path, m.color);   // a cut-out: hatched
     }
     dctx.setLineDash([]);   // corner dots are solid, also on the shape being drawn
     pts.forEach((p,i)=>{
@@ -2551,7 +2560,7 @@ function evtPdf(e){
   return {x:(e.clientX-r.left)/zoom, y:(e.clientY-r.top)/zoom};
 }
 function snap(p){
-  const sc = cornerSnapPdf(p); if(sc) return sc;
+  const sc = cornerSnapPdf(p); if(sc) return {x:sc.x, y:sc.y};   // just the spot (no snap details in the saved points)
   if(!shiftDown || !drawing || !drawing.pts.length) return p;
   const a = drawing.pts[drawing.pts.length-1];
   return Math.abs(p.x-a.x) > Math.abs(p.y-a.y) ? {x:p.x,y:a.y} : {x:a.x,y:p.y};
@@ -2752,7 +2761,7 @@ overlay.addEventListener("touchend", e => {
   if(pinchActive && e.touches.length<2){
     const k = parseFloat((stage.style.transform.match(/scale\(([\d.]+)\)/)||[])[1]||1);
     stage.style.transform = "";
-    zoom = Math.max(0.2, Math.min(6, pinch0.zoom * k));
+    zoom = Math.max(0.2, Math.min(MAX_ZOOM, pinch0.zoom * k));
     renderPage(); updateBar();
     setTimeout(()=>{ pinchActive=false; }, 120);
   }
@@ -2780,13 +2789,14 @@ function finishDrawing(){
     if(drawing.type==="area") arcs.push(0);   // the closing segment starts straight
     if(arcs.some(b => b)) m.arcs = Array.from(arcs, b => b || 0);
     if(drawing.src==="pdf"){ m.page = pageNum; m.doc = curDocId; }
+    if(cutNext){ m.sub = true; joinParentCat(m); }
     measurements.push(m); selectedId = m.id;
   }
-  drawing = null; curveMode = false; refreshAll();
+  drawing = null; curveMode = false; cutNext = false; refreshAll();
 }
 function cancelDrawing(){
   if(drawing && drawing.type==="count"){ finishDrawing(); return; }
-  drawing = null; curveMode = false;
+  drawing = null; curveMode = false; cutNext = false;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
 // ⌘Z while drawing takes back the last step — a point, or the bend you just gave a segment
@@ -2830,6 +2840,8 @@ function updateFab(){
   const cb = document.getElementById("fabCurve");
   cb.style.display = d && (d.type==="line" || d.type==="area") && d.pts.length>=2 ? "" : "none";
   cb.classList.toggle("on", !!curveMode);
+  const cu = document.getElementById("fabCut");
+  if(cu){ cu.style.display = d && (d.type==="line" || d.type==="area") ? "" : "none"; cu.classList.toggle("on", !!cutNext); }
   updateUndoBtns();
 }
 document.getElementById("fabCurve").onclick = () => {
@@ -2967,7 +2979,7 @@ wrap.addEventListener("wheel", e => {
   wz.clientX = e.clientX; wz.clientY = e.clientY;
   // small trackpad deltas and big mouse-wheel notches both feel right with an exponential
   const step = e.deltaMode===1 ? e.deltaY*18 : e.deltaY;
-  wz.target = Math.max(0.2, Math.min(6, wz.target * Math.exp(-step*0.0022)));
+  wz.target = Math.max(0.2, Math.min(MAX_ZOOM, wz.target * Math.exp(-step*0.0022)));
   stage.style.transformOrigin = wz.ox+"px "+wz.oy+"px";
   stage.style.transform = "scale("+(wz.target/wz.base)+")";
   document.getElementById("zoomInfo").textContent = Math.round(wz.target*100)+"%";
@@ -3009,7 +3021,7 @@ function goPage(delta){
 }
 document.getElementById("prevPg").onclick = () => goPage(-1);
 document.getElementById("nextPg").onclick = () => goPage(1);
-document.getElementById("zoomIn").onclick = () => { zoom=Math.min(6,zoom*1.2); renderPage(); updateBar(); };
+document.getElementById("zoomIn").onclick = () => { zoom=Math.min(MAX_ZOOM,zoom*1.2); renderPage(); updateBar(); };
 document.getElementById("zoomOut").onclick = () => { zoom=Math.max(0.2,zoom/1.2); renderPage(); updateBar(); };
 document.getElementById("zoomFit").onclick = () => pdfDoc && fitPage();
 
@@ -3241,13 +3253,14 @@ function itemHTML(m, v, child){
   const catOpts = '<option value="">— no cat —</option>'+
     orderedCats().map(c=>'<option value="'+c.id+'"'+(m.cat===c.id?" selected":"")+'>'+
       (isChildCat(c)? "· ":"")+esc2(c.name)+'</option>').join("");
-  return '<div class="mitem'+(m.id===selectedId?" sel":"")+(hiddenItems.has(m.id)?" hid":"")+'"'+(child?' style="margin-left:14px"':'')+' data-id="'+m.id+'">'+
+  return '<div class="mitem'+(m.id===selectedId?" sel":"")+(hiddenItems.has(m.id)?" hid":"")+(m.sub?" cut":"")+'"'+(child?' style="margin-left:14px"':'')+' data-id="'+m.id+'">'+
     '<div class="row1"><button class="swatch" title="Change color" style="background:'+m.color+'"></button>'+
     '<input class="name" value="'+esc2(m.name)+'">'+
     '<button class="del" title="Delete">✕</button></div>'+
     '<div class="row2"><span>'+loc+' · '+unitOf(m.type)+
     (perim!=null?' <span class="sub">perim '+fLen(perim, 1)+'</span>':'')+
     '</span><span style="display:flex;gap:6px;align-items:center">'+
+    '<button class="iCut'+(m.sub?" on":"")+'" title="'+(m.sub ? 'Cut-out: subtracted from the category — click to count it normally' : 'Make it a cut-out: subtract it from the category')+'">➖</button>'+
     '<button class="iEye'+(hiddenItems.has(m.id)?" off":"")+'" title="Hide / show this measurement on the plan and map">'+(hiddenItems.has(m.id)?"🙈":"👁")+'</button>'+
     '<select class="catSel" title="Move to category">'+catOpts+'</select>'+
     '<span class="qty">'+qty+'</span></span></div></div>';
@@ -3300,6 +3313,7 @@ function itemHTML(m, v, child){
       });
       return;
     }
+    if(e.target.closest(".iCut")){ toggleCut(m); return; }
     if(e.target.closest(".iEye")){
       hiddenItems.has(m.id) ? hiddenItems.delete(m.id) : hiddenItems.add(m.id);
       markStatic(); renderList(); drawOverlay(); redrawMapLayers(); return;
@@ -6078,7 +6092,8 @@ function drawSnapRing(){
   ringAt = null;
   if(mode!=="pdf" || !mousePdf || panning) return;
   let c = null, drag = false;
-  if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
+  if(cornerArm && cornerArm.grab){ if(cornerArm.hit.kind!=="bend"){ c = cornerArm.hit.m.pts[cornerArm.hit.idx]; drag = true; } }   // grabbed, ready to move
+  else if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
   else if(overPlan){
     c = cornerSnapPdf(mousePdf);
     if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
@@ -6106,26 +6121,41 @@ overlay.addEventListener("mousedown", e => {
   if(isCtxClick(e) || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
   if(typeof viewOnly!=="undefined" && viewOnly) return;
   const p = evtPdf(e), hit = cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
-  if(hit) cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot()};
+  if(hit){
+    const arm = cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot(), grab:false};
+    // held still for half a second: now it's grabbed (blue ring, move cursor) and a drag moves it
+    arm.timer = setTimeout(() => { if(cornerArm===arm && !editDrag){ arm.grab = true; overlay.style.cursor = "move"; requestDraw(); } }, 450);
+  }
 });
 window.addEventListener("mousemove", e => {
   if(!cornerArm || editDrag) return;
   if(!(e.buttons & 1)){ cornerArm = null; return; }
-  if(Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y) < 4) return;
+  const dd = Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y);
+  if(!cornerArm.grab){
+    if(dd < 12) return;   // a wobbly click still starts measuring right on that corner
+    // pressed and dragged straight away: that moves the plan — the corner stays where it is
+    clearTimeout(cornerArm.timer);
+    panArm = {x:cornerArm.x, y:cornerArm.y, l:wrap.scrollLeft, t:wrap.scrollTop, moved:false};
+    cornerArm = null; return;
+  }
+  if(dd < 3) return;
   const {hit, start, pre} = cornerArm; cornerArm = null;
   selectedId = hit.m.id; selVertex = hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
   editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start, orig:hit.m.pts.map(q=>({...q})), pre, moved:false};
   staticExclude = hit.m.id; markStatic(); renderList(); drawOverlay();
   suppressClick = true;   // the click at the end of the drag doesn't add a point
 });
-window.addEventListener("mouseup", () => { cornerArm = null; });
+window.addEventListener("mouseup", () => {
+  if(cornerArm){ clearTimeout(cornerArm.timer); if(cornerArm.grab){ suppressClick = true; requestDraw(); } }   // grabbed but not moved: no point either
+  cornerArm = null;
+});
 overlay.addEventListener("mousemove", e => {
   overPlan = true;
   if(drawing && overlay.style.cursor==="move") overlay.style.cursor = DRAW_CURSOR;
   if(mode!=="pdf" || drawing || editDrag) return;
   if(tool==="line" || tool==="area" || tool==="count" || tool==="calibrate"){
     const p = evtPdf(e), h = tool==="calibrate" ? null : cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
-    const cur = h ? "move" : DRAW_CURSOR;
+    const cur = cornerArm && cornerArm.grab ? "move" : DRAW_CURSOR;
     if(overlay.style.cursor!==cur) overlay.style.cursor = cur;
     const c = cornerSnapPdf(p) || (h && h.kind!=="bend" ? h.m.pts[h.idx] : null);
     if(c!==ringAt && !(c && ringAt && c.x===ringAt.x && c.y===ringAt.y)) requestDraw();
@@ -6271,6 +6301,7 @@ function drawingItems(){
     {label:"◆ Curve handles on every edge", on:curvesOn(), fn:() => clickId("setCurves")},
     {label:"◎ Magnet — snap to the plan's lines", k:"M", on:magnetOn(), fn:() => setMagnet(!magnetOn())},
     {label:"📍 Snap to my corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
+    {label:"➖ This shape is a cut-out (subtract)", on:cutNext, fn:() => clickId("fabCut")},
     {label:"✕ Cancel this shape", k:"Esc", fn:cancelDrawing}];
 }
 function shapeItems(hit, p){
@@ -6281,6 +6312,7 @@ function shapeItems(hit, p){
   if(p && m.type!=="count" && hit.kind!=="vertex") it.push({label:"➕ Add a corner here", fn:() => insertCorner(m, p)});
   if(tool!=="select") it.push({label:"↖ Edit it with Select", fn:() => { setTool("select"); selectedId = m.id; refreshAll(); }});
   it.push({label:"✏️ Rename…", fn:() => renameMeasure(m)},
+    {label: m.sub ? "➕ Count it normally (not a cut-out)" : "➖ Make it a cut-out (subtract)", fn:() => toggleCut(m)},
     {label:"⧉ Duplicate", fn:() => dupMeasure(m)},
     {label:"🙈 Hide", fn:() => hideMeasure(m)},
     {label:"🗑 Delete measurement", danger:1, fn:() => deleteMeasure(m)});
@@ -6457,8 +6489,8 @@ function hintText(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag any corner or curve ◆ to adjust it · <b>right-click</b> for options';
-  if(tool==="line") return warn+'<b>Line:</b> click to start · drag any corner or curve ◆ to adjust it · <b>right-click</b> for options';
+  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · hold a corner or ◆, then drag, to adjust it · <b>right-click</b> for options';
+  if(tool==="line") return warn+'<b>Line:</b> click to start · hold a corner or ◆, then drag, to adjust it · <b>right-click</b> for options';
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
@@ -6779,6 +6811,54 @@ syncPrefsUI();
   setInterval(check, 5*60000);
   document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible") check(); });
 })();
+
+// ================= cut-outs: measurements that are subtracted from their category =================
+var cutNext = false;   // the shape being drawn will be a cut-out
+const _measureValue127 = measureValue;
+measureValue = function(m){ const v = _measureValue127(m); return v!=null && m.sub ? -v : v; };   // minus everywhere: list, totals, estimates, exports
+function hatchCut(path, color){
+  if(path.length < 3) return;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for(const p of path){ x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+  dctx.save();
+  dctx.beginPath(); dctx.moveTo(path[0].x, path[0].y); for(let i=1; i<path.length; i++) dctx.lineTo(path[i].x, path[i].y); dctx.closePath(); dctx.clip();
+  dctx.setLineDash([]); dctx.strokeStyle = color; dctx.globalAlpha = .45; dctx.lineWidth = Math.max(1, dpr);
+  const gap = 9*dpr; dctx.beginPath();
+  for(let s = x0 - (y1-y0); s < x1; s += gap){ dctx.moveTo(s, y1); dctx.lineTo(s + (y1-y0), y0); }
+  dctx.stroke(); dctx.restore();
+}
+// the area a cut-out sits inside (same page / map), if any
+function parentArea(m){
+  const inside = (a, b) => a.pts.every(p => pointInPoly(b.src==="map" ? {x:p.lng, y:p.lat} : p, b.src==="map" ? shapePts(b).map(q => ({x:q.lng, y:q.lat})) : shapePts(b)));
+  let best = null, bestA = Infinity;
+  for(const b of measurements){
+    if(b===m || b.type!=="area" || b.sub || b.src!==m.src || b.pts.length<3) continue;
+    if(m.src==="pdf" && (b.page!==m.page || b.doc!==m.doc)) continue;
+    if(!inside(m, b)) continue;
+    const a = Math.abs(_measureValue127(b) || 0);
+    if(a < bestA){ bestA = a; best = b; }
+  }
+  return best;
+}
+function joinParentCat(m){
+  const b = parentArea(m);
+  if(b && (b.cat||"")!==(m.cat||"")){ m.cat = b.cat; m.color = b.color; }
+  return b;
+}
+function toggleCut(m){
+  pushHistory();
+  m.sub = !m.sub;
+  if(!m.sub) delete m.sub;
+  const b = m.sub ? joinParentCat(m) : null;
+  refreshAll();
+  const c = catOf(m.cat);
+  toast(m.sub ? "Cut-out — subtracted from "+(c ? c.name : b ? b.name : "the totals") : "Counted normally again", 3500);
+}
+document.getElementById("fabCut").onclick = () => {
+  cutNext = !cutNext;
+  if(cutNext) toast("This shape will be subtracted (a cut-out) — draw it inside the area it comes out of", 4000);
+  updateFab(); requestDraw();
+};
 </script>
 </body>
 </html>

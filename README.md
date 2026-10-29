@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v2.9.9
+# PLAN TAKEOFF v3.0
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Cut-outs, deep zoom, safer corners (v3.0)** — any measurement can be a cut-out that's subtracted from its category (➖ Cut-out while drawing, right-click, or ➖ in the list; dashed and hatched; one drawn inside an area joins that area's category; minus in all totals, estimates and exports). Zoom up to 6400%. With Line / Area / Count, clicking another measurement's corner starts measuring there; hold a corner ½ s to grab and move it.
 - **Curves button and auto-update (v2.9.9)** — a Curves on/off button in the tool bar (◆ handles on every edge); when a new version is published, an open tab shows "A new version is ready — Update now" (work is kept).
 - **Drag to move the plan in any tool (v2.9.8)** — with Line / Area / Count a drag moves the plan (even mid-shape) and a click places a point; in Select a drag on a shape that isn't selected moves the plan, a click selects it.
 - **New / Open in the top bar (v2.9.6)** — ＋ New and 📂 Open on the right, next to Save (v2.9.7).
@@ -34,6 +35,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 The live app is always `index.html`. Earlier versions are kept as full working copies:
 
+- **v2.9** — `v2.9.html` → https://stephanbluitt.github.io/plantakeoff/v2.9.html
 - **v2.8** — `v2.8.html` → https://stephanbluitt.github.io/plantakeoff/v2.8.html
 - **v2.7** — `v2.7.html` → https://stephanbluitt.github.io/plantakeoff/v2.7.html
 - **v2.6** — `v2.6.html` → https://stephanbluitt.github.io/plantakeoff/v2.6.html
