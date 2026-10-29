@@ -116,6 +116,7 @@
   body[data-theme="dark"] .tbtn.primary{color:#141416;}   /* dark text reads better on the bright dark-mode accent */
   #saveBtn{margin:0 2px 0 4px;}
   #tbNew, #tbOpen{flex:none; white-space:nowrap;}
+  #tbOpen{margin-right:2px;}
   body.viewonly #tbNew{display:none !important;}
   @media (max-width:840px){ #tbNew, #tbOpen{padding:0 9px;} }
   #shareBtn{margin-right:2px;}
@@ -572,12 +573,10 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.6</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.7</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
-  <button class="tbtn" id="tbNew" title="Start a new project (⌘N)">＋ New</button>
-  <button class="tbtn" id="tbOpen" title="Open one of your saved projects">📂 Open</button>
   <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
   <input type="file" id="projInput" accept="application/json" hidden>
   <div id="modeSeg">
@@ -587,6 +586,8 @@
   <div id="topRight">
     <button class="ibtn" id="undoBtn" title="Undo (Cmd/Ctrl+Z)" disabled>↶</button>
     <button class="ibtn" id="redoBtn" title="Redo (Shift+Cmd/Ctrl+Z)" disabled>↷</button>
+    <button class="tbtn" id="tbNew" title="Start a new project (⌘N)">＋ New</button>
+    <button class="tbtn" id="tbOpen" title="Open one of your saved projects">📂 Open</button>
     <button class="tbtn primary" id="saveBtn" title="Save (⌘S)">Save</button>
     <button class="tbtn" id="shareBtn" data-pop="share" title="Export, print or copy your takeoff">Export <span class="chev">▾</span></button>
     <button class="ibtn" id="settingsBtn" data-pop="settings" title="Settings">⚙️</button>
