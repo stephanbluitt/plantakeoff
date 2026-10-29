@@ -569,7 +569,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.4</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.5</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -625,6 +625,7 @@
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
   <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag the corner</b></div>
+  <div class="hrow"><span>Adjust a curve (any tool)</span><b>drag its ◆</b></div>
   <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
   <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
   <div class="hrow"><span>Move whole shape</span><b>Select + drag inside</b></div>
@@ -6065,7 +6066,7 @@ function drawSnapRing(){
   if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
   else if(overPlan){
     c = cornerSnapPdf(mousePdf);
-    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h){ c = h.m.pts[h.idx]; drag = true; } }
+    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
   }
   if(!c) return;
   ringAt = c;
@@ -6089,7 +6090,7 @@ overlay.addEventListener("mousedown", e => {
   cornerArm = null;
   if(isCtxClick(e) || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
   if(typeof viewOnly!=="undefined" && viewOnly) return;
-  const p = evtPdf(e), hit = cornerAt(p);
+  const p = evtPdf(e), hit = cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
   if(hit) cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot()};
 });
 window.addEventListener("mousemove", e => {
@@ -6097,7 +6098,7 @@ window.addEventListener("mousemove", e => {
   if(!(e.buttons & 1)){ cornerArm = null; return; }
   if(Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y) < 4) return;
   const {hit, start, pre} = cornerArm; cornerArm = null;
-  selectedId = hit.m.id; selVertex = {mId:hit.m.id, idx:hit.idx};
+  selectedId = hit.m.id; selVertex = hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
   editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start, orig:hit.m.pts.map(q=>({...q})), pre, moved:false};
   staticExclude = hit.m.id; markStatic(); renderList(); drawOverlay();
   suppressClick = true;   // the click at the end of the drag doesn't add a point
@@ -6108,10 +6109,10 @@ overlay.addEventListener("mousemove", e => {
   if(drawing && overlay.style.cursor==="move") overlay.style.cursor = DRAW_CURSOR;
   if(mode!=="pdf" || drawing || editDrag) return;
   if(tool==="line" || tool==="area" || tool==="count" || tool==="calibrate"){
-    const p = evtPdf(e), h = tool==="calibrate" ? null : cornerAt(p);
+    const p = evtPdf(e), h = tool==="calibrate" ? null : cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
     const cur = h ? "move" : DRAW_CURSOR;
     if(overlay.style.cursor!==cur) overlay.style.cursor = cur;
-    const c = cornerSnapPdf(p) || (h ? h.m.pts[h.idx] : null);
+    const c = cornerSnapPdf(p) || (h && h.kind!=="bend" ? h.m.pts[h.idx] : null);
     if(c!==ringAt && !(c && ringAt && c.x===ringAt.x && c.y===ringAt.y)) requestDraw();
   }
 });
@@ -6439,8 +6440,8 @@ function hintText(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag any corner to adjust it · <b>right-click</b> for options';
-  if(tool==="line") return warn+'<b>Line:</b> click to start · drag any corner to adjust it · <b>right-click</b> for options';
+  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag any corner or curve ◆ to adjust it · <b>right-click</b> for options';
+  if(tool==="line") return warn+'<b>Line:</b> click to start · drag any corner or curve ◆ to adjust it · <b>right-click</b> for options';
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
@@ -6684,6 +6685,15 @@ prefClick("setMagnet", () => setMagnet(!magnetOn()));
 // the page's line work is read ahead when the magnet is on
 setInterval(() => { if(magnetOn() && pdfDoc && mode==="pdf") magnetPage(); }, 1500);
 syncPrefsUI();
+
+// the ◆ (curve handle) of the selected line or area under the mouse — draggable with the Line / Area tools too
+function bendAt(p){
+  const m = selectedId!=null ? measurements.find(x => x.id===selectedId) : null;
+  if(!m || m.src!=="pdf" || m.page!==pageNum || m.doc!==curDocId || !(m.type==="line" || m.type==="area")) return null;
+  const hs = bendHandles(m.pts, m.arcs, m.type==="area"), n = m.pts.length, vt = 9/zoom;
+  for(let i=0; i<hs.length; i++) if(showsBend(m.pts[i], m.pts[(i+1)%n]) && bendOK(m.arcs, i) && dist(p, hs[i]) < vt) return {m, idx:i, kind:"bend"};
+  return null;
+}
 </script>
 </body>
 </html>
