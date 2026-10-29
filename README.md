@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v2.9
+# PLAN TAKEOFF v2.9.1
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Right-click fixed (v2.9.1)** — the right button never grabs the plan or starts a measurement; Mac Ctrl+click opens the menu; clicking away to close the menu does nothing else.
 - **Easier drawing (v2.9)** — right-click anywhere for a menu (finish, take back a point, curve, add or delete a corner, rename, duplicate, hide, move to a category, tools, scale, export); corners can be dragged with any tool, no need to switch to Select; area edges can't cross (the preview turns red); points snap onto nearby corners (hold Alt to place freely) and clicking an area's first corner closes it; curve handles (◆) are off by default (⌒ Curve / U while drawing, or turn them on in Settings); the scroll wheel zooms the plan (Settings can switch it to moving), and the map zooms smoothly around the mouse like Google Maps; every measurement saves to the cloud within seconds; plans stay sharp while zooming and panning, and nearby pages are prepared ahead so they open at once; labelled tools with Scale and Help buttons, a tip for the tool in use and a getting-started list.
 - **Safer PDF opening (v2.8)** — plan PDFs open with pdf.js script evaluation turned off, so a crafted PDF can't run code in the app (CVE-2024-4367).
 - **Readable PDFs on crowded plans (v2.7)** — numbered tags never overlap: each stays on its shape where it covers nothing else, the rest fan out from the crowd into clear paper with leader lines that don't cross, and very dense sheets get slightly smaller tags. Also for locked/secured plans, with a key page after each sheet.

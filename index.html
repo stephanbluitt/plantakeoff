@@ -566,7 +566,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.1</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -1567,6 +1567,7 @@ function initMap(){
   mapLayerGroup = L.layerGroup().addTo(map);
   tempGroup = L.layerGroup().addTo(map);
   map.on("click", e => {
+    if(e.originalEvent && isCtxClick(e.originalEvent)) return;
     if(tool==="select"){
       if(selectedId!=null || selVertex){ selectedId=null; selVertex=null; refreshAll(); }
       return;
@@ -2555,7 +2556,7 @@ function hitTest(p){
   return null;
 }
 overlay.addEventListener("mousedown", e => {
-  if(e.button===0 && tool==="select" && !spaceDown){
+  if(e.button===0 && !isCtxClick(e) && tool==="select" && !spaceDown){
     const hit = hitTest(evtPdf(e));
     if(hit){
       selectedId = hit.m.id;
@@ -2568,6 +2569,7 @@ overlay.addEventListener("mousedown", e => {
     }
     if(selectedId!=null || selVertex){ selectedId=null; selVertex=null; markStatic(); renderList(); drawOverlay(); }
   }
+  if(isCtxClick(e) && e.button!==1) return;   // right-click: the menu, not a grab
   if(tool==="select" || e.button===1 || spaceDown){
     panning = true; panStart = {x:e.clientX, y:e.clientY, l:wrap.scrollLeft, t:wrap.scrollTop};
     overlay.style.cursor = "grabbing"; e.preventDefault();
@@ -2575,7 +2577,8 @@ overlay.addEventListener("mousedown", e => {
 });
 overlay.addEventListener("contextmenu", e => {
   e.preventDefault();
-  if(panning || pinchActive) return;
+  if(pinchActive) return;
+  if(panning){ panning = false; overlay.style.cursor = tool==="select" ? "grab" : DRAW_CURSOR; }
   const p = evtPdf(e);
   if(drawing && drawing.src!=="map"){ ctxOpen(e, drawingItems()); return; }
   const hit = hitTest(p);
@@ -2665,6 +2668,7 @@ function endBendDrag(e){
 overlay.addEventListener("pointerup", endBendDrag);
 overlay.addEventListener("pointercancel", endBendDrag);
 overlay.addEventListener("click", e => {
+  if(isCtxClick(e)) return;
   if(suppressClick){ suppressClick = false; return; }
   if(panning || tool==="select" || spaceDown || pinchActive) return;
   if(e.detail > 1) return; // second click of a double-click — dblclick handler finishes the shape
@@ -6062,7 +6066,7 @@ function cornerAt(p){
 }
 overlay.addEventListener("mousedown", e => {
   cornerArm = null;
-  if(e.button!==0 || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
+  if(isCtxClick(e) || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
   if(typeof viewOnly!=="undefined" && viewOnly) return;
   const p = evtPdf(e), hit = cornerAt(p);
   if(hit) cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot()};
@@ -6261,7 +6265,16 @@ function ctxOpen(ev, items){
       if(f) setTimeout(f, 0);
     });
     ctxEl.addEventListener("contextmenu", e => e.preventDefault());
-    document.addEventListener("mousedown", e => { if(ctxEl.classList.contains("open") && !ctxEl.contains(e.target)) ctxClose(); }, true);
+    const dismiss = e => {
+      if(!ctxEl.classList.contains("open") || ctxEl.contains(e.target)) return;
+      ctxClose();
+      if(e.button===0 && e.target.closest && e.target.closest("#canvasWrap, #mapDiv")){ ctxSwallow = Date.now(); e.stopPropagation(); e.preventDefault(); }
+    };
+    addEventListener("pointerdown", dismiss, true); addEventListener("mousedown", dismiss, true);
+    addEventListener("click", e => {
+      // the click that closed the menu, or the click half of a Mac Ctrl+click that opened it, does nothing else
+      if((ctxSwallow && Date.now()-ctxSwallow < 1500) || (isCtxClick(e) && ctxEl.classList.contains("open"))){ ctxSwallow = 0; e.stopPropagation(); e.preventDefault(); }
+    }, true);
     document.addEventListener("keydown", e => { if(e.key==="Escape" && ctxEl.classList.contains("open")){ ctxClose(); e.stopPropagation(); } }, true);
     addEventListener("blur", ctxClose); addEventListener("resize", ctxClose);
     document.getElementById("canvasWrap").addEventListener("scroll", ctxClose, {passive:true});
@@ -6426,6 +6439,17 @@ const _updateFab117 = updateFab;
 updateFab = function(){ _updateFab117(); updateHint(); };
 setInterval(updateHint, 2500);
 setTimeout(updateHint, 300);
+
+// right-click = the right button, or Ctrl + click on a Mac (also what a two-finger click sends there)
+var IS_MAC_UI = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent), ctxSwallow = 0;
+function isCtxClick(e){ return e.button===2 || (e.button===0 && e.ctrlKey && IS_MAC_UI); }
+// the grey around the page opens the same menu
+document.getElementById("canvasWrap").addEventListener("contextmenu", e => {
+  if(e.target===overlay) return;   // the plan itself has its own menu
+  e.preventDefault();
+  if(panning){ panning = false; overlay.style.cursor = tool==="select" ? "grab" : DRAW_CURSOR; }
+  ctxOpen(e, drawing && drawing.src!=="map" ? drawingItems() : generalItems());
+});
 </script>
 </body>
 </html>
