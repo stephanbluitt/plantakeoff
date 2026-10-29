@@ -534,7 +534,9 @@
   .tool2 svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
   .tool2 .q{font-size:17px; font-weight:700; line-height:19px; height:19px;}
   .tsep{height:1px; width:34px; background:var(--hair); margin:3px auto;}
-  body[data-mode="map"] #toolScale{display:none;}
+  body[data-mode="map"] #toolScale, body[data-mode="map"] #toolMagnet{display:none;}
+  #toolMagnet.on{background:var(--amber); color:#fff;}
+  @media (max-width:840px){ #toast{bottom:calc(124px + var(--sab));} }   /* messages sit above the tool bar on phones */
   .ctxMenu{min-width:230px; max-height:calc(100vh - 16px); overflow:auto; padding:4px;}
   .ctxMenu .mi{padding:6px 10px;}
   .ctxMenu .mi:disabled{opacity:.4; cursor:default; background:none; color:var(--ink);}
@@ -547,6 +549,7 @@
     padding:7px 30px 7px 11px; font-size:12px; line-height:1.45; color:var(--dim); position:relative;}
   #hintBar b{color:var(--ink);}
   #hintBar .warn{color:#e5493a; font-weight:600;}
+  #hintBar .mag{color:#d6336c; font-weight:600;}
   #hintBar .x, #guideCard .x{position:absolute; right:6px; top:5px; border:none; background:none; color:var(--faint); cursor:pointer; font-size:13px; padding:2px 4px;}
   #guideCard{background:var(--solid); border:1px solid var(--hair); border-radius:12px; box-shadow:var(--shadow); padding:10px 12px; position:relative; font-size:12.5px;}
   #guideCard h4{font-size:12.5px; margin:0 0 6px; font-weight:700;}
@@ -566,7 +569,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -625,7 +628,8 @@
   <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
   <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
   <div class="hrow"><span>Move whole shape</span><b>Select + drag inside</b></div>
-  <div class="hrow"><span>Snap onto corners · place freely</span><b>automatic · hold Alt</b></div>
+  <div class="hrow"><span>Magnet: snap to the plan's lines</span><b>M · 🧲 on the left</b></div>
+  <div class="hrow"><span>Snap onto corners · place freely</span><b>automatic · hold ⌘ / Ctrl</b></div>
   <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
   <div class="hrow"><span>Curve the last segment while drawing</span><b>⌒ Curve · U · Alt + click</b></div>
   <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
@@ -725,6 +729,10 @@
   <button class="tool2" id="toolScale" data-pop="scale" aria-label="Set the scale">
     <svg viewBox="0 0 24 24"><path d="M3 15.5L15.5 3 21 8.5 8.5 21z"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2"/></svg>
     <span class="cap">Scale</span><span class="tip">Set the drawing scale</span>
+  </button>
+  <button class="tool2" id="toolMagnet" aria-label="Magnet: snap to the plan's lines">
+    <svg viewBox="0 0 24 24"><path d="M6 3h4v8a2 2 0 0 0 4 0V3h4v8a6 6 0 0 1-12 0z"/><path d="M6 7h4M14 7h4"/></svg>
+    <span class="cap">Magnet</span><span class="tip">Magnet: points snap to the plan's lines (M)</span>
   </button>
   <button class="tool2" id="toolHelp" data-pop="help" aria-label="Tools and shortcuts">
     <span class="q">?</span><span class="cap">Help</span><span class="tip">How to use the tools · shortcuts</span>
@@ -1019,7 +1027,8 @@
   <div class="ph">MOUSE &amp; DRAWING</div>
   <button class="mi" id="setWheelZoom" title="Like most takeoff programs: the wheel zooms where the mouse is. Hold Shift to move sideways.">🖱️ Scroll wheel zooms the plan</button>
   <button class="mi" id="setWheelPan" title="The wheel moves around the plan. Hold ⌘ / Ctrl and scroll (or pinch) to zoom.">🖐️ Scroll wheel moves the plan</button>
-  <button class="mi" id="setSnap" title="The next point jumps onto a nearby corner, so shapes meet exactly. Hold Alt / Option to place it freely.">🧲 Snap to corners</button>
+  <button class="mi" id="setMagnet" title="Points jump onto the lines and corners of the plan itself, for precise measuring. Off by default. Hold ⌘ (Ctrl on Windows) to place a point freely. Shortcut: M">🧲 Magnet: snap to the plan's lines</button>
+  <button class="mi" id="setSnap" title="The next point jumps onto a corner of your other measurements, so shapes meet exactly. Hold ⌘ (Ctrl on Windows) to place it freely.">📍 Snap to my measurements' corners</button>
   <button class="mi" id="setCurves" title="Shows a ◆ in the middle of each edge — drag it to curve the edge. Off: use ⌒ Curve (U) while drawing.">⌒ Curve handles ◆ on edges</button>
   <button class="mi" id="setHints" title="A short tip for the tool you have and a getting-started list">💡 Tips for the tool in use</button>
   <div class="ph">SEARCH</div>
@@ -2600,7 +2609,10 @@ window.addEventListener("mousemove", e => {
       if(!m.arcs) m.arcs = [];
       m.arcs[i] = pdfBulge(m.pts[i], m.pts[(i+1)%m.pts.length], p);
     } else {
-      editDrag.m.pts[editDrag.idx] = {x:editDrag.orig[editDrag.idx].x+dx, y:editDrag.orig[editDrag.idx].y+dy};
+      const q = {x:editDrag.orig[editDrag.idx].x+dx, y:editDrag.orig[editDrag.idx].y+dy};
+      const sn = editDrag.m.src==="pdf" && editDrag.kind==="vertex" ? dragSnap(q, editDrag.m) : null;
+      dragSnapAt = sn;
+      editDrag.m.pts[editDrag.idx] = sn ? {x:sn.x, y:sn.y} : q;
     }
     editDrag.moved = true; requestDraw();
     const v = measureValue(editDrag.m);
@@ -6024,15 +6036,18 @@ function closesOnFirst(d, p){
 // ---- snapping onto corners ----
 function shownOnPage(m){ return m.src==="pdf" && m.page===pageNum && m.doc===curDocId && !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id); }
 function cornerSnapPdf(p){
-  if(!p || !snapOn() || altHeld || !(tool==="line" || tool==="area")) return null;
-  let best = null, bd = 9/zoom;
-  const look = q => { const d = dist(p, q); if(d < bd){ bd = d; best = q; } };
-  if(drawing && drawing.src!=="map") drawing.pts.slice(0, -1).forEach(look);   // not the point just placed
-  for(const m of measurements) if(m.type!=="count" && shownOnPage(m)) m.pts.forEach(look);
-  return best ? {x:best.x, y:best.y} : null;
+  if(!p || altHeld || freeHeld || !(tool==="line" || tool==="area" || tool==="calibrate")) return null;
+  if(tool!=="calibrate" && snapOn()){
+    let best = null, bd = 9/zoom;
+    const look = q => { const d = dist(p, q); if(d < bd){ bd = d; best = q; } };
+    if(drawing && drawing.src!=="map") drawing.pts.slice(0, -1).forEach(look);   // not the point just placed
+    for(const m of measurements) if(m.type!=="count" && shownOnPage(m)) m.pts.forEach(look);
+    if(best) return {x:best.x, y:best.y, kind:"mine"};
+  }
+  return planSnap(p);
 }
 function mapCornerSnap(ll){
-  if(!map || !snapOn() || altHeld || !(tool==="line" || tool==="area")) return null;
+  if(!map || !snapOn() || altHeld || freeHeld || !(tool==="line" || tool==="area")) return null;
   const P = map.latLngToContainerPoint(ll);
   let best = null, bd = 10;
   const look = q => { const d = map.latLngToContainerPoint(q).distanceTo(P); if(d < bd){ bd = d; best = q; } };
@@ -6044,15 +6059,20 @@ function mapCornerSnap(ll){
 var ringAt = null, overPlan = false;
 function drawSnapRing(){
   ringAt = null;
-  if(mode!=="pdf" || !overPlan || !mousePdf || editDrag || panning) return;
-  let c = cornerSnapPdf(mousePdf), drag = false;
-  if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h){ c = h.m.pts[h.idx]; drag = true; } }
+  if(mode!=="pdf" || !mousePdf || panning) return;
+  let c = null, drag = false;
+  if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
+  else if(overPlan){
+    c = cornerSnapPdf(mousePdf);
+    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h){ c = h.m.pts[h.idx]; drag = true; } }
+  }
   if(!c) return;
   ringAt = c;
-  const s = pdfToScreen(c);
-  octx.save();
-  octx.beginPath(); octx.arc(s.x, s.y, 8*dpr, 0, 7);
-  octx.lineWidth = 2*dpr; octx.strokeStyle = drag ? "#2f6fdb" : "#16a34a"; octx.setLineDash([]); octx.stroke();
+  const s = pdfToScreen(c), plan = c.kind==="corner" || c.kind==="line";
+  octx.save(); octx.setLineDash([]);
+  octx.beginPath(); octx.arc(s.x, s.y, (c.kind==="line" ? 6 : 8)*dpr, 0, 7);
+  octx.lineWidth = 2*dpr; octx.strokeStyle = drag ? "#2f6fdb" : plan ? "#d6336c" : "#16a34a"; octx.stroke();
+  if(c.kind==="corner"){ octx.beginPath(); octx.arc(s.x, s.y, 2.2*dpr, 0, 7); octx.fillStyle = "#d6336c"; octx.fill(); }
   octx.restore();
 }
 
@@ -6086,8 +6106,8 @@ overlay.addEventListener("mousemove", e => {
   overPlan = true;
   if(drawing && overlay.style.cursor==="move") overlay.style.cursor = DRAW_CURSOR;
   if(mode!=="pdf" || drawing || editDrag) return;
-  if(tool==="line" || tool==="area" || tool==="count"){
-    const p = evtPdf(e), h = cornerAt(p);
+  if(tool==="line" || tool==="area" || tool==="count" || tool==="calibrate"){
+    const p = evtPdf(e), h = tool==="calibrate" ? null : cornerAt(p);
     const cur = h ? "move" : DRAW_CURSOR;
     if(overlay.style.cursor!==cur) overlay.style.cursor = cur;
     const c = cornerSnapPdf(p) || (h ? h.m.pts[h.idx] : null);
@@ -6208,6 +6228,7 @@ function generalItems(){
     it.push({head:"PLAN"},
       {label:"📐 Set the scale…", off:!pdfDoc, fn:() => openPopAt("scale", "scaleChip")},
       {label:"📐 Calibrate on plan", k:"C", off:!pdfDoc, fn:() => clickId("scCalib")},
+      {label:"🧲 Magnet — snap to the plan's lines", k:"M", off:!pdfDoc, on:magnetOn(), fn:() => setMagnet(!magnetOn())},
       {label:"📄 Add PDF plans…", fn:() => clickId("openBtn")});
   } else {
     it.push({head:"MAP"},
@@ -6229,7 +6250,8 @@ function drawingItems(){
     {label:d.type==="area" ? "✓ Close and finish the area" : "✓ Finish the line", k:"Enter", off:n<need, fn:finishDrawing},
     {label:"↩ Take back the last point", k:"⌫", off:!n, fn:undoPoint},
     {label:"⌒ Curve the last segment", k:"U", off:n<2, on:curveMode, fn:() => clickId("fabCurve")},
-    {label:"🧲 Snap to corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
+    {label:"🧲 Magnet — snap to the plan's lines", k:"M", on:magnetOn(), fn:() => setMagnet(!magnetOn())},
+    {label:"📍 Snap to my corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
     {label:"✕ Cancel this shape", k:"Esc", fn:cancelDrawing}];
 }
 function shapeItems(hit, p){
@@ -6266,7 +6288,7 @@ function ctxOpen(ev, items){
     });
     ctxEl.addEventListener("contextmenu", e => e.preventDefault());
     const dismiss = e => {
-      if(!ctxEl.classList.contains("open") || ctxEl.contains(e.target)) return;
+      if(!ctxEl.classList.contains("open") || (e.target instanceof Node && ctxEl.contains(e.target))) return;
       ctxClose();
       if(e.button===0 && e.target.closest && e.target.closest("#canvasWrap, #mapDiv")){ ctxSwallow = Date.now(); e.stopPropagation(); e.preventDefault(); }
     };
@@ -6364,12 +6386,13 @@ async function prefetchNext(){
 function syncPrefsUI(){
   const sel = (id, on) => { const b = document.getElementById(id); if(b) b.classList.toggle("sel", !!on); };
   sel("setWheelZoom", wheelPref()==="zoom"); sel("setWheelPan", wheelPref()!=="zoom");
-  sel("setSnap", snapOn()); sel("setCurves", curvesOn()); sel("setHints", hintsOn());
+  sel("setSnap", snapOn()); sel("setCurves", curvesOn()); sel("setHints", hintsOn()); sel("setMagnet", magnetOn());
+  const mb = document.getElementById("toolMagnet"); if(mb) mb.classList.toggle("on", magnetOn());
 }
 function prefClick(id, fn){ const b = document.getElementById(id); if(b) b.addEventListener("click", e => { e.stopPropagation(); fn(); syncPrefsUI(); }); }
 prefClick("setWheelZoom", () => { prefSet("tt_wheel", "zoom"); toast("Scroll wheel zooms the plan — hold Shift to move sideways"); });
 prefClick("setWheelPan", () => { prefSet("tt_wheel", "pan"); toast("Scroll wheel moves the plan — ⌘ / Ctrl + scroll or pinch to zoom"); });
-prefClick("setSnap", () => { prefSet("tt_snap", snapOn() ? "0" : "1"); toast(snapOn() ? "Snap to corners: on (hold Alt to place a point freely)" : "Snap to corners: off"); requestDraw(); });
+prefClick("setSnap", () => { prefSet("tt_snap", snapOn() ? "0" : "1"); toast(snapOn() ? "Snap to corners: on (hold ⌘ / Ctrl to place a point freely)" : "Snap to corners: off"); requestDraw(); });
 prefClick("setCurves", () => {
   prefSet("tt_curves", curvesOn() ? "0" : "1");
   toast(curvesOn() ? "Curve handles on — drag the ◆ on an edge to curve it" : "Curve handles off — while drawing, use ⌒ Curve (U) for a curved edge");
@@ -6420,6 +6443,9 @@ function hintText(){
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
+// the tip line also says when the magnet is on
+const _hintText119 = hintText;
+hintText = function(){ const h = _hintText119(); return magnetOn() && mode==="pdf" && tool!=="select" && tool!=="count" ? h+' <span class="mag">· 🧲 Magnet on (M)</span>' : h; };
 var hintLast = "";
 function updateHint(){
   const bar = document.getElementById("hintBar"), card = document.getElementById("guideCard");
@@ -6450,6 +6476,210 @@ document.getElementById("canvasWrap").addEventListener("contextmenu", e => {
   if(panning){ panning = false; overlay.style.cursor = tool==="select" ? "grab" : DRAW_CURSOR; }
   ctxOpen(e, drawing && drawing.src!=="map" ? drawingItems() : generalItems());
 });
+
+// ================= 1.15: Magnet — points snap onto the plan's own lines =================
+// Vector plans: the line work is read once per page from the PDF and kept in a grid, so finding the lines near
+// the mouse is instant. Line ends and crossings win; otherwise the point goes onto the nearest line.
+// Scanned plans (no line work inside): the point goes onto the nearest dark line of the picture.
+var freeHeld = false, dragSnapAt = null, magnetPages = new Map(), magMemo = null;
+function magnetOn(){ return prefGet("tt_magnet", "0")==="1"; }
+function setMagnet(on){
+  prefSet("tt_magnet", on ? "1" : "0"); syncPrefsUI(); magMemo = null;
+  if(on){
+    const g = pdfDoc ? magnetPage() : null;
+    toast(!pdfDoc ? "Magnet on — open a plan to use it"
+      : g && g.raster ? "Magnet on — this plan is a scan, so points jump onto its dark lines"
+      : "Magnet on — points jump onto the plan's lines and corners (hold ⌘ / Ctrl to place freely)", 4000);
+  } else toast("Magnet off");
+  requestDraw(); updateHint();
+}
+// the line work of the page in view: ready, or being read (null until it's ready)
+function magnetPage(){
+  const key = bkey(), g = magnetPages.get(key);
+  if(g) return g.ready ? g : null;
+  const job = {ready:false};
+  magnetPages.set(key, job);
+  readLineWork(pdfDoc, pageNum).then(r => {
+    Object.assign(job, r, {ready:true}); magMemo = null;
+    while(magnetPages.size > 6) magnetPages.delete(magnetPages.keys().next().value);
+    if(key===bkey()) requestDraw();
+  });
+  return null;
+}
+async function readLineWork(doc, pg){
+  try{
+    const page = await doc.getPage(pg);
+    const vt = page.getViewport({scale:1}).transform;
+    const ol = await page.getOperatorList();
+    const O = pdfjsLib.OPS, U = pdfjsLib.Util, fn = ol.fnArray, ar = ol.argsArray;
+    const DRAWN = new Set([O.stroke, O.closeStroke, O.fill, O.eoFill, O.fillStroke, O.eoFillStroke, O.closeFillStroke, O.closeEOFillStroke]);
+    const segs = [], curved = [], MAX = 400000*4, stack = [];
+    let inCurve = 0;
+    let ctm = vt;
+    const tp = (x, y) => [ctm[0]*x + ctm[2]*y + ctm[4], ctm[1]*x + ctm[3]*y + ctm[5]];
+    const line = (x1, y1, x2, y2) => {
+      const p = tp(x1, y1), q = tp(x2, y2);
+      if(Math.abs(p[0]-q[0]) + Math.abs(p[1]-q[1]) > 0.25){ segs.push(p[0], p[1], q[0], q[1]); curved.push(inCurve); }
+    };
+    for(let i=0; i<fn.length && segs.length<MAX; i++){
+      const f = fn[i], a = ar[i];
+      if(f===O.save) stack.push(ctm);
+      else if(f===O.restore){ if(stack.length) ctm = stack.pop(); }
+      else if(f===O.transform) ctm = U.transform(ctm, a);
+      else if(f===O.paintFormXObjectBegin){ stack.push(ctm); if(a && a[0]) ctm = U.transform(ctm, a[0]); }
+      else if(f===O.paintFormXObjectEnd){ if(stack.length) ctm = stack.pop(); }
+      else if(f===O.constructPath && DRAWN.has(fn[i+1])){   // paths that get drawn (not clipping outlines)
+        const ops = a[0], c = a[1];
+        let k = 0, cx = 0, cy = 0, sx = 0, sy = 0;
+        const bez = (x1, y1, x2, y2, x3, y3) => {   // curves become short straight pieces
+          let px = cx, py = cy;
+          inCurve = 1;   // the pieces of a curve aren't corners
+          for(let s=1; s<=6; s++){
+            const t = s/6, u = 1-t;
+            const x = u*u*u*cx + 3*u*u*t*x1 + 3*u*t*t*x2 + t*t*t*x3, y = u*u*u*cy + 3*u*u*t*y1 + 3*u*t*t*y2 + t*t*t*y3;
+            line(px, py, x, y); px = x; py = y;
+          }
+          inCurve = 0; cx = x3; cy = y3;
+        };
+        for(const op of ops){
+          if(op===O.moveTo){ cx = sx = c[k++]; cy = sy = c[k++]; }
+          else if(op===O.lineTo){ const x = c[k++], y = c[k++]; line(cx, cy, x, y); cx = x; cy = y; }
+          else if(op===O.curveTo){ bez(c[k], c[k+1], c[k+2], c[k+3], c[k+4], c[k+5]); k += 6; }
+          else if(op===O.curveTo2){ bez(cx, cy, c[k], c[k+1], c[k+2], c[k+3]); k += 4; }
+          else if(op===O.curveTo3){ bez(c[k], c[k+1], c[k+2], c[k+3], c[k+2], c[k+3]); k += 4; }
+          else if(op===O.closePath){ line(cx, cy, sx, sy); cx = sx; cy = sy; }
+          else if(op===O.rectangle){
+            const x = c[k++], y = c[k++], w = c[k++], h = c[k++];
+            line(x, y, x+w, y); line(x+w, y, x+w, y+h); line(x+w, y+h, x, y+h); line(x, y+h, x, y);
+            cx = sx = x; cy = sy = y;
+          }
+        }
+      }
+      if((i & 8191)===8191) await new Promise(r => setTimeout(r, 0));   // stays smooth on very busy sheets
+    }
+    const n = segs.length/4;
+    if(n < 12) return {raster:true, n:0};   // a scan: nothing to read, use the picture instead
+    const S = 16, grid = new Map(), seg = Float64Array.from(segs);
+    for(let s=0; s<n; s++){
+      const x1 = seg[4*s], y1 = seg[4*s+1], x2 = seg[4*s+2], y2 = seg[4*s+3];
+      const steps = Math.max(1, Math.ceil(Math.hypot(x2-x1, y2-y1)/(S/2)));
+      let last = NaN;
+      for(let j=0; j<=steps; j++){
+        const t = j/steps, key = Math.floor((x1+(x2-x1)*t)/S)*100003 + Math.floor((y1+(y2-y1)*t)/S);
+        if(key===last) continue;
+        last = key;
+        let a = grid.get(key); if(!a) grid.set(key, a = []);
+        if(a[a.length-1]!==s) a.push(s);
+      }
+      if((s & 65535)===65535) await new Promise(r => setTimeout(r, 0));
+    }
+    return {raster:false, n, seg, grid, S, curved:Uint8Array.from(curved)};
+  }catch(e){ return {raster:true, n:0}; }
+}
+function segCrossAt(a, b, c, d){
+  const r1 = b.x-a.x, r2 = b.y-a.y, s1 = d.x-c.x, s2 = d.y-c.y, den = r1*s2 - r2*s1;
+  if(Math.abs(den) < 1e-9) return null;
+  const t = ((c.x-a.x)*s2 - (c.y-a.y)*s1)/den, u = ((c.x-a.x)*r2 - (c.y-a.y)*r1)/den;
+  if(t < -0.001 || t > 1.001 || u < -0.001 || u > 1.001) return null;
+  return {x:a.x + t*r1, y:a.y + t*r2};
+}
+// where the magnet puts a point near p (page units), or null
+function planSnap(p){
+  if(!p || !magnetOn() || mode!=="pdf" || !pdfDoc) return null;
+  const g = magnetPage(); if(!g) return null;
+  const memo = p.x+"|"+p.y+"|"+zoom+"|"+bkey();
+  if(magMemo && magMemo.k===memo) return magMemo.v;
+  const v = g.raster ? inkSnap(p) : lineSnap(g, p);
+  magMemo = {k:memo, v};
+  return v;
+}
+function lineSnap(g, p){
+  const r = 10/zoom, S = g.S, seg = g.seg, ids = new Set();
+  const gx0 = Math.floor((p.x-r-S)/S), gx1 = Math.floor((p.x+r+S)/S), gy0 = Math.floor((p.y-r-S)/S), gy1 = Math.floor((p.y+r+S)/S);
+  for(let gx=gx0; gx<=gx1; gx++) for(let gy=gy0; gy<=gy1; gy++){ const a = g.grid.get(gx*100003+gy); if(a) for(const s of a) ids.add(s); }
+  const near = [];
+  for(const s of ids){
+    const a = {x:seg[4*s], y:seg[4*s+1]}, b = {x:seg[4*s+2], y:seg[4*s+3]}, q = segNear(p, a, b), d = Math.hypot(p.x-q.x, p.y-q.y);
+    if(d <= r) near.push({a, b, q, d, c:g.curved[s]});
+  }
+  if(!near.length) return null;
+  // 1) a corner: the end of a line or where two lines cross
+  let best = null, bd = r*0.85;
+  for(const o of near) if(!o.c) for(const e of [o.a, o.b]){ const d = dist(p, e); if(d < bd){ bd = d; best = e; } }
+  near.sort((u, v) => u.d - v.d);
+  const m = Math.min(near.length, 40);
+  for(let i=0; i<m; i++) for(let j=i+1; j<m; j++){
+    if(near[i].c && near[j].c) continue;   // two pieces of the same curve meet, that's no corner
+    const X = segCrossAt(near[i].a, near[i].b, near[j].a, near[j].b);
+    if(X){ const d = dist(p, X); if(d < bd){ bd = d; best = X; } }
+  }
+  if(best) return {x:best.x, y:best.y, kind:"corner"};
+  // 2) otherwise onto the nearest line
+  return {x:near[0].q.x, y:near[0].q.y, kind:"line"};
+}
+// scanned plans: the nearest dark pixel of what's on screen, then the middle of that stroke
+function inkSnap(p){
+  let cv = null, toPx, toPage;
+  if(hiCanvas.style.display==="block" && hiState && hiState.key===bkey() && hiState.zoom===zoom){
+    toPx = q => ({x:(q.x*zoom - hiState.x)*dpr, y:(q.y*zoom - hiState.y)*dpr});
+    toPage = (x, y) => ({x:(x/dpr + hiState.x)/zoom, y:(y/dpr + hiState.y)/zoom});
+    const c = toPx(p);
+    if(c.x>=0 && c.y>=0 && c.x<hiCanvas.width && c.y<hiCanvas.height) cv = hiCanvas;
+  }
+  if(!cv){
+    const k = pdfCanvas.width / (pageW/zoom);
+    if(!isFinite(k) || k<=0) return null;
+    cv = pdfCanvas; toPx = q => ({x:q.x*k, y:q.y*k}); toPage = (x, y) => ({x:x/k, y:y/k});
+  }
+  const c = toPx(p), perScreen = cv===hiCanvas ? dpr : (pdfCanvas.width/(pageW||1));
+  const R = Math.max(3, Math.round(10*perScreen)), x0 = Math.round(c.x)-R, y0 = Math.round(c.y)-R, w = 2*R+1;
+  let px;
+  try{ px = cv.getContext("2d").getImageData(x0, y0, w, w).data; }catch{ return null; }
+  const dark = (i, j) => { const o = 4*(j*w+i); return px[o+3] > 0 && px[o]*0.3 + px[o+1]*0.59 + px[o+2]*0.11 < 120; };
+  let bi = -1, bj = -1, bd = R*R + 1;
+  for(let j=0; j<w; j++) for(let i=0; i<w; i++){
+    const d = (i-R)*(i-R) + (j-R)*(j-R);
+    if(d < bd && dark(i, j)){ bd = d; bi = i; bj = j; }
+  }
+  if(bi<0) return null;
+  const rr = Math.max(1, Math.round(1.5*perScreen));
+  let sx = 0, sy = 0, n = 0;
+  for(let j=Math.max(0, bj-rr); j<=Math.min(w-1, bj+rr); j++) for(let i=Math.max(0, bi-rr); i<=Math.min(w-1, bi+rr); i++) if(dark(i, j)){ sx += i; sy += j; n++; }
+  const q = toPage(x0 + sx/n + 0.5, y0 + sy/n + 0.5);
+  return {x:q.x, y:q.y, kind:"line"};
+}
+// a corner being dragged: onto another measurement's corner, or onto the plan's lines
+function dragSnap(q, own){
+  if(altHeld || freeHeld) return null;
+  if(snapOn()){
+    let best = null, bd = 9/zoom;
+    for(const m of measurements) if(m!==own && m.type!=="count" && shownOnPage(m)) for(const c of m.pts){ const d = dist(q, c); if(d < bd){ bd = d; best = c; } }
+    if(best) return {x:best.x, y:best.y, kind:"mine"};
+  }
+  return planSnap(q);
+}
+// ⌘ (Ctrl on Windows) held: place points freely, no snapping
+function setFree(e){
+  const f = !!(e.metaKey || (e.ctrlKey && !IS_MAC_UI));
+  if(f!==freeHeld){ freeHeld = f; magMemo = null; requestDraw(); }
+}
+addEventListener("mousemove", setFree, true);
+addEventListener("keydown", setFree, true);
+addEventListener("keyup", setFree, true);
+addEventListener("blur", () => { freeHeld = false; });
+addEventListener("mouseup", () => { if(dragSnapAt){ dragSnapAt = null; requestDraw(); } });
+// M = magnet on / off (plans)
+addEventListener("keydown", e => {
+  if(e.key.toLowerCase()!=="m" || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if(["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName) || e.target.isContentEditable) return;
+  if(document.querySelector(".modalBack.open, #loginGate.show, #payGate.show") || mode!=="pdf") return;
+  setMagnet(!magnetOn());
+});
+document.getElementById("toolMagnet").addEventListener("click", e => { e.stopPropagation(); setMagnet(!magnetOn()); });
+prefClick("setMagnet", () => setMagnet(!magnetOn()));
+// the page's line work is read ahead when the magnet is on
+setInterval(() => { if(magnetOn() && pdfDoc && mode==="pdf") magnetPage(); }, 1500);
+syncPrefsUI();
 </script>
 </body>
 </html>
