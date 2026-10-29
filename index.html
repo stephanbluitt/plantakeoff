@@ -115,6 +115,9 @@
   .tbtn .chev{font-size:9px; opacity:.75;}
   body[data-theme="dark"] .tbtn.primary{color:#141416;}   /* dark text reads better on the bright dark-mode accent */
   #saveBtn{margin:0 2px 0 4px;}
+  #tbNew, #tbOpen{flex:none; white-space:nowrap;}
+  body.viewonly #tbNew{display:none !important;}
+  @media (max-width:840px){ #tbNew, #tbOpen{padding:0 9px;} }
   #shareBtn{margin-right:2px;}
   #listToggle{display:none;}
   /* ================= popovers ================= */
@@ -569,10 +572,12 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.5</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.6</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
+  <button class="tbtn" id="tbNew" title="Start a new project (⌘N)">＋ New</button>
+  <button class="tbtn" id="tbOpen" title="Open one of your saved projects">📂 Open</button>
   <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
   <input type="file" id="projInput" accept="application/json" hidden>
   <div id="modeSeg">
@@ -6694,6 +6699,10 @@ function bendAt(p){
   for(let i=0; i<hs.length; i++) if(showsBend(m.pts[i], m.pts[(i+1)%n]) && bendOK(m.arcs, i) && dist(p, hs[i]) < vt) return {m, idx:i, kind:"bend"};
   return null;
 }
+
+// top bar: + New and Open, one click away (the ☰ menu still has them too)
+document.getElementById("tbNew").onclick = () => askNewProject();
+document.getElementById("tbOpen").onclick = () => openCloud();
 </script>
 </body>
 </html>

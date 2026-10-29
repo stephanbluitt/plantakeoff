@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v2.9.5
+# PLAN TAKEOFF v2.9.6
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **New / Open in the top bar (v2.9.6)** — ＋ New and 📂 Open next to the project name.
 - **Curves in any tool (v2.9.5)** — the ◆ of the selected line or area can be dragged with the Line / Area tools too, like corners.
 - **Magnet (v2.9.2)** — off by default; Magnet button on the left, M key, right-click menu or Settings. Points snap onto the plan's own lines: line ends and crossings first, otherwise the nearest line (read from the PDF's line work; on scanned plans, the nearest dark line). Works while drawing, calibrating and dragging corners. Hold ⌘ / Ctrl to place a point freely. Holding Shift for a straight line wins over it (v2.9.4). Its ring is green (v2.9.3) — red is kept for real problems only.
 - **Right-click fixed (v2.9.1)** — the right button never grabs the plan or starts a measurement; Mac Ctrl+click opens the menu; clicking away to close the menu does nothing else.
