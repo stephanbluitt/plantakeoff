@@ -448,6 +448,11 @@
   #restoreBar.show{display:flex;}
   #restoreBar .msg{font-size:12.5px;}
   #restoreBar .msg b{color:var(--amber);}
+  .vtxIcon:hover{box-shadow:0 0 0 5px rgba(47,111,219,.45) !important; cursor:move;}
+  .bendDot:hover{box-shadow:0 0 0 5px rgba(47,111,219,.45); transform:rotate(45deg) scale(1.35);}
+  #hoverTip{position:fixed; z-index:5000; pointer-events:none; display:none; background:var(--solid); color:var(--ink);
+    border:1px solid var(--hair); border-radius:8px; box-shadow:var(--shadow); padding:4px 9px; font-size:11.5px; white-space:nowrap;}
+  #hoverTip b{color:var(--amber);}
   .vtxIcon{width:14px; height:14px; border-radius:50%; background:#fff;
     border:3px solid var(--amber); box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:grab;}
   .cntIcon{width:20px; height:20px; border-radius:50%; color:#fff; font:bold 10px/20px ui-monospace,monospace;
@@ -582,7 +587,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.0.1</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -2547,10 +2552,11 @@ function drawBendDots(m, nb, closed){
   dctx.setLineDash([]);
   for(let i=0; i<Math.min(nb, hs.length); i++){
     if(!showsBend(m.pts[i], m.pts[(i+1)%n]) || !bendOK(m.arcs, i)) continue;
-    const c = pdfToScreen(hs[i]), r = 6*dpr;
+    const hot = hoverBend && hoverBend.id===m.id && hoverBend.idx===i, c = pdfToScreen(hs[i]), r = (hot ? 9 : 6)*dpr;
     dia(c, r); dctx.fillStyle = "#fff"; dctx.fill();
     dctx.strokeStyle = m.color; dctx.lineWidth = 2*dpr; dctx.stroke();
-    if(m.arcs && m.arcs[i]){ dia(c, r*0.42); dctx.fillStyle = m.color; dctx.fill(); }
+    if(hot){ dia(c, r*0.55); dctx.fillStyle = m.color; dctx.fill(); }
+    else if(m.arcs && m.arcs[i]){ dia(c, r*0.42); dctx.fillStyle = m.color; dctx.fill(); }
   }
 }
 
@@ -6096,7 +6102,7 @@ function drawSnapRing(){
   else if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
   else if(overPlan){
     c = cornerSnapPdf(mousePdf);
-    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
+    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="select")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
   }
   if(!c) return;
   ringAt = c;
@@ -6124,7 +6130,7 @@ overlay.addEventListener("mousedown", e => {
   if(hit){
     const arm = cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot(), grab:false};
     // held still for half a second: now it's grabbed (blue ring, move cursor) and a drag moves it
-    arm.timer = setTimeout(() => { if(cornerArm===arm && !editDrag){ arm.grab = true; overlay.style.cursor = "move"; requestDraw(); } }, 450);
+    arm.timer = setTimeout(() => { if(cornerArm===arm && !editDrag){ arm.grab = true; overlay.style.cursor = "grabbing"; requestDraw(); grabTip(); } }, 450);
   }
 });
 window.addEventListener("mousemove", e => {
@@ -6859,6 +6865,56 @@ document.getElementById("fabCut").onclick = () => {
   if(cutNext) toast("This shape will be subtracted (a cut-out) — draw it inside the area it comes out of", 4000);
   updateFab(); requestDraw();
 };
+
+// ================= what's under the mouse: corner or curve ◆ — cursor, highlight and a small tip =================
+var hoverBend = null, hoverKey = "", tipEl = null, tipXY = [0, 0];
+function showTip(html, x, y){
+  if(!hintsOn() || !html){ hideTip(); return; }
+  if(!tipEl){ tipEl = document.createElement("div"); tipEl.id = "hoverTip"; document.body.appendChild(tipEl); }
+  if(tipEl._h!==html){ tipEl._h = html; tipEl.innerHTML = html; }
+  tipXY = [x, y];
+  const w = tipEl.offsetWidth || 200;
+  tipEl.style.left = Math.min(x + 16, innerWidth - w - 8)+"px"; tipEl.style.top = (y + 20)+"px"; tipEl.style.display = "block";
+}
+function hideTip(){ if(tipEl) tipEl.style.display = "none"; }
+function grabTip(){ showTip("<b>Grabbed</b> — now drag to move it", tipXY[0], tipXY[1]); }
+function setHover(key, hb){
+  const changedBend = (hb ? hb.id+":"+hb.idx : "") !== (hoverBend ? hoverBend.id+":"+hoverBend.idx : "");
+  hoverBend = hb;
+  if(changedBend) markStatic();
+  if(key!==hoverKey || changedBend){ hoverKey = key; requestDraw(); }
+}
+overlay.addEventListener("mousemove", e => {
+  if(mode!=="pdf" || editDrag || panning || (panArm && panArm.moved) || bendDrag){ hideTip(); setHover("", null); return; }
+  if(cornerArm && cornerArm.grab){ overlay.style.cursor = "grabbing"; grabTip(); return; }
+  const p = evtPdf(e);
+  let html = "", cur = null, key = "", hb = null;
+  if(!drawing && tool!=="calibrate"){
+    const c = cornerAt(p), b = c || tool==="count" ? null : bendAt(p);
+    if(c){
+      key = "c"+c.m.id+":"+c.idx;
+      if(tool==="select"){ cur = "move"; html = c.kind==="dot" ? "<b>Drag</b> to move it · right-click for options" : "<b>Drag</b> to move this corner · right-click for options"; }
+      else { cur = "pointer"; html = c.kind==="dot" ? "<b>Click</b> to count here · <b>hold</b> to move this one" : "<b>Click</b> to start here · <b>hold</b> to move this corner"; }
+    } else if(b){
+      key = "b"+b.m.id+":"+b.idx; hb = {id:b.m.id, idx:b.idx}; cur = "grab";
+      html = tool==="select" ? "<b>Drag</b> to bend this edge · right-click to straighten" : "<b>Hold</b>, then drag to bend this edge";
+    } else if(tool==="select"){
+      const h = hitTest(p);
+      if(h && h.kind==="body"){
+        if(h.m.id===selectedId){ cur = "move"; html = "<b>Drag</b> to move this shape"; }
+        else { cur = "pointer"; html = "<b>Click</b> to select · drag to move the plan"; }
+      }
+    }
+  }
+  const want = cur || (tool==="select" ? "grab" : DRAW_CURSOR);
+  if(overlay.style.cursor!==want) overlay.style.cursor = want;
+  setHover(key, hb);
+  if(html) showTip(html, e.clientX, e.clientY); else hideTip();
+});
+overlay.addEventListener("mouseleave", () => { hideTip(); setHover("", null); });
+overlay.addEventListener("mousedown", () => { if(!(cornerArm && cornerArm.grab)) hideTip(); });
+addEventListener("mouseup", () => { if(!editDrag) hideTip(); });
+addEventListener("wheel", hideTip, {passive:true});
 </script>
 </body>
 </html>
