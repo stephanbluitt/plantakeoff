@@ -539,7 +539,11 @@
   .tool2 .q{font-size:17px; font-weight:700; line-height:19px; height:19px;}
   .tsep{height:1px; width:34px; background:var(--hair); margin:3px auto;}
   body[data-mode="map"] #toolScale, body[data-mode="map"] #toolMagnet{display:none;}
-  #toolMagnet.on{background:var(--amber); color:#fff;}
+  #toolMagnet.on, #toolCurves.on{background:var(--amber); color:#fff;}
+  @media (max-width:480px){ #toolsPill .tool, #toolsPill .tool2{width:40px;} #toolsPill .cap{font-size:8.5px;} }
+  #updBar{position:fixed; z-index:6000; left:50%; transform:translateX(-50%); top:58px; display:none; align-items:center; gap:10px;
+    background:var(--solid); border:1px solid var(--amber); border-radius:12px; box-shadow:var(--shadow); padding:8px 8px 8px 14px; font-size:13px;}
+  #updBar.show{display:flex;}
   @media (max-width:840px){ #toast{bottom:calc(124px + var(--sab));} }   /* messages sit above the tool bar on phones */
   .ctxMenu{min-width:230px; max-height:calc(100vh - 16px); overflow:auto; padding:4px;}
   .ctxMenu .mi{padding:6px 10px;}
@@ -573,7 +577,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.8</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.9</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -740,6 +744,10 @@
   <button class="tool2" id="toolMagnet" aria-label="Magnet: snap to the plan's lines">
     <svg viewBox="0 0 24 24"><path d="M6 3h4v8a2 2 0 0 0 4 0V3h4v8a6 6 0 0 1-12 0z"/><path d="M6 7h4M14 7h4"/></svg>
     <span class="cap">Magnet</span><span class="tip">Magnet: points snap to the plan's lines (M)</span>
+  </button>
+  <button class="tool2" id="toolCurves" aria-label="Curve handles on or off">
+    <svg viewBox="0 0 24 24"><path d="M4 18C6 8 18 8 20 18"/><path d="M12 7.5l2 2-2 2-2-2z"/></svg>
+    <span class="cap">Curves</span><span class="tip">Curves: show the ◆ on every edge to bend it (on / off)</span>
   </button>
   <button class="tool2" id="toolHelp" data-pop="help" aria-label="Tools and shortcuts">
     <span class="q">?</span><span class="cap">Help</span><span class="tip">How to use the tools · shortcuts</span>
@@ -2719,7 +2727,7 @@ overlay.addEventListener("click", e => {
     addDrawPoint(p); bendTip(); drawOverlay(); updateFab(); updateLive();
   }
 });
-overlay.addEventListener("dblclick", e => { e.preventDefault(); finishDrawing(); });
+overlay.addEventListener("dblclick", e => { e.preventDefault(); if(Date.now() - (window.__panEndAt || 0) < 600) return; finishDrawing(); });
 
 // touch: pinch zoom on PDF (two fingers), CSS preview then commit
 let pinchActive=false, pinch0=null;
@@ -4794,7 +4802,7 @@ window.addEventListener("beforeunload", e => {
   clearTimeout(autosaveTimer);
   if(measurements.length || categories.length || docs.length)
     storeSet(AS_KEY, JSON.stringify(Object.assign(serializeProject(), {_dirty:!!window.__isDirty})));
-  if(!IS_DESKTOP_APP && window.__isDirty && (measurements.length || docs.length)){
+  if(!IS_DESKTOP_APP && !window.__ttUpdating && window.__isDirty && (measurements.length || docs.length)){
     e.preventDefault();
     e.returnValue = "";
   }
@@ -6237,6 +6245,7 @@ function generalItems(){
     it.push({head:"PLAN"},
       {label:"📐 Set the scale…", off:!pdfDoc, fn:() => openPopAt("scale", "scaleChip")},
       {label:"📐 Calibrate on plan", k:"C", off:!pdfDoc, fn:() => clickId("scCalib")},
+      {label:"◆ Curve handles on every edge", on:curvesOn(), fn:() => clickId("setCurves")},
       {label:"◎ Magnet — snap to the plan's lines", k:"M", off:!pdfDoc, on:magnetOn(), fn:() => setMagnet(!magnetOn())},
       {label:"📄 Add PDF plans…", fn:() => clickId("openBtn")});
   } else {
@@ -6259,6 +6268,7 @@ function drawingItems(){
     {label:d.type==="area" ? "✓ Close and finish the area" : "✓ Finish the line", k:"Enter", off:n<need, fn:finishDrawing},
     {label:"↩ Take back the last point", k:"⌫", off:!n, fn:undoPoint},
     {label:"⌒ Curve the last segment", k:"U", off:n<2, on:curveMode, fn:() => clickId("fabCurve")},
+    {label:"◆ Curve handles on every edge", on:curvesOn(), fn:() => clickId("setCurves")},
     {label:"◎ Magnet — snap to the plan's lines", k:"M", on:magnetOn(), fn:() => setMagnet(!magnetOn())},
     {label:"📍 Snap to my corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
     {label:"✕ Cancel this shape", k:"Esc", fn:cancelDrawing}];
@@ -6724,7 +6734,7 @@ window.addEventListener("mousemove", e => {
   if(overlay.style.cursor!=="grabbing") overlay.style.cursor = "grabbing";
 });
 window.addEventListener("mouseup", () => {
-  if(panArm && panArm.moved){ suppressClick = true; overlay.style.cursor = DRAW_CURSOR; }   // the drag ends without placing a point
+  if(panArm && panArm.moved){ suppressClick = true; overlay.style.cursor = DRAW_CURSOR; window.__panEndAt = Date.now(); }   // the drag ends without placing a point
   panArm = null;
   // Select: a click (no drag) on a shape that wasn't selected selects it
   if(selArm!=null){
@@ -6732,6 +6742,43 @@ window.addEventListener("mouseup", () => {
     if(panStart && wrap.scrollLeft===panStart.l && wrap.scrollTop===panStart.t){ selectedId = id; selVertex = null; markStatic(); renderList(); drawOverlay(); }
   }
 });
+
+// ---- Curves button: the ◆ handles on every edge, on or off (same as Settings → Curve handles) ----
+document.getElementById("toolCurves").addEventListener("click", e => { e.stopPropagation(); clickId("setCurves"); });
+const _syncPrefs125 = syncPrefsUI;
+syncPrefsUI = function(){ _syncPrefs125(); const b = document.getElementById("toolCurves"); if(b) b.classList.toggle("on", curvesOn()); };
+syncPrefsUI();
+
+// ---- a new version is out: a button to switch to it (an open tab would otherwise keep the old one) ----
+(function(){
+  if(!/^https?:$/.test(location.protocol)) return;
+  const RX = [/window\.TT_VERSION="([^"]+)"/, /PLAN<span>TAKEOFF<\/span> <em>([^<]+)<\/em>/];
+  const own = window.TT_VERSION || ((document.body.innerHTML.match(RX[1]) || [])[1]);
+  if(!own) return;
+  const bar = document.createElement("div"); bar.id = "updBar"; bar.setAttribute("role", "status");
+  bar.innerHTML = '<span>✨ A new version is ready — your work is kept.</span><button type="button" class="btn primary" id="updGo">Update now</button><button type="button" class="btn" id="updLater">Later</button>';
+  document.body.appendChild(bar);
+  let newer = null, later = 0;
+  async function check(){
+    if(Date.now() < later) return;
+    try{
+      const html = await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.text() : "");
+      let v = null; for(const rx of RX){ const m = html.match(rx); if(m){ v = m[1]; break; } }
+      if(v && v!==own){ newer = v; bar.classList.add("show"); }
+    }catch{}
+  }
+  document.getElementById("updLater").onclick = () => { bar.classList.remove("show"); later = Date.now() + 30*60000; };
+  document.getElementById("updGo").onclick = async () => {
+    if(drawing && drawing.type!=="count"){ toast("Finish or cancel the shape you're drawing first, then update"); return; }
+    const b = document.getElementById("updGo"); b.disabled = true; b.textContent = "Saving…";
+    try{ if(window.__isDirty && typeof cloudOn==="function" && cloudOn()) await window.__cloudQuickSave(true); }catch{}
+    window.__ttUpdating = true;
+    location.reload();
+  };
+  setTimeout(check, 20000);
+  setInterval(check, 5*60000);
+  document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible") check(); });
+})();
 </script>
 </body>
 </html>
