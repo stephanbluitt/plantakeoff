@@ -573,7 +573,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.7</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.8</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -644,7 +644,7 @@
   <div class="hrow"><span>Zoom</span><b>scroll wheel · + −</b></div>
   <div class="hrow"><span>Fit page</span><b>F</b></div>
   <div class="hrow"><span>Change page</span><b>‹ › · Page Up / Down</b></div>
-  <div class="hrow"><span>Move around the plan</span><b>Space + drag · middle button · arrows</b></div>
+  <div class="hrow"><span>Move around the plan (any tool)</span><b>click and drag · arrows</b></div>
   <div class="hrow"><span>Wheel zooms or moves</span><b>⚙️ Settings</b></div>
   <div class="hrow"><span>Hide category / item</span><b>👁 in list</b></div>
   <div class="hrow"><span>Show ONLY one category</span><b>Alt + 👁</b></div>
@@ -2574,7 +2574,8 @@ function hitTest(p){
 overlay.addEventListener("mousedown", e => {
   if(e.button===0 && !isCtxClick(e) && tool==="select" && !spaceDown){
     const hit = hitTest(evtPdf(e));
-    if(hit){
+    selArm = hit && hit.kind==="body" && hit.m.id!==selectedId ? hit.m.id : null;   // not selected yet: a drag moves the plan, a click selects it
+    if(hit && selArm==null){
       selectedId = hit.m.id;
       selVertex = hit.kind==="body" || hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
       editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start:evtPdf(e),
@@ -6704,6 +6705,33 @@ function bendAt(p){
 // top bar: + New and Open, one click away (the ☰ menu still has them too)
 document.getElementById("tbNew").onclick = () => askNewProject();
 document.getElementById("tbOpen").onclick = () => openCloud();
+
+// ================= click and drag moves the plan, whatever the tool =================
+var panArm = null, selArm = null;
+overlay.addEventListener("mousedown", e => {
+  panArm = null;
+  if(e.button!==0 || isCtxClick(e) || spaceDown || mode!=="pdf" || tool==="select") return;
+  if(cornerArm || bendDrag || editDrag) return;   // starting on a corner or ◆: that adjusts it
+  panArm = {x:e.clientX, y:e.clientY, l:wrap.scrollLeft, t:wrap.scrollTop, moved:false};
+});
+window.addEventListener("mousemove", e => {
+  if(!panArm) return;
+  if(!(e.buttons & 1) || editDrag || bendDrag){ panArm = null; return; }
+  const dx = e.clientX-panArm.x, dy = e.clientY-panArm.y;
+  if(!panArm.moved && Math.hypot(dx, dy) < 5) return;   // a little wobble is still a click
+  panArm.moved = true;
+  wrap.scrollLeft = panArm.l - dx; wrap.scrollTop = panArm.t - dy;
+  if(overlay.style.cursor!=="grabbing") overlay.style.cursor = "grabbing";
+});
+window.addEventListener("mouseup", () => {
+  if(panArm && panArm.moved){ suppressClick = true; overlay.style.cursor = DRAW_CURSOR; }   // the drag ends without placing a point
+  panArm = null;
+  // Select: a click (no drag) on a shape that wasn't selected selects it
+  if(selArm!=null){
+    const id = selArm; selArm = null;
+    if(panStart && wrap.scrollLeft===panStart.l && wrap.scrollTop===panStart.t){ selectedId = id; selVertex = null; markStatic(); renderList(); drawOverlay(); }
+  }
+});
 </script>
 </body>
 </html>
