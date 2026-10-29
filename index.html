@@ -350,6 +350,7 @@
   .mitem{
     border:1px solid var(--hair); border-radius:11px; background:var(--solid);
     padding:8px 10px; margin-bottom:6px; cursor:pointer;
+    content-visibility:auto; contain-intrinsic-size:auto 76px;   /* rows out of sight cost nothing */
   }
   .mitem:hover{border-color:var(--line);}
   .mitem.sel{border-color:var(--amber); box-shadow:0 0 0 1px var(--amber);}
@@ -587,7 +588,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.0.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.1.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -1333,7 +1334,9 @@ function geoBentArea(pts, arcs){
   }
   return Math.abs(Math.sign(s)*a - cut*M2FT*M2FT);
 }
-function measureValue(m){
+// a cut-out counts as minus its size everywhere: list, totals, estimates, exports
+function measureValue(m){ const v = rawValue(m); return v!=null && m.sub ? -v : v; }
+function rawValue(m){
   if(m.type==="count") return m.pts.length;
   if(m.src==="map"){
     return m.type==="line" ? geoBentLen(m.pts, m.arcs, false) : geoBentArea(m.pts, m.arcs);
@@ -1701,7 +1704,7 @@ function addVertexHandles(layer, m){
   });
 }
 function redrawMapLayers(){
-  if(!map) return;
+  if(!map || mode!=="map") return;   // on a plan the map waits (setMode("map") draws it)
   mapLayerGroup.clearLayers();
   for(const m of measurements){
     if(m.src!=="map") continue;
@@ -2435,23 +2438,45 @@ function requestDraw(){
 }
 // labels of the shapes on the page, collected while the static layer is drawn and placed together at the end
 let labelQueue = null;
+function labelText(m){ const v = measureValue(m); return v==null ? "—" : fQty(m.type, v, 1, 0); }
+// The spots are worked out for the whole page and remembered: selecting, hovering and dragging reuse them.
+// After a zoom the old spots are used straight away and re-worked once the zooming stops.
+var labelMemo = null, labelTimer = 0;
+function labelSig(queue, items){
+  let h = 0;
+  const mix = v => { h = (Math.imul(h, 31) + Math.round(v*64))|0; };
+  for(const m of items){ mix(m.id); for(const p of m.pts){ mix(p.x); mix(p.y); } if(m.arcs) for(const b of m.arcs) mix((b||0)*4096); }
+  return pageNum+"|"+curDocId+"|"+dpr+"|"+items.length+"|"+h+"|"+queue.map(o => o.m.id+":"+o.text).join(",");
+}
 function drawScreenLabels(queue, items){
   if(!queue.length) return;
   const k = zoom*dpr;   // plan units → canvas pixels
   dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
   const bh = 16*dpr, pad = 5*dpr;
-  const reqs = queue.map(o => ({m:o.m, text:o.text, w:(dctx.measureText(o.text).width + pad*2)/k, h:bh/k}));
-  const laid = layoutLabels(reqs, pageW/zoom, pageH/zoom, 3/zoom, 7/zoom, items);
-  for(const q of laid) if(q.leader){   // thin line back to a label that had to move away
+  const sig = labelSig(queue, items);
+  let laid;
+  if(labelMemo && labelMemo.sig===sig && (labelMemo.zoom===zoom || !labelMemo.redo)){
+    laid = labelMemo.laid;
+    if(labelMemo.zoom!==zoom){   // zoomed: same spots for now, worked out again when the zooming stops
+      clearTimeout(labelTimer);
+      labelTimer = setTimeout(() => { if(labelMemo){ labelMemo.redo = true; markStatic(); requestDraw(); } }, 260);
+    }
+  } else {
+    const reqs = queue.map(o => ({m:o.m, text:o.text, skip:o.skip, w:(dctx.measureText(o.text).width + pad*2)/k, h:bh/k}));
+    laid = layoutLabels(reqs, pageW/zoom, pageH/zoom, 3/zoom, 7/zoom, items, 140);
+    labelMemo = {sig, zoom, laid, redo:false};
+  }
+  for(const q of laid) if(q.leader && staticExclude!==q.m.id){   // thin line back to a label that had to move away
     const b = q.box, a = pdfToScreen({x:q.ax, y:q.ay}), e = pdfToScreen({x:clamp(q.ax, b.x, b.x+b.w), y:clamp(q.ay, b.y, b.y+b.h)});
     dctx.strokeStyle = q.m.color; dctx.lineWidth = 1.2*dpr; dctx.globalAlpha = .9;
     dctx.beginPath(); dctx.moveTo(a.x, a.y); dctx.lineTo(e.x, e.y); dctx.stroke();
     dctx.beginPath(); dctx.arc(a.x, a.y, 2.2*dpr, 0, 7); dctx.fillStyle = q.m.color; dctx.fill(); dctx.globalAlpha = 1;
   }
   for(const q of laid){
+    if(staticExclude===q.m.id) continue;   // being dragged: drawn with the shape instead
     const o = pdfToScreen({x:q.box.x, y:q.box.y});
     dctx.fillStyle = "rgba(20,22,26,.85)";
-    dctx.fillRect(o.x, o.y, q.box.w*k, bh);
+    dctx.fillRect(o.x, o.y, dctx.measureText(q.text).width + pad*2, bh);
     dctx.fillStyle = q.m.color;
     dctx.fillText(q.text, o.x + pad, o.y + bh - 4.5*dpr);
   }
@@ -2468,9 +2493,9 @@ function rebuildStatic(lw){
   for(const m of measurements){
     if(m.src!=="pdf" || m.page !== pageNum || m.doc !== curDocId) continue;
     if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
-    if(staticExclude === m.id) continue;
-    drawMeasure(m, m.id===selectedId, lw);
     drawn.push(m);
+    if(staticExclude === m.id){ if(m.type!=="count" && m.pts.length>1) labelQueue.push({m, text:labelText(m), skip:true}); continue; }
+    drawMeasure(m, m.id===selectedId, lw);
   }
   const queue = labelQueue; labelQueue = null;
   try{ drawScreenLabels(queue, drawn); }catch(e){ console.warn("labels", e); }
@@ -2478,12 +2503,14 @@ function rebuildStatic(lw){
   orgX = ovX; orgY = ovY;
 }
 function drawOverlay(){
+  if(mode!=="pdf") return;   // on the map the plan layer waits (setMode("pdf") draws it)
   const lw = Math.max(1.5, 2*dpr);
   placeOverlay();
   if(staticDirty || stZoom!==zoom || ovX<stX || ovY<stY || ovX+ovW>stX+stW+0.01 || ovY+ovH>stY+stH+0.01)
     rebuildStatic(lw);
   octx.clearRect(0,0,overlay.width,overlay.height);
   if(staticCanvas.width && staticCanvas.height) octx.drawImage(staticCanvas, Math.round((stX-ovX)*dpr), Math.round((stY-ovY)*dpr));
+  drawHoverBend();
   if(editDrag && editDrag.m.src==="pdf") drawMeasure(editCrosses() ? Object.assign({}, editDrag.m, {color:"#e5493a"}) : editDrag.m, true, lw);
   if(drawing && drawing.src!=="map" && drawing.pts.length){
     const g = drawingShape(drawing, drawCursor(drawing));
@@ -2531,8 +2558,7 @@ function drawMeasure(m, hot, lw, ghost){
     if(nb>0) drawBendDots(m, nb, m.type==="area" && !ghost);
     if(!ghost && pts.length>1){
       const mid = path[Math.floor(path.length/2)] || pts[0];
-      const v = measureValue(m);
-      const txt = v==null ? "—" : fQty(m.type, v, 1, 0);
+      const txt = labelText(m);
       if(labelQueue){ labelQueue.push({m, text:txt}); dctx.setLineDash([]); return; }   // the page's labels are placed together afterwards
       dctx.font = (11*dpr)+"px ui-monospace,Menlo,monospace";
       const w = dctx.measureText(txt).width;
@@ -2548,16 +2574,27 @@ function drawMeasure(m, hot, lw, ghost){
 // ◆ = a white diamond on each segment; a curved segment's has a coloured centre
 function drawBendDots(m, nb, closed){
   const hs = bendHandles(m.pts, m.arcs, closed), n = m.pts.length;
-  const dia = (c, r) => { dctx.beginPath(); dctx.moveTo(c.x, c.y-r); dctx.lineTo(c.x+r, c.y); dctx.lineTo(c.x, c.y+r); dctx.lineTo(c.x-r, c.y); dctx.closePath(); };
   dctx.setLineDash([]);
   for(let i=0; i<Math.min(nb, hs.length); i++){
     if(!showsBend(m.pts[i], m.pts[(i+1)%n]) || !bendOK(m.arcs, i)) continue;
-    const hot = hoverBend && hoverBend.id===m.id && hoverBend.idx===i, c = pdfToScreen(hs[i]), r = (hot ? 9 : 6)*dpr;
-    dia(c, r); dctx.fillStyle = "#fff"; dctx.fill();
-    dctx.strokeStyle = m.color; dctx.lineWidth = 2*dpr; dctx.stroke();
-    if(hot){ dia(c, r*0.55); dctx.fillStyle = m.color; dctx.fill(); }
-    else if(m.arcs && m.arcs[i]){ dia(c, r*0.42); dctx.fillStyle = m.color; dctx.fill(); }
+    bendDot(m, hs[i], i, false);
   }
+}
+function bendDot(m, h, i, hot){
+  const c = pdfToScreen(h), r = (hot ? 9 : 6)*dpr;
+  const dia = rr => { dctx.beginPath(); dctx.moveTo(c.x, c.y-rr); dctx.lineTo(c.x+rr, c.y); dctx.lineTo(c.x, c.y+rr); dctx.lineTo(c.x-rr, c.y); dctx.closePath(); };
+  dia(r); dctx.fillStyle = "#fff"; dctx.fill();
+  dctx.strokeStyle = m.color; dctx.lineWidth = 2*dpr; dctx.stroke();
+  if(hot){ dia(r*0.55); dctx.fillStyle = m.color; dctx.fill(); }
+  else if(m.arcs && m.arcs[i]){ dia(r*0.42); dctx.fillStyle = m.color; dctx.fill(); }
+}
+// the ◆ under the mouse, bigger and filled in, on top of the remembered layer
+function drawHoverBend(){
+  if(!hoverBend || hoverBend.id!==selectedId || (editDrag && editDrag.m.id===hoverBend.id)) return;
+  const m = measurements.find(x => x.id===hoverBend.id);
+  if(!m || m.src!=="pdf" || m.page!==pageNum || m.doc!==curDocId || !(m.type==="line" || m.type==="area")) return;
+  const hs = bendHandles(m.pts, m.arcs, m.type==="area");
+  if(hs[hoverBend.idx]) bendDot(m, hs[hoverBend.idx], hoverBend.idx, true);
 }
 
 // ================= PDF mouse & touch =================
@@ -2667,12 +2704,6 @@ window.addEventListener("mouseup", () => {
     else drawOverlay();
   }
   if(panning){ panning=false; overlay.style.cursor = tool==="select" ? "grab" : DRAW_CURSOR; }
-});
-overlay.addEventListener("mousemove", e => {
-  mousePdf = evtPdf(e);
-  altHeld = e.altKey;
-  updateLive();
-  if(drawing && drawing.src!=="map") requestDraw();
 });
 // while drawing: drag the ◆ in the middle of a placed segment to curve it (mouse, pen or finger)
 var bendDrag = null, suppressClick = false;
@@ -2849,6 +2880,7 @@ function updateFab(){
   const cu = document.getElementById("fabCut");
   if(cu){ cu.style.display = d && (d.type==="line" || d.type==="area") ? "" : "none"; cu.classList.toggle("on", !!cutNext); }
   updateUndoBtns();
+  updateHint();   // the tips follow every change of tool, drawing and plan
 }
 document.getElementById("fabCurve").onclick = () => {
   curveMode = !curveMode;
@@ -3183,16 +3215,23 @@ function renderList(){
   // plan and map measurements are listed apart when there are both — what's on screen first
   const order = mode==="map" ? ["map", "pdf"] : ["pdf", "map"];
   const parts = order.map(src => ({src, items:visible.filter(m => (m.src==="map" ? "map" : "pdf")===src)})).filter(p => p.items.length);
+  // built without the highlight, so a new selection alone doesn't rebuild the list — the highlight just moves
+  const sel = selectedId;
   let html = "";
-  for(const p of parts){
-    if(parts.length>1) html += '<div class="srcHead"><span>'+(p.src==="map" ? "🗺️ MAP" : "📄 PLANS")+'</span><b>'+qtyLine(p.items)+'</b></div>';
-    html += listGroupsHTML(p.items);
-  }
-  el.innerHTML = html;
+  selectedId = null;
+  try{
+    for(const p of parts){
+      if(parts.length>1) html += '<div class="srcHead"><span>'+(p.src==="map" ? "🗺️ MAP" : "📄 PLANS")+'</span><b>'+qtyLine(p.items)+'</b></div>';
+      html += listGroupsHTML(p.items);
+    }
+  } finally { selectedId = sel; }
+  if(html!==listHTML){ listHTML = html; el.innerHTML = html; }
   syncHideAll();
-  const selEl = el.querySelector(".mitem.sel");
-  if(selEl) selEl.scrollIntoView({block:"nearest"});
+  const old = el.querySelector(".mitem.sel"), selEl = sel!=null ? el.querySelector('.mitem[data-id="'+sel+'"]') : null;
+  if(old && old!==selEl) old.classList.remove("sel");
+  if(selEl){ selEl.classList.add("sel"); selEl.scrollIntoView({block:"nearest"}); }
 }
+var listHTML = "";
 document.getElementById("measSearch").addEventListener("input", () => { renderList(); renderTotals(); });
 // one set of measurements, by category and type
 function listGroupsHTML(visible){
@@ -3480,7 +3519,7 @@ function drawLabelsOn(ctx, items, sc, k, W, H){
     const text = m.name + (v!=null ? " — "+qtyText(m, v) : "");
     reqs.push({m, text, w:ctx.measureText(text).width/sc + pad*2, h:bh});
   }
-  const laid = layoutLabels(reqs, W, H, fs*0.5, r, items);
+  const laid = layoutLabels(reqs, W, H, fs*0.5, r, items, 4000);
   for(const q of laid) if(q.leader){   // leader lines first, so they never cross over a label
     const b = q.box;
     ctx.strokeStyle = q.m.color; ctx.lineWidth = Math.max(1, 1.5*k);
@@ -3699,8 +3738,9 @@ function labelSpots(m, w, h, g, r){
 }
 // reqs: [{m, w, h, …}] → each gets box {x,y,w,h}, its anchor ax/ay on the shape, and leader true/false.
 // all = every measurement drawn on the page: labels keep clear of their outlines and count dots too.
-function layoutLabels(reqs, W, H, g, r, all){
+function layoutLabels(reqs, W, H, g, r, all, budget){
   all = all || reqs.map(q => q.m);
+  const deadline = budget ? performance.now() + budget : Infinity;
   const h0 = reqs.length ? reqs[0].h : 12;
   const cell = Math.max(8, h0*3), grid = new Map();
   let stamp = 0;
@@ -3753,7 +3793,7 @@ function layoutLabels(reqs, W, H, g, r, all){
     const consider = (b, ax, ay, near) => { const sc = score(b, id); if(!bs || sc.s < bs.s){ bs = sc; best = {b, ax, ay, near}; } return sc; };
     for(const sp of spots) consider(fit(sp.x, sp.y, w, h), sp.ax, sp.ay, true);
     // on or beside its own shape is best — unless it would cover another label or a lot of other linework
-    if(spots.length && !(bs && bs.lab===0 && bs.cov<=2)){
+    if(spots.length && !(bs && bs.lab===0 && bs.cov<=2) && performance.now() < deadline){
       const ax = spots[0].ax, ay = spots[0].ay, stepR = h*1.25 + g;
       const t0 = Math.atan2(ay - cy0, ax - cx0);   // head away from the crowd first
       ring: for(let k=1; k<=18; k++){
@@ -3762,7 +3802,7 @@ function layoutLabels(reqs, W, H, g, r, all){
           const t = t0 + (j===0 ? 0 : (j%2 ? (j+1)/2 : -j/2))*(Math.PI*2/n);
           const b = fit(ax + Math.cos(t)*(k*stepR + w/2) - w/2, ay + Math.sin(t)*k*stepR - h/2, w, h);
           const sc = consider(b, ax, ay, false);
-          if(sc.lab===0 && sc.cov===0) break ring;
+          if(sc.lab===0 && sc.cov<=2) break ring;   // free of labels and (almost) of other lines: good enough
         }
       }
     }
@@ -3898,7 +3938,7 @@ function drawPageMarkups(L, page, items, vp, rot, font, mode, bold){
   }
   let numbered = mode==="num", laid = null;
   if(mode!=="num"){
-    laid = layoutLabels(fullReqs, vp.width, vp.height, fs*0.5, r, items);
+    laid = layoutLabels(fullReqs, vp.width, vp.height, fs*0.5, r, items, 4000);
     const pushed = laid.filter(q => q.leader).length;
     if(mode==="auto" && (laid.length > 14 || pushed > Math.max(3, laid.length*0.25))) numbered = true;
   }
@@ -4899,7 +4939,6 @@ function updateSaveState(){
   el.className = "saveState "+cls;
   if(el.title!==tip) el.title = tip;
 }
-setInterval(updateSaveState, 1500);
 document.getElementById("saveState").onclick = () => { if(window.__isDirty && cloudOn() && !cloudSaving) window.__cloudQuickSave(false); };
 
 // ================= themes =================
@@ -4909,6 +4948,9 @@ function applyTheme(t){
   document.getElementById("themeBtn").textContent = t==="light" ? "🌙" : "☀️";
   document.getElementById("themeBtn").title = t==="light" ? "Switch to dark mode" : "Switch to light mode";
   storeSet(THEME_KEY, t);
+  // the theme drives the plan too, unless the plan colours were set by hand with 🌓
+  const st = storeGet(PDFINV_KEY);
+  if(st!=="1" && st!=="0") applyPdfInvert(t==="dark", false);
 }
 document.getElementById("themeBtn").onclick = () =>
   applyTheme(document.body.dataset.theme==="light" ? "dark" : "light");
@@ -4922,13 +4964,6 @@ function applyPdfInvert(on, persist){
 }
 document.getElementById("pdfInvert").onclick = () =>
   applyPdfInvert(!pdfCanvas.classList.contains("inverted"), true);
-// theme drives the plan too, unless the user has manually overridden with 🌓
-const _applyThemeBase = applyTheme;
-applyTheme = function(t){
-  _applyThemeBase(t);
-  const st = storeGet(PDFINV_KEY);
-  if(st!=="1" && st!=="0") applyPdfInvert(t==="dark", false);
-};
 applyTheme(storeGet(THEME_KEY)==="dark" ? "dark" : "light");
 const _pdfInvSt = storeGet(PDFINV_KEY);
 if(_pdfInvSt==="1") applyPdfInvert(true, false);
@@ -6007,7 +6042,7 @@ setTool("select");
 refreshCatSelect();
 syncTitle();
 
-// ================= 1.14: easier drawing =================
+// ================= drawing helpers: crossing edges, snapping, corner handles, right-click menus =================
 // right-click menus, corners you can drag in any tool, area edges that can't cross, snapping onto corners,
 // curve handles only when wanted, scroll-wheel setting, tips for the tool in use and a getting-started card
 var cornerArm = null, hiState = null, planImgs = new Map(), planImgBytes = 0, prefetchTimer = null;
@@ -6116,10 +6151,11 @@ function drawSnapRing(){
 
 // ---- corners can be dragged with any drawing tool (a plain click on one still starts / adds a point there) ----
 function cornerAt(p){
-  const vt = 9/zoom;
-  const list = measurements.filter(m => m.src==="pdf" && m.page===pageNum && m.doc===curDocId && (m.id===selectedId || (!hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id))));
-  list.sort((a, b) => (b.id===selectedId) - (a.id===selectedId));
-  for(const m of list) for(let i=m.pts.length-1; i>=0; i--) if(dist(p, m.pts[i]) < vt) return {m, idx:i, kind:m.type==="count" ? "dot" : "vertex"};
+  const vt = 9/zoom, here = m => m.src==="pdf" && m.page===pageNum && m.doc===curDocId;
+  const near = m => { for(let i=m.pts.length-1; i>=0; i--) if(dist(p, m.pts[i]) < vt) return {m, idx:i, kind:m.type==="count" ? "dot" : "vertex"}; return null; };
+  const sel = selectedId!=null ? measurements.find(m => m.id===selectedId) : null;   // the selected shape first
+  if(sel && here(sel)){ const h = near(sel); if(h) return h; }
+  for(const m of measurements) if(m!==sel && here(m) && !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id)){ const h = near(m); if(h) return h; }
   return null;
 }
 overlay.addEventListener("mousedown", e => {
@@ -6155,19 +6191,6 @@ window.addEventListener("mouseup", () => {
   if(cornerArm){ clearTimeout(cornerArm.timer); if(cornerArm.grab){ suppressClick = true; requestDraw(); } }   // grabbed but not moved: no point either
   cornerArm = null;
 });
-overlay.addEventListener("mousemove", e => {
-  overPlan = true;
-  if(drawing && overlay.style.cursor==="move") overlay.style.cursor = DRAW_CURSOR;
-  if(mode!=="pdf" || drawing || editDrag) return;
-  if(tool==="line" || tool==="area" || tool==="count" || tool==="calibrate"){
-    const p = evtPdf(e), h = tool==="calibrate" ? null : cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
-    const cur = cornerArm && cornerArm.grab ? "move" : DRAW_CURSOR;
-    if(overlay.style.cursor!==cur) overlay.style.cursor = cur;
-    const c = cornerSnapPdf(p) || (h && h.kind!=="bend" ? h.m.pts[h.idx] : null);
-    if(c!==ringAt && !(c && ringAt && c.x===ringAt.x && c.y===ringAt.y)) requestDraw();
-  }
-});
-overlay.addEventListener("mouseleave", () => { overPlan = false; if(ringAt) requestDraw(); });
 // Select tool: double-click an edge to add a corner there
 overlay.addEventListener("dblclick", e => {
   if(tool!=="select" || drawing) return;
@@ -6445,6 +6468,7 @@ function syncPrefsUI(){
   sel("setWheelZoom", wheelPref()==="zoom"); sel("setWheelPan", wheelPref()!=="zoom");
   sel("setSnap", snapOn()); sel("setCurves", curvesOn()); sel("setHints", hintsOn()); sel("setMagnet", magnetOn());
   const mb = document.getElementById("toolMagnet"); if(mb) mb.classList.toggle("on", magnetOn());
+  const cb = document.getElementById("toolCurves"); if(cb) cb.classList.toggle("on", curvesOn());
 }
 function prefClick(id, fn){ const b = document.getElementById(id); if(b) b.addEventListener("click", e => { e.stopPropagation(); fn(); syncPrefsUI(); }); }
 prefClick("setWheelZoom", () => { prefSet("tt_wheel", "zoom"); toast("Scroll wheel zooms the plan — hold Shift to move sideways"); });
@@ -6487,7 +6511,12 @@ function guideState(){
     scale:Object.keys(docScale).length>0 || Object.keys(ftPerUnit).length>0 || measurements.some(m => m.src==="map"),
     meas:measurements.length>0, out:prefGet("tt_exported", "0")==="1"};
 }
+// the tip line for the tool in use; it also says when the magnet is on
 function hintText(){
+  const h = toolHint();
+  return magnetOn() && mode==="pdf" && tool!=="select" && tool!=="count" ? h+' <span class="mag">· ◎ Magnet on (M)</span>' : h;
+}
+function toolHint(){
   const d = drawing, map_ = mode==="map";
   const unset = !map_ && pdfDoc && !(ftPerUnit[PK()] || docScale[curDocId]);
   const warn = unset && tool!=="select" && tool!=="calibrate" ? '<span class="warn">Set the scale first</span> (📐 Scale on the left) — ' : "";
@@ -6500,9 +6529,6 @@ function hintText(){
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
-// the tip line also says when the magnet is on
-const _hintText119 = hintText;
-hintText = function(){ const h = _hintText119(); return magnetOn() && mode==="pdf" && tool!=="select" && tool!=="count" ? h+' <span class="mag">· ◎ Magnet on (M)</span>' : h; };
 var hintLast = "";
 function updateHint(){
   const bar = document.getElementById("hintBar"), card = document.getElementById("guideCard");
@@ -6517,10 +6543,6 @@ function updateHint(){
   card.style.display = showCard ? "" : "none";
   if(showCard) card.querySelectorAll(".gs").forEach(b => b.classList.toggle("ok", !!g[b.dataset.g]));
 }
-// the tips follow every change of tool, drawing and plan
-const _updateFab117 = updateFab;
-updateFab = function(){ _updateFab117(); updateHint(); };
-setInterval(updateHint, 2500);
 setTimeout(updateHint, 300);
 
 // right-click = the right button, or Ctrl + click on a Mac (also what a two-finger click sends there)
@@ -6534,7 +6556,7 @@ document.getElementById("canvasWrap").addEventListener("contextmenu", e => {
   ctxOpen(e, drawing && drawing.src!=="map" ? drawingItems() : generalItems());
 });
 
-// ================= 1.15: Magnet — points snap onto the plan's own lines =================
+// ================= Magnet — points snap onto the plan's own lines =================
 // Vector plans: the line work is read once per page from the PDF and kept in a grid, so finding the lines near
 // the mouse is instant. Line ends and crossings win; otherwise the point goes onto the nearest line.
 // Scanned plans (no line work inside): the point goes onto the nearest dark line of the picture.
@@ -6738,7 +6760,6 @@ addEventListener("keydown", e => {
 document.getElementById("toolMagnet").addEventListener("click", e => { e.stopPropagation(); setMagnet(!magnetOn()); });
 prefClick("setMagnet", () => setMagnet(!magnetOn()));
 // the page's line work is read ahead when the magnet is on
-setInterval(() => { if(magnetOn() && pdfDoc && mode==="pdf") magnetPage(); }, 1500);
 syncPrefsUI();
 
 // the ◆ (curve handle) of the selected line or area under the mouse — draggable with the Line / Area tools too
@@ -6783,8 +6804,6 @@ window.addEventListener("mouseup", () => {
 
 // ---- Curves button: the ◆ handles on every edge, on or off (same as Settings → Curve handles) ----
 document.getElementById("toolCurves").addEventListener("click", e => { e.stopPropagation(); clickId("setCurves"); });
-const _syncPrefs125 = syncPrefsUI;
-syncPrefsUI = function(){ _syncPrefs125(); const b = document.getElementById("toolCurves"); if(b) b.classList.toggle("on", curvesOn()); };
 syncPrefsUI();
 
 // ---- a new version is out: a button to switch to it (an open tab would otherwise keep the old one) ----
@@ -6820,8 +6839,6 @@ syncPrefsUI();
 
 // ================= cut-outs: measurements that are subtracted from their category =================
 var cutNext = false;   // the shape being drawn will be a cut-out
-const _measureValue127 = measureValue;
-measureValue = function(m){ const v = _measureValue127(m); return v!=null && m.sub ? -v : v; };   // minus everywhere: list, totals, estimates, exports
 function hatchCut(path, color){
   if(path.length < 3) return;
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -6841,7 +6858,7 @@ function parentArea(m){
     if(b===m || b.type!=="area" || b.sub || b.src!==m.src || b.pts.length<3) continue;
     if(m.src==="pdf" && (b.page!==m.page || b.doc!==m.doc)) continue;
     if(!inside(m, b)) continue;
-    const a = Math.abs(_measureValue127(b) || 0);
+    const a = Math.abs(rawValue(b) || 0);
     if(a < bestA){ bestA = a; best = b; }
   }
   return best;
@@ -6881,16 +6898,21 @@ function grabTip(){ showTip("<b>Grabbed</b> — now drag to move it", tipXY[0], 
 function setHover(key, hb){
   const changedBend = (hb ? hb.id+":"+hb.idx : "") !== (hoverBend ? hoverBend.id+":"+hoverBend.idx : "");
   hoverBend = hb;
-  if(changedBend) markStatic();
   if(key!==hoverKey || changedBend){ hoverKey = key; requestDraw(); }
 }
-overlay.addEventListener("mousemove", e => {
+// Everything the plan does when the mouse moves over it, in one place: where the mouse is on the plan,
+// the live length / area, the preview of the shape being drawn, the snap ring, the cursor and the tip.
+function overlayMove(e){
+  const p = mousePdf = evtPdf(e);
+  altHeld = e.altKey; overPlan = true;
+  updateLive();
+  if(drawing && drawing.src!=="map") requestDraw();   // the preview follows the mouse (ring included)
   if(mode!=="pdf" || editDrag || panning || (panArm && panArm.moved) || bendDrag){ hideTip(); setHover("", null); return; }
   if(cornerArm && cornerArm.grab){ overlay.style.cursor = "grabbing"; grabTip(); return; }
-  const p = evtPdf(e);
-  let html = "", cur = null, key = "", hb = null;
+  let html = "", cur = null, key = "", hb = null, c = null;
   if(!drawing && tool!=="calibrate"){
-    const c = cornerAt(p), b = c || tool==="count" ? null : bendAt(p);
+    c = cornerAt(p);
+    const b = c || tool==="count" ? null : bendAt(p);
     if(c){
       key = "c"+c.m.id+":"+c.idx;
       if(tool==="select"){ cur = "move"; html = c.kind==="dot" ? "<b>Drag</b> to move it · right-click for options" : "<b>Drag</b> to move this corner · right-click for options"; }
@@ -6909,12 +6931,28 @@ overlay.addEventListener("mousemove", e => {
   const want = cur || (tool==="select" ? "grab" : DRAW_CURSOR);
   if(overlay.style.cursor!==want) overlay.style.cursor = want;
   setHover(key, hb);
+  // the ring where the next click lands (a corner to snap to, or one you can move)
+  if(!drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="calibrate")){
+    const r = cornerSnapPdf(p) || (c ? c.m.pts[c.idx] : null);
+    if(r!==ringAt && !(r && ringAt && r.x===ringAt.x && r.y===ringAt.y)) requestDraw();
+  }
   if(html) showTip(html, e.clientX, e.clientY); else hideTip();
-});
-overlay.addEventListener("mouseleave", () => { hideTip(); setHover("", null); });
+}
+overlay.addEventListener("mousemove", overlayMove);
+overlay.addEventListener("mouseleave", () => { overPlan = false; hideTip(); setHover("", null); if(ringAt) requestDraw(); });
 overlay.addEventListener("mousedown", () => { if(!(cornerArm && cornerArm.grab)) hideTip(); });
 addEventListener("mouseup", () => { if(!editDrag) hideTip(); });
 addEventListener("wheel", hideTip, {passive:true});
+
+// ================= one timer for the small things =================
+// the save label, the tips and the magnet reading the page ahead — every 1.5 s while the tab is in view
+function tick(){
+  if(document.hidden) return;
+  updateSaveState(); updateHint();
+  if(magnetOn() && pdfDoc && mode==="pdf") magnetPage();
+}
+setInterval(tick, 1500);
+document.addEventListener("visibilitychange", tick);
 </script>
 </body>
 </html>
