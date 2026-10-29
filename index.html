@@ -549,7 +549,7 @@
     padding:7px 30px 7px 11px; font-size:12px; line-height:1.45; color:var(--dim); position:relative;}
   #hintBar b{color:var(--ink);}
   #hintBar .warn{color:#e5493a; font-weight:600;}
-  #hintBar .mag{color:#d6336c; font-weight:600;}
+  #hintBar .mag{color:var(--amber); font-weight:600;}
   #hintBar .x, #guideCard .x{position:absolute; right:6px; top:5px; border:none; background:none; color:var(--faint); cursor:pointer; font-size:13px; padding:2px 4px;}
   #guideCard{background:var(--solid); border:1px solid var(--hair); border-radius:12px; box-shadow:var(--shadow); padding:10px 12px; position:relative; font-size:12.5px;}
   #guideCard h4{font-size:12.5px; margin:0 0 6px; font-weight:700;}
@@ -569,7 +569,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.9.2</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9.3</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -628,7 +628,7 @@
   <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
   <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
   <div class="hrow"><span>Move whole shape</span><b>Select + drag inside</b></div>
-  <div class="hrow"><span>Magnet: snap to the plan's lines</span><b>M · 🧲 on the left</b></div>
+  <div class="hrow"><span>Magnet: snap to the plan's lines</span><b>M · Magnet on the left</b></div>
   <div class="hrow"><span>Snap onto corners · place freely</span><b>automatic · hold ⌘ / Ctrl</b></div>
   <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
   <div class="hrow"><span>Curve the last segment while drawing</span><b>⌒ Curve · U · Alt + click</b></div>
@@ -1027,7 +1027,7 @@
   <div class="ph">MOUSE &amp; DRAWING</div>
   <button class="mi" id="setWheelZoom" title="Like most takeoff programs: the wheel zooms where the mouse is. Hold Shift to move sideways.">🖱️ Scroll wheel zooms the plan</button>
   <button class="mi" id="setWheelPan" title="The wheel moves around the plan. Hold ⌘ / Ctrl and scroll (or pinch) to zoom.">🖐️ Scroll wheel moves the plan</button>
-  <button class="mi" id="setMagnet" title="Points jump onto the lines and corners of the plan itself, for precise measuring. Off by default. Hold ⌘ (Ctrl on Windows) to place a point freely. Shortcut: M">🧲 Magnet: snap to the plan's lines</button>
+  <button class="mi" id="setMagnet" title="Points jump onto the lines and corners of the plan itself, for precise measuring. Off by default. Hold ⌘ (Ctrl on Windows) to place a point freely. Shortcut: M">◎ Magnet: snap to the plan's lines</button>
   <button class="mi" id="setSnap" title="The next point jumps onto a corner of your other measurements, so shapes meet exactly. Hold ⌘ (Ctrl on Windows) to place it freely.">📍 Snap to my measurements' corners</button>
   <button class="mi" id="setCurves" title="Shows a ◆ in the middle of each edge — drag it to curve the edge. Off: use ⌒ Curve (U) while drawing.">⌒ Curve handles ◆ on edges</button>
   <button class="mi" id="setHints" title="A short tip for the tool you have and a getting-started list">💡 Tips for the tool in use</button>
@@ -6071,8 +6071,8 @@ function drawSnapRing(){
   const s = pdfToScreen(c), plan = c.kind==="corner" || c.kind==="line";
   octx.save(); octx.setLineDash([]);
   octx.beginPath(); octx.arc(s.x, s.y, (c.kind==="line" ? 6 : 8)*dpr, 0, 7);
-  octx.lineWidth = 2*dpr; octx.strokeStyle = drag ? "#2f6fdb" : plan ? "#d6336c" : "#16a34a"; octx.stroke();
-  if(c.kind==="corner"){ octx.beginPath(); octx.arc(s.x, s.y, 2.2*dpr, 0, 7); octx.fillStyle = "#d6336c"; octx.fill(); }
+  octx.lineWidth = 2*dpr; octx.strokeStyle = drag ? "#2f6fdb" : "#16a34a"; octx.stroke();
+  if(c.kind==="corner"){ octx.beginPath(); octx.arc(s.x, s.y, 2.2*dpr, 0, 7); octx.fillStyle = "#16a34a"; octx.fill(); }
   octx.restore();
 }
 
@@ -6228,7 +6228,7 @@ function generalItems(){
     it.push({head:"PLAN"},
       {label:"📐 Set the scale…", off:!pdfDoc, fn:() => openPopAt("scale", "scaleChip")},
       {label:"📐 Calibrate on plan", k:"C", off:!pdfDoc, fn:() => clickId("scCalib")},
-      {label:"🧲 Magnet — snap to the plan's lines", k:"M", off:!pdfDoc, on:magnetOn(), fn:() => setMagnet(!magnetOn())},
+      {label:"◎ Magnet — snap to the plan's lines", k:"M", off:!pdfDoc, on:magnetOn(), fn:() => setMagnet(!magnetOn())},
       {label:"📄 Add PDF plans…", fn:() => clickId("openBtn")});
   } else {
     it.push({head:"MAP"},
@@ -6250,7 +6250,7 @@ function drawingItems(){
     {label:d.type==="area" ? "✓ Close and finish the area" : "✓ Finish the line", k:"Enter", off:n<need, fn:finishDrawing},
     {label:"↩ Take back the last point", k:"⌫", off:!n, fn:undoPoint},
     {label:"⌒ Curve the last segment", k:"U", off:n<2, on:curveMode, fn:() => clickId("fabCurve")},
-    {label:"🧲 Magnet — snap to the plan's lines", k:"M", on:magnetOn(), fn:() => setMagnet(!magnetOn())},
+    {label:"◎ Magnet — snap to the plan's lines", k:"M", on:magnetOn(), fn:() => setMagnet(!magnetOn())},
     {label:"📍 Snap to my corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
     {label:"✕ Cancel this shape", k:"Esc", fn:cancelDrawing}];
 }
@@ -6445,7 +6445,7 @@ function hintText(){
 }
 // the tip line also says when the magnet is on
 const _hintText119 = hintText;
-hintText = function(){ const h = _hintText119(); return magnetOn() && mode==="pdf" && tool!=="select" && tool!=="count" ? h+' <span class="mag">· 🧲 Magnet on (M)</span>' : h; };
+hintText = function(){ const h = _hintText119(); return magnetOn() && mode==="pdf" && tool!=="select" && tool!=="count" ? h+' <span class="mag">· ◎ Magnet on (M)</span>' : h; };
 var hintLast = "";
 function updateHint(){
   const bar = document.getElementById("hintBar"), card = document.getElementById("guideCard");
