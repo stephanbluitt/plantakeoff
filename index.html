@@ -231,12 +231,13 @@
   .tool.active{background:var(--amber); color:#fff;}
   .tool svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
   .tool .tip{
-    position:absolute; left:50px; top:50%; transform:translateY(-50%);
+    position:absolute; left:58px; top:50%; transform:translateY(-50%);
     background:var(--solid); color:var(--ink); padding:4px 9px; border-radius:7px;
     font-size:11px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s;
     border:1px solid var(--hair); box-shadow:var(--shadow); z-index:30;
   }
-  .tool:hover .tip{opacity:1;}
+  .tool:hover .tip, .tool2:hover .tip{opacity:1;}
+  .tool2 .tip{position:absolute; left:58px; top:50%; transform:translateY(-50%); background:var(--solid); color:var(--ink); padding:4px 9px; border-radius:7px; font-size:11px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s; border:1px solid var(--hair); box-shadow:var(--shadow); z-index:30;}
   #navPill{left:50%; transform:translateX(-50%); bottom:calc(16px + var(--sab));}
   .pbtn{
     height:30px; min-width:30px; padding:0 8px; border:none; background:none;
@@ -523,6 +524,41 @@
     .tbtn .chev{display:none;}
   }
   @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+
+  /* 1.14: labelled tools, Scale / Help buttons, right-click menu, hints, getting started */
+  #toolsPill .tool, #toolsPill .tool2{width:50px; height:48px; flex-direction:column; gap:3px;}
+  #toolsPill .cap{font-size:9.5px; line-height:1; font-weight:650; letter-spacing:.2px; pointer-events:none;}
+  .tool2{border-radius:10px; border:none; background:transparent; color:var(--dim); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; position:relative; font:inherit;}
+  .tool2:hover, .tool2.on{background:var(--panel2); color:var(--ink);}
+  .tool2 svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .tool2 .q{font-size:17px; font-weight:700; line-height:19px; height:19px;}
+  .tsep{height:1px; width:34px; background:var(--hair); margin:3px auto;}
+  body[data-mode="map"] #toolScale{display:none;}
+  .ctxMenu{min-width:230px; max-height:calc(100vh - 16px); overflow:auto; padding:4px;}
+  .ctxMenu .mi{padding:6px 10px;}
+  .ctxMenu .mi:disabled{opacity:.4; cursor:default; background:none; color:var(--ink);}
+  .ctxMenu .ph{padding:6px 10px 2px;}
+  .ctxMenu .ph.nm{text-transform:none; letter-spacing:0; font-size:11.5px; color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:280px;}
+  #helpDock{position:fixed; z-index:1050; left:84px; top:62px; display:flex; flex-direction:column; gap:8px; max-width:340px; pointer-events:none;}
+  body[data-mode="map"] #helpDock{top:auto; bottom:calc(30px + var(--sab)); flex-direction:column-reverse;}
+  #helpDock > *{pointer-events:auto;}
+  #hintBar{background:var(--solid); border:1px solid var(--hair); border-radius:10px; box-shadow:var(--shadow);
+    padding:7px 30px 7px 11px; font-size:12px; line-height:1.45; color:var(--dim); position:relative;}
+  #hintBar b{color:var(--ink);}
+  #hintBar .warn{color:#e5493a; font-weight:600;}
+  #hintBar .x, #guideCard .x{position:absolute; right:6px; top:5px; border:none; background:none; color:var(--faint); cursor:pointer; font-size:13px; padding:2px 4px;}
+  #guideCard{background:var(--solid); border:1px solid var(--hair); border-radius:12px; box-shadow:var(--shadow); padding:10px 12px; position:relative; font-size:12.5px;}
+  #guideCard h4{font-size:12.5px; margin:0 0 6px; font-weight:700;}
+  #guideCard .gs{display:flex; align-items:center; gap:8px; width:100%; text-align:left; border:none; background:none; color:var(--ink);
+    padding:5px 6px; border-radius:8px; cursor:pointer; font:inherit; font-size:12.5px;}
+  #guideCard .gs:hover{background:var(--panel2);}
+  #guideCard .gs .n{width:20px; height:20px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; background:var(--panel2); color:var(--dim);}
+  #guideCard .gs.ok .n{background:#1f8a4c; color:#fff;}
+  #guideCard .gs.ok span:last-child{color:var(--faint); text-decoration:line-through;}
+  @media (max-width:840px){ #toolsPill .tool, #toolsPill .tool2{width:46px; height:46px;} #toolsPill .tsep{width:1px; height:30px; margin:0 3px;} .tool2 .tip{display:none;} }
+  @media (max-width:700px){ #helpDock{display:none !important;} }
 </style>
 </head>
 <body data-mode="pdf">
@@ -530,7 +566,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>2.8</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>2.9</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -557,9 +593,12 @@
   <button class="mi" id="newBtn">➕ New project <span class="k">⌘N</span></button>
   <div class="sep"></div>
   <button class="mi" id="openBtn">📄 Add PDF plans…</button>
+  <button class="mi" id="pmScale">📐 Set the scale…</button>
   <button class="mi" id="cloudMenuOpen">☁️ Cloud projects…</button>
   <button class="mi" id="saveProj">💾 Save <span class="k">⌘S</span></button>
   <button class="mi" id="verBtn">🕘 Project versions…</button>
+  <button class="mi" id="pmExport">⬇️ Export PDF with markups</button>
+  <button class="mi" id="pmHelp">❓ How to use the tools</button>
   <div class="sep"></div>
   <button class="mi" id="clearBtn">🗑️ Clear measurements…</button>
   <div class="sep"></div>
@@ -575,30 +614,33 @@
   <label class="mchk" title="On: your measurements drawn on the plan, plus a takeoff summary page. Off: the plans as they came."><input type="checkbox" id="pdfMarks" checked> Include markups</label>
   <label class="mchk" title="Crowded sheets read better with numbered tags and a key page right after the sheet.">Labels <select id="pdfLabels"><option value="auto">Auto</option><option value="full">Name and quantity</option><option value="num">Numbers + key page</option></select></label>
 </div>
-<div class="pop" id="pop-help" style="min-width:300px">
+<div class="pop" id="pop-help" style="min-width:320px">
   <div class="ph">TOOLS</div>
+  <div class="hrow"><span>Menu with every option</span><b>right-click</b></div>
   <div class="hrow"><span>Select / edit shapes</span><b>V</b></div>
   <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
-  <div class="hrow"><span>Curve a segment of a line or area</span><b>drag its ◆</b></div>
-  <div class="hrow"><span>…while drawing</span><b>⌥/Alt + click · U</b></div>
-  <div class="hrow"><span>Make a curve straight again</span><b>right-click its ◆</b></div>
-  <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
+  <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
+  <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag the corner</b></div>
+  <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
+  <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
+  <div class="hrow"><span>Move whole shape</span><b>Select + drag inside</b></div>
+  <div class="hrow"><span>Snap onto corners · place freely</span><b>automatic · hold Alt</b></div>
   <div class="hrow"><span>Straight lines while drawing</span><b>hold Shift</b></div>
-  <div class="hrow"><span>Delete a corner point</span><b>right-click it</b></div>
-  <div class="hrow"><span>Move whole shape</span><b>drag inside it</b></div>
+  <div class="hrow"><span>Curve the last segment while drawing</span><b>⌒ Curve · U · Alt + click</b></div>
+  <div class="hrow"><span>Calibrate scale (in Scale menu)</span><b>C</b></div>
   <div class="ph">VIEW</div>
-  <div class="hrow"><span>Fit page · zoom</span><b>F · + −</b></div>
+  <div class="hrow"><span>Zoom</span><b>scroll wheel · + −</b></div>
+  <div class="hrow"><span>Fit page</span><b>F</b></div>
   <div class="hrow"><span>Change page</span><b>‹ › · Page Up / Down</b></div>
-  <div class="hrow"><span>Move around the plan</span><b>arrow keys · Space + drag</b></div>
-  <div class="hrow"><span>Switch plans · add PDFs</span><b>📄 bottom bar</b></div>
+  <div class="hrow"><span>Move around the plan</span><b>Space + drag · middle button · arrows</b></div>
+  <div class="hrow"><span>Wheel zooms or moves</span><b>⚙️ Settings</b></div>
   <div class="hrow"><span>Hide category / item</span><b>👁 in list</b></div>
   <div class="hrow"><span>Show ONLY one category</span><b>Alt + 👁</b></div>
-  <div class="hrow"><span>Hide / show everything</span><b>Hide all</b></div>
   <div class="ph">PROJECT</div>
   <div class="hrow"><span>Undo · Redo</span><b>⌘Z · ⇧⌘Z</b></div>
-  <div class="hrow"><span>Take back the last point or curve while drawing</span><b>⌘Z · Backspace</b></div>
-  <div class="hrow"><span>Save</span><b>⌘S</b></div>
+  <div class="hrow"><span>Take back the last point while drawing</span><b>⌘Z · Backspace</b></div>
+  <div class="hrow"><span>Save (also automatic after every measurement)</span><b>⌘S</b></div>
   <div class="hrow"><span>Copy measurements · CSV</span><b>⇧⌘C · ⌘E</b></div>
   <div class="hrow"><span>Plan with your markups</span><b>Export → Export PDF</b></div>
 </div>
@@ -621,7 +663,7 @@
     <div class="big" id="hintBig">Drop PDF plans here (several at once is fine), or add them from the menu</div>
     <div>Or switch to <b>Map</b> to measure any property from satellite</div>
     <div>Finish shapes with <kbd>double-click</kbd> / <kbd>Enter</kbd> · <kbd>⌘Z</kbd> undo · <kbd>⌘S</kbd> save</div>
-    <div>Select tool: click a shape to edit — drag corners, drag inside to move, right-click a point to delete</div>
+    <div>Right-click anywhere for options · drag any corner to adjust it, in any tool</div>
   </div>
   <div id="stage">
     <canvas id="pdfCanvas"></canvas>
@@ -665,19 +707,27 @@
 <div class="pill" id="toolsPill">
   <button class="tool active" data-tool="select" aria-label="Select / pan">
     <svg viewBox="0 0 24 24"><path d="M5 3l14 8-6.5 1.5L11 19z"/></svg>
-    <span class="tip">Select / edit (V)</span>
+    <span class="cap">Select</span><span class="tip">Select / edit (V)</span>
   </button>
   <button class="tool" data-tool="line" aria-label="Linear measure">
     <svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/><path d="M6.2 17.8L17.8 6.2"/></svg>
-    <span class="tip" id="tipLine">Linear — LF (L)</span>
+    <span class="cap">Line</span><span class="tip" id="tipLine">Linear — LF (L)</span>
   </button>
   <button class="tool" data-tool="area" aria-label="Area measure">
     <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
-    <span class="tip" id="tipArea">Area — SF (A)</span>
+    <span class="cap">Area</span><span class="tip" id="tipArea">Area — SF (A)</span>
   </button>
   <button class="tool" data-tool="count" aria-label="Count items">
     <svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="17" r="2"/></svg>
-    <span class="tip">Count — EA (K)</span>
+    <span class="cap">Count</span><span class="tip">Count — EA (K)</span>
+  </button>
+  <div class="tsep"></div>
+  <button class="tool2" id="toolScale" data-pop="scale" aria-label="Set the scale">
+    <svg viewBox="0 0 24 24"><path d="M3 15.5L15.5 3 21 8.5 8.5 21z"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2"/></svg>
+    <span class="cap">Scale</span><span class="tip">Set the drawing scale</span>
+  </button>
+  <button class="tool2" id="toolHelp" data-pop="help" aria-label="Tools and shortcuts">
+    <span class="q">?</span><span class="cap">Help</span><span class="tip">How to use the tools · shortcuts</span>
   </button>
 </div>
 
@@ -966,6 +1016,12 @@
   <button class="mi" id="setLenFtIn">5'-6" — feet and inches</button>
   <button class="mi" id="setLenIn">66" — inches</button>
   <button class="mi" id="setBoth">⇄ Show US and metric together</button>
+  <div class="ph">MOUSE &amp; DRAWING</div>
+  <button class="mi" id="setWheelZoom" title="Like most takeoff programs: the wheel zooms where the mouse is. Hold Shift to move sideways.">🖱️ Scroll wheel zooms the plan</button>
+  <button class="mi" id="setWheelPan" title="The wheel moves around the plan. Hold ⌘ / Ctrl and scroll (or pinch) to zoom.">🖐️ Scroll wheel moves the plan</button>
+  <button class="mi" id="setSnap" title="The next point jumps onto a nearby corner, so shapes meet exactly. Hold Alt / Option to place it freely.">🧲 Snap to corners</button>
+  <button class="mi" id="setCurves" title="Shows a ◆ in the middle of each edge — drag it to curve the edge. Off: use ⌒ Curve (U) while drawing.">⌒ Curve handles ◆ on edges</button>
+  <button class="mi" id="setHints" title="A short tip for the tool you have and a getting-started list">💡 Tips for the tool in use</button>
   <div class="ph">SEARCH</div>
   <button class="mi" id="setGkey">🔎 Google address search…</button>
   <div class="ph">STORAGE</div>
@@ -1366,6 +1422,8 @@ function newColor(type){
 function newDrawing(src){ return {src, type:tool, pts:[], arcs:[], hist:[], redo:[], color:newColor(tool)}; }
 function addDrawPoint(p){
   const d = drawing;
+  if(d.type==="area" && d.pts.length>=3 && closesOnFirst(d, p)){ finishDrawing(); return; }
+  if(d.type==="area" && crossesPath(d.pts, p)){ crossWarn(); return; }
   d.pts.push(p);
   if(d.pts.length>1) d.arcs.push(0);
   d.hist.push({t:"pt"}); d.redo = [];
@@ -1394,7 +1452,8 @@ function bendTip(){
   if(bendTipShown || !drawing || drawing.pts.length!==2 || !(drawing.type==="line" || drawing.type==="area")) return;
   bendTipShown = true;
   toast(matchMedia("(pointer: coarse)").matches ? "Curved edge? Tap ⌒ Curve, then tap on the curve"
-        : "Curved edge? Drag the ◆ in the middle of the segment — or press U and click on the curve", 5000);
+        : curvesOn() ? "Curved edge? Drag the ◆ in the middle of the segment — or press U and click on the curve"
+        : "Curved edge? Press ⌒ Curve (U), then click on the curve", 5000);
 }
 
 // ================= undo / redo history =================
@@ -1404,6 +1463,7 @@ function snapshot(){
     docs, ftPerUnit, docScale, scaleLabels});
 }
 function pushHistory(){
+  window.__changeSoon = true;   // a measurement changed: the cloud copy follows within seconds
   undoStack.push(snapshot());
   if(undoStack.length > 60) undoStack.shift();
   redoStack.length = 0;
@@ -1439,6 +1499,7 @@ window.__redo = () => {
   updateUndoBtns();
 };
 function commitHistory(preSnap){
+  window.__changeSoon = true;
   undoStack.push(preSnap);
   if(undoStack.length > 60) undoStack.shift();
   redoStack.length = 0;
@@ -1490,7 +1551,8 @@ document.getElementById("modeMap").onclick = () => setMode("map");
 let map=null, baseLayers={}, currentBase=null, mapLayerGroup=null, tempGroup=null;
 function initMap(){
   if(map) return;
-  map = L.map("mapDiv", {zoomControl:true, doubleClickZoom:false, attributionControl:true, maxZoom:22})
+  map = L.map("mapDiv", {zoomControl:true, doubleClickZoom:false, attributionControl:true, maxZoom:22,
+                         zoomSnap:0.25, zoomDelta:0.5, wheelPxPerZoomLevel:90, wheelDebounceTime:25})
     .setView([40.9403, -73.8654], 15); // Yonkers, NY
   const gOpts = {maxZoom:22, maxNativeZoom:20, subdomains:["0","1","2","3"], attribution:"Imagery © Google"};
   baseLayers = {
@@ -1519,6 +1581,7 @@ function initMap(){
     mapAddPoint(ll);
   });
   map.on("dblclick", () => finishDrawing());
+  map.on("contextmenu", e => mapCtxEvent(e));
   map.on("mousemove", e => {
     if(drawing && mode==="map"){
       mouseLL = {lat:e.latlng.lat, lng:e.latlng.lng};
@@ -1537,6 +1600,7 @@ document.getElementById("baseSwitch").onchange = e => {
 };
 
 function mapAddPoint(ll){
+  ll = mapCornerSnap(ll) || ll;
   if(tool==="count"){
     pushHistory();
     let m = drawing;
@@ -1579,15 +1643,23 @@ function enableBodyDrag(layer, m){
 function addVertexHandles(layer, m){
   m.pts.forEach((pt,i)=>{
     const mk = L.marker(pt, {draggable:true, icon:L.divIcon({className:"vtxIcon", iconSize:[14,14], iconAnchor:[7,7]})}).addTo(mapLayerGroup);
-    let pre = null;
-    mk.on("dragstart", ()=>{ pre = snapshot(); });
+    let pre = null, orig = null;
+    mk.on("dragstart", ()=>{ pre = snapshot(); orig = m.pts.map(q=>({...q})); });
     mk.on("drag", e => {
       m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng};
       layer.setLatLngs(shapePts(m));
+      if(m.type==="area") layer.setStyle({color: polySelfCrosses(m.pts) ? "#e5493a" : m.color});
     });
-    mk.on("dragend", ()=>{ if(pre) commitHistory(pre); refreshAll(); });
-    mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); deleteVertex(m, i); });
-    mk.on("click", e => { L.DomEvent.stopPropagation(e); selVertex={mId:m.id, idx:i}; });
+    mk.on("dragend", ()=>{
+      if(m.type==="area" && orig && polySelfCrosses(m.pts)){ m.pts = orig; crossWarn(true); refreshAll(); return; }   // edges can't cross
+      if(pre) commitHistory(pre); refreshAll();
+    });
+    mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); L.DomEvent.preventDefault(e); ctxOpen(e.originalEvent, shapeItems({kind:"vertex", m, idx:i}, null)); });
+    mk.on("click", e => {
+      L.DomEvent.stopPropagation(e);
+      if(tool!=="select"){ mapAddPoint({lat:m.pts[i].lat, lng:m.pts[i].lng}); return; }   // drawing: start / add a point right on this corner
+      selVertex={mId:m.id, idx:i};
+    });
   });
 }
 function redrawMapLayers(){
@@ -1601,12 +1673,12 @@ function redrawMapLayers(){
     if(m.type==="line" && m.pts.length>1){
       const pl = L.polyline(shapePts(m), style).addTo(mapLayerGroup);
       pl.bindTooltip(m.name+" — "+fLen(measureValue(m), 1), {sticky:true});
-      pl.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+      pl.on("click", e=>{ if(tool!=="select") return; L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pl, m); addVertexHandles(pl, m); addBendHandles(pl, m); }
     } else if(m.type==="area" && m.pts.length>2){
       const pg = L.polygon(shapePts(m), {...style, fillOpacity:.22}).addTo(mapLayerGroup);
       pg.bindTooltip(m.name+" — "+fArea(measureValue(m), 0), {sticky:true});
-      pg.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+      pg.on("click", e=>{ if(tool!=="select") return; L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
       if(hot){ enableBodyDrag(pg, m); addVertexHandles(pg, m); addBendHandles(pg, m); }
     } else if(m.type==="count"){
       m.pts.forEach((p,i)=>{
@@ -1619,13 +1691,13 @@ function redrawMapLayers(){
           mk.on("dragstart", ()=>{ pre = snapshot(); });
           mk.on("drag", e => { m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng}; });
           mk.on("dragend", ()=>{ if(pre) commitHistory(pre); refreshAll(); });
-          mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); deleteVertex(m, i); });
-          mk.bindTooltip(m.name+" #"+(i+1)+" — right-click deletes");
+          mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); L.DomEvent.preventDefault(e); ctxOpen(e.originalEvent, shapeItems({kind:"dot", m, idx:i}, null)); });
+          mk.bindTooltip(m.name+" #"+(i+1)+" — right-click for options");
         } else {
           const cm = L.circleMarker(p, {radius:9, color:m.color, weight:2, fillColor:m.color, fillOpacity:.35})
             .addTo(mapLayerGroup)
             .bindTooltip(m.name+" #"+(i+1));
-          cm.on("click", e=>{ L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
+          cm.on("click", e=>{ if(tool!=="select") return; L.DomEvent.stopPropagation(e); selectedId=m.id; refreshAll(); });
         }
       });
     }
@@ -1638,7 +1710,7 @@ function mapShowsBend(P, Q){ return map.latLngToContainerPoint(P).distanceTo(map
 function addBendHandles(layer, m){
   const n = m.pts.length;
   bendHandles(m.pts, m.arcs, m.type==="area").forEach((pos, i) => {
-    if(!mapShowsBend(m.pts[i], m.pts[(i+1)%n])) return;
+    if(!mapShowsBend(m.pts[i], m.pts[(i+1)%n]) || !bendOK(m.arcs, i)) return;
     const mk = L.marker(pos, {draggable:true, icon:bendIcon(!!(m.arcs && m.arcs[i])), zIndexOffset:400}).addTo(mapLayerGroup);
     let pre = null;
     mk.on("dragstart", () => { pre = snapshot(); });
@@ -1664,7 +1736,7 @@ function drawTemp(){
   if(!map) return;
   const d = mode==="map" ? drawing : null;
   if(!d || !d.pts.length){ if(tempSig || tempShape){ tempGroup.clearLayers(); tempShape = null; tempSig = ""; } return; }
-  const sig = d.type+":"+d.pts.length+":"+(d.arcs || []).join(",")+":"+map.getZoom();
+  const sig = d.type+":"+d.pts.length+":"+(d.arcs || []).join(",")+":"+map.getZoom()+":"+(curveMode ? 1 : 0);
   if(sig!==tempSig && !mapBendDrag){
     tempGroup.clearLayers(); tempShape = null;
     for(const p of d.pts) L.circleMarker(p, {radius:4, color:"#fff", weight:1.5, fillColor:d.color, fillOpacity:1, interactive:false}).addTo(tempGroup);
@@ -1679,6 +1751,8 @@ function drawTemp(){
     tempShape = (d.type==="area" ? L.polygon : L.polyline)(shape, {color:d.color, weight:3, dashArray:"7,5", fillOpacity:.15, interactive:false, smoothFactor:0}).addTo(tempGroup);
     tempShape.bringToBack();
   } else tempShape.setLatLngs(shape);
+  const red = d.type==="area" && !bending() && !!mouseLL && !mapBendDrag && crossesPath(d.pts, mouseLL);
+  if(red!==!!tempShape._ttRed){ tempShape._ttRed = red; tempShape.setStyle({color: red ? "#e5493a" : d.color}); }
 }
 function scheduleTemp(){
   if(tempRaf) return;
@@ -1686,7 +1760,7 @@ function scheduleTemp(){
 }
 function addTempBendHandles(d){
   bendHandles(d.pts, d.arcs, false).forEach((pos, i) => {
-    if(!mapShowsBend(d.pts[i], d.pts[i+1])) return;
+    if(!mapShowsBend(d.pts[i], d.pts[i+1]) || !bendOK(d.arcs, i)) return;
     const mk = L.marker(pos, {draggable:true, icon:bendIcon(!!d.arcs[i]), zIndexOffset:400}).addTo(tempGroup);
     let prev = 0;
     mk.on("dragstart", () => { mapBendDrag = true; prev = d.arcs[i] || 0; });
@@ -2182,12 +2256,26 @@ async function renderPage(){
   const cssW = vp1.width*zoom, cssH = vp1.height*zoom;
   pdfCanvas.style.width = cssW+"px"; pdfCanvas.style.height = cssH+"px";
   pageW = cssW; pageH = cssH; markStatic();
-  hiCanvas.style.display = "none";
+  // the sharp layer stays up, stretched to the new zoom, until a fresh one replaces it (no blurry flash)
+  if(hiState && hiState.key===key && hiCanvas.style.display==="block"){
+    const k = zoom/hiState.zoom;
+    hiCanvas.style.left = hiState.x*k+"px"; hiCanvas.style.top = hiState.y*k+"px";
+    hiCanvas.style.width = hiState.w*k+"px"; hiCanvas.style.height = hiState.h*k+"px";
+  } else { hiCanvas.style.display = "none"; hiState = null; }
   let base = baseCache.get(key);
   if(!base){
     if(baseBusy){ baseQueued = true; }
     else{
       baseBusy = true;
+      // a page seen before (or prepared ahead) shows at once from its stored picture while the real one renders
+      const pic = planImgs.get(key);
+      if(pic && typeof createImageBitmap==="function"){
+        try{
+          const bm = await createImageBitmap(pic.blob);
+          if(key===bkey()){ pdfCanvas.width = bm.width; pdfCanvas.height = bm.height; pdfCanvas.getContext("2d").drawImage(bm, 0, 0); drawOverlay(); }
+          if(bm.close) bm.close();
+        }catch{}
+      }
       try{
         const bscale = Math.min(3, (BASE_MAX*dpr)/Math.max(vp1.width, vp1.height));
         const bvp = page.getViewport({scale:bscale});
@@ -2197,7 +2285,7 @@ async function renderPage(){
         bctx.fillStyle = "#fff"; bctx.fillRect(0,0,c.width,c.height);
         await page.render({canvasContext:bctx, viewport:bvp}).promise;
         base = {canvas:c, scale:bscale};
-        baseCache.set(key, base);
+        baseCache.set(key, base); keepPlanImg(key, base);
         if(baseCache.size > 4) baseCache.delete(baseCache.keys().next().value);
       } finally { baseBusy = false; }
       if(baseQueued || key!==bkey()){ baseQueued = false; renderPage(); return; }
@@ -2211,6 +2299,7 @@ async function renderPage(){
   }
   drawOverlay();
   scheduleHi(60);
+  schedulePrefetch();
 }
 function scheduleHi(delay=120){
   clearTimeout(hiTimer);
@@ -2218,33 +2307,50 @@ function scheduleHi(delay=120){
 }
 async function updateHi(){
   if(!pdfDoc || mode!=="pdf" || wz){ return; }
-  const gen = viewGen, doc = pdfDoc, pg = pageNum;
-  const base = baseCache.get(bkey());
+  const gen = viewGen, doc = pdfDoc, pg = pageNum, key = bkey(), z = zoom;
+  const base = baseCache.get(key);
   const page = await doc.getPage(pg);
   if(gen!==viewGen || doc!==pdfDoc) return;
   const vp1 = page.getViewport({scale:1});
-  if(base && zoom*dpr <= base.scale + 0.01){ hiCanvas.style.display="none"; return; }
-  const pad = 250;
-  const W = vp1.width*zoom, H = vp1.height*zoom;
-  let x = Math.max(0, wrap.scrollLeft - stage.offsetLeft - pad);
-  let y = Math.max(0, wrap.scrollTop  - stage.offsetTop  - pad);
-  let w = Math.min(wrap.clientWidth + pad*2, W - x);
-  let h = Math.min(wrap.clientHeight + pad*2, H - y);
-  if(w<=0 || h<=0){ hiCanvas.style.display="none"; return; }
+  if(base && z*dpr <= base.scale + 0.01){ hiCanvas.style.display="none"; hiState = null; return; }
+  const W = vp1.width*z, H = vp1.height*z;
+  const vx = wrap.scrollLeft - stage.offsetLeft, vy = wrap.scrollTop - stage.offsetTop, vw = wrap.clientWidth, vh = wrap.clientHeight;
+  // still sharp for this view? panning inside what was already rendered costs nothing
+  const s = hiState;
+  if(s && s.key===key && s.zoom===z && hiCanvas.style.display==="block" &&
+     s.x <= Math.max(0, vx)+1 && s.y <= Math.max(0, vy)+1 && s.x+s.w >= Math.min(W, vx+vw)-1 && s.y+s.h >= Math.min(H, vy+vh)-1) return;
+  // a wide margin around the view so short pans stay sharp — smaller when it would be too many pixels
+  let pad = Math.max(250, Math.round(Math.max(vw, vh)*0.6)), x = 0, y = 0, w = 0, h = 0;
+  for(;;){
+    x = Math.max(0, vx - pad); y = Math.max(0, vy - pad);
+    w = Math.min(vw + pad*2, W - x); h = Math.min(vh + pad*2, H - y);
+    if(w*h*dpr*dpr <= 16e6 || pad <= 40) break;
+    pad = Math.round(pad*0.6);
+  }
+  if(w<=0 || h<=0){ hiCanvas.style.display="none"; hiState = null; return; }
   const pw = Math.floor(w*dpr), ph = Math.floor(h*dpr);
-  if(pw*ph > 24e6){ hiCanvas.style.display="none"; return; }
+  if(pw*ph > 24e6){ hiCanvas.style.display="none"; hiState = null; return; }
   if(hiTask){ try{ hiTask.cancel(); }catch{} hiTask = null; }
-  hiCanvas.width = pw; hiCanvas.height = ph;
-  hiCanvas.style.left = x+"px"; hiCanvas.style.top = y+"px";
-  hiCanvas.style.width = w+"px"; hiCanvas.style.height = h+"px";
-  hictx.fillStyle = "#fff"; hictx.fillRect(0,0,pw,ph);
-  const rvp = page.getViewport({scale:zoom});
-  const task = page.render({canvasContext:hictx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
+  // render off-screen and swap it in when done: the sharp layer never goes blank while the next one is on its way
+  const buf = document.createElement("canvas");
+  buf.width = pw; buf.height = ph;
+  const bctx = buf.getContext("2d");
+  bctx.fillStyle = "#fff"; bctx.fillRect(0,0,pw,ph);
+  const rvp = page.getViewport({scale:z});
+  const task = page.render({canvasContext:bctx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
   hiTask = task;
   try{
     await task.promise;
-    if(gen===viewGen) hiCanvas.style.display = "block";
+    if(gen===viewGen && z===zoom && key===bkey()){
+      hiCanvas.width = pw; hiCanvas.height = ph;
+      hictx.drawImage(buf, 0, 0);
+      hiCanvas.style.left = x+"px"; hiCanvas.style.top = y+"px";
+      hiCanvas.style.width = w+"px"; hiCanvas.style.height = h+"px";
+      hiCanvas.style.display = "block";
+      hiState = {key, zoom:z, x, y, w, h};
+    }
   }catch(e){ /* cancelled mid-flight — a newer render took over */ }
+  buf.width = buf.height = 0;
   if(hiTask===task) hiTask = null;
 }
 wrap.addEventListener("scroll", ()=>{ if(pdfDoc && mode==="pdf") drawOverlay(); scheduleHi(110); }, {passive:true});
@@ -2340,13 +2446,14 @@ function drawOverlay(){
     rebuildStatic(lw);
   octx.clearRect(0,0,overlay.width,overlay.height);
   if(staticCanvas.width && staticCanvas.height) octx.drawImage(staticCanvas, Math.round((stX-ovX)*dpr), Math.round((stY-ovY)*dpr));
-  if(editDrag && editDrag.m.src==="pdf") drawMeasure(editDrag.m, true, lw);
+  if(editDrag && editDrag.m.src==="pdf") drawMeasure(editCrosses() ? Object.assign({}, editDrag.m, {color:"#e5493a"}) : editDrag.m, true, lw);
   if(drawing && drawing.src!=="map" && drawing.pts.length){
     const g = drawingShape(drawing, drawCursor(drawing));
-    const ghost = {type:drawing.type, pts:g.pts, arcs:g.arcs, color: drawing.color || COLORS[drawing.type], page:pageNum, src:"pdf",
+    const ghost = {type:drawing.type, pts:g.pts, arcs:g.arcs, color: drawCross(drawing) ? "#e5493a" : (drawing.color || COLORS[drawing.type]), page:pageNum, src:"pdf",
                    bends: drawing.type==="line" || drawing.type==="area" ? drawing.pts.length-1 : 0};
     drawMeasure(ghost, true, lw, true);
   }
+  drawSnapRing();
 }
 function drawMeasure(m, hot, lw, ghost){
   const pts = m.pts.map(pdfToScreen);
@@ -2405,7 +2512,7 @@ function drawBendDots(m, nb, closed){
   const dia = (c, r) => { dctx.beginPath(); dctx.moveTo(c.x, c.y-r); dctx.lineTo(c.x+r, c.y); dctx.lineTo(c.x, c.y+r); dctx.lineTo(c.x-r, c.y); dctx.closePath(); };
   dctx.setLineDash([]);
   for(let i=0; i<Math.min(nb, hs.length); i++){
-    if(!showsBend(m.pts[i], m.pts[(i+1)%n])) continue;
+    if(!showsBend(m.pts[i], m.pts[(i+1)%n]) || !bendOK(m.arcs, i)) continue;
     const c = pdfToScreen(hs[i]), r = 6*dpr;
     dia(c, r); dctx.fillStyle = "#fff"; dctx.fill();
     dctx.strokeStyle = m.color; dctx.lineWidth = 2*dpr; dctx.stroke();
@@ -2419,6 +2526,7 @@ function evtPdf(e){
   return {x:(e.clientX-r.left)/zoom, y:(e.clientY-r.top)/zoom};
 }
 function snap(p){
+  const sc = cornerSnapPdf(p); if(sc) return sc;
   if(!shiftDown || !drawing || !drawing.pts.length) return p;
   const a = drawing.pts[drawing.pts.length-1];
   return Math.abs(p.x-a.x) > Math.abs(p.y-a.y) ? {x:p.x,y:a.y} : {x:a.x,y:p.y};
@@ -2430,7 +2538,7 @@ function hitTest(p){
   if(sel && sel.src==="pdf" && sel.page===pageNum && sel.doc===curDocId && (sel.type==="line" || sel.type==="area")
      && !sel.pts.some(q => dist(p, q) < vt)){
     const hs = bendHandles(sel.pts, sel.arcs, sel.type==="area"), n = sel.pts.length;
-    for(let i=0; i<hs.length; i++) if(showsBend(sel.pts[i], sel.pts[(i+1)%n]) && dist(p, hs[i]) < vt) return {kind:"bend", m:sel, idx:i};
+    for(let i=0; i<hs.length; i++) if(showsBend(sel.pts[i], sel.pts[(i+1)%n]) && bendOK(sel.arcs, i) && dist(p, hs[i]) < vt) return {kind:"bend", m:sel, idx:i};
   }
   for(const m of [...measurements].reverse()){
     if(m.src!=="pdf" || m.page!==pageNum || m.doc!==curDocId) continue;
@@ -2466,14 +2574,17 @@ overlay.addEventListener("mousedown", e => {
   }
 });
 overlay.addEventListener("contextmenu", e => {
-  if(tool!=="select") return;
-  const hit = hitTest(evtPdf(e));
-  if(hit && hit.kind==="bend"){   // right-click a ◆: straight again
-    e.preventDefault();
-    if(hit.m.arcs && hit.m.arcs[hit.idx]){ pushHistory(); hit.m.arcs[hit.idx] = 0; tidyArcs(hit.m); refreshAll(); toast("Straightened"); }
+  e.preventDefault();
+  if(panning || pinchActive) return;
+  const p = evtPdf(e);
+  if(drawing && drawing.src!=="map"){ ctxOpen(e, drawingItems()); return; }
+  const hit = hitTest(p);
+  if(hit){
+    if(selectedId!==hit.m.id){ selectedId = hit.m.id; selVertex = null; markStatic(); renderList(); drawOverlay(); }
+    ctxOpen(e, shapeItems(hit, p));
     return;
   }
-  if(hit && hit.kind!=="body"){ e.preventDefault(); deleteVertex(hit.m, hit.idx); }
+  ctxOpen(e, generalItems());
 });
 window.addEventListener("mousemove", e => {
   if(editDrag){
@@ -2501,7 +2612,9 @@ window.addEventListener("mousemove", e => {
 });
 window.addEventListener("mouseup", () => {
   if(editDrag){
-    const {moved, pre, m} = editDrag;
+    let {moved, pre, m} = editDrag;
+    // an area can't be dragged into a shape whose edges cross: the corner goes back
+    if(moved && editCrosses()){ m.pts = editDrag.orig; moved = false; crossWarn(true); }
     editDrag = null; staticExclude = null; markStatic();
     tidyArcs(m);
     if(moved){ commitHistory(pre); refreshAll(); }
@@ -2524,7 +2637,7 @@ overlay.addEventListener("pointerdown", e => {
   if(e.button!==0 || !d || d.src!=="pdf" || !(d.type==="line" || d.type==="area") || d.pts.length<2 || spaceDown) return;
   const p = evtPdf(e), hs = bendHandles(d.pts, d.arcs, false), reach = (e.pointerType==="touch" ? 20 : 10)/zoom;
   for(let i=0; i<hs.length; i++){
-    if(!showsBend(d.pts[i], d.pts[i+1]) || dist(p, hs[i]) >= reach) continue;
+    if(!showsBend(d.pts[i], d.pts[i+1]) || !bendOK(d.arcs, i) || dist(p, hs[i]) >= reach) continue;
     bendDrag = {i, prev:d.arcs[i] || 0, id:e.pointerId, moved:false};
     try{ overlay.setPointerCapture(e.pointerId); }catch{}
     e.preventDefault(); return;
@@ -2623,6 +2736,7 @@ function finishDrawing(){
   const near = (a,b) => drawing.src==="map" ? havFt(a,b) < 1.5 : dist(a,b) < 4/zoom;
   let pops = 0;
   while(pts.length>1 && pops<2 && near(pts[pts.length-1], pts[pts.length-2])){ pts.pop(); pops++; }
+  if(drawing.type==="area" && closeCrosses(pts)){ crossWarn(false, true); return; }
   const need = drawing.type==="area" ? 3 : 2;
   if(pts.length >= need){
     pushHistory();
@@ -2802,7 +2916,10 @@ function commitWheelZoom(){
   updateBar();
 }
 wrap.addEventListener("wheel", e => {
-  if(!(e.ctrlKey||e.metaKey) || !pdfDoc) return;
+  if(!pdfDoc) return;
+  // pinch and ⌘/Ctrl + scroll always zoom; the plain wheel zooms unless Settings say it moves the plan
+  // (Shift + wheel and sideways swipes still move)
+  if(!(e.ctrlKey||e.metaKey) && (wheelPref()!=="zoom" || e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY))) return;
   e.preventDefault();
   const r = wrap.getBoundingClientRect();
   if(!wz){
@@ -4177,7 +4294,7 @@ function normMeas(arr){
 var verClockStart = Date.now();   // var: used by the session restore while the page loads
 function applyProject(data){
   verClockStart = Date.now();
-  docStore.clear(); baseCache.clear();
+  docStore.clear(); baseCache.clear(); if(planImgs){ planImgs.clear(); planImgBytes = 0; }
   undoStack.length = 0; redoStack.length = 0; updateUndoBtns();   // a different job starts a fresh undo history
   projectName = data.projectName||"";
   if(Array.isArray(data.docs)){
@@ -4581,7 +4698,7 @@ function resetProject(){
   docs=[]; // the PDFs stay in memory until another job is opened, so ⌘Z can restore them
   clearPlanView();
   fileHandle=null; versions=[];
-  baseCache.clear();
+  baseCache.clear(); if(planImgs){ planImgs.clear(); planImgBytes = 0; }
   collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
   document.getElementById("measSearch").value="";
   document.getElementById("filterSel").value="all";
@@ -4683,14 +4800,24 @@ var restoredMsg = "";
 var cloudSaveTimer = null, cloudSaving = false, cloudSavedAt = 0, cloudSaveErr = "";
 function cloudOn(){ return typeof window.__cloudQuickSave==="function" && window.__cloudQuickSave.enabled(); }
 function cloudSaveDue(){ return window.__isDirty && (measurements.length || docs.length) && cloudOn(); }
+var cloudSaveDueAt = 0;
 function scheduleCloudSave(ms){
+  // after every measurement the cloud copy follows within a few seconds; other changes (names, colours) within 30 s.
+  // more changes never push a save that's already on the way further out.
+  const soon = ms==null && (window.__changeSoon || (typeof window.__trialSaveSoon==="function" && window.__trialSaveSoon()));
+  if(ms==null) window.__changeSoon = false;
+  const wait = ms!=null ? ms : soon ? 2500 : 30000, due = Date.now() + wait;
+  if(cloudSaveTimer && cloudSaveDueAt <= due) return;
   clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = setTimeout(runCloudAutosave, ms==null ? 30000 : ms);
+  cloudSaveDueAt = due;
+  cloudSaveTimer = setTimeout(runCloudAutosave, wait);
 }
 function runCloudAutosave(){
+  cloudSaveTimer = null;
   if(!cloudSaveDue()) return;
-  // not in the middle of drawing or a dialog — try again shortly
-  if(drawing || editDrag || document.querySelector(".modalBack.open")){ scheduleCloudSave(10000); return; }
+  // not while a corner is being dragged or a dialog is open — try again shortly (a shape still being drawn
+  // isn't part of the project yet, so saving the rest meanwhile is fine)
+  if(editDrag || cornerArm || cloudSaving || document.querySelector(".modalBack.open")){ scheduleCloudSave(3000); return; }
   window.__cloudQuickSave(true);
 }
 document.addEventListener("visibilitychange", () => {
@@ -5827,6 +5954,478 @@ else if(restoredMsg && !IS_WEB) toast(restoredMsg);
 setTool("select");
 refreshCatSelect();
 syncTitle();
+
+// ================= 1.14: easier drawing =================
+// right-click menus, corners you can drag in any tool, area edges that can't cross, snapping onto corners,
+// curve handles only when wanted, scroll-wheel setting, tips for the tool in use and a getting-started card
+var cornerArm = null, hiState = null, planImgs = new Map(), planImgBytes = 0, prefetchTimer = null;
+function prefGet(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : v; }catch{ return d; } }
+function prefSet(k, v){ try{ localStorage.setItem(k, v); }catch{} }
+function wheelPref(){ return prefGet("tt_wheel", "zoom"); }
+function curvesOn(){ return prefGet("tt_curves", "0")==="1"; }
+function snapOn(){ return prefGet("tt_snap", "1")==="1"; }
+function hintsOn(){ return prefGet("tt_hints", "1")==="1"; }
+// a ◆ shows on an edge when curve handles are on, while ⌒ Curve is on, or when that edge is already curved
+function bendOK(arcs, i){ return curvesOn() || curveMode || !!(arcs && arcs[i]); }
+
+// ---- edges that cross ----
+function xyOf(p){ return p.lat!=null ? {x:p.lng*Math.cos(p.lat*Math.PI/180), y:p.lat} : p; }
+function segCross(a, b, c, d){
+  const o = (p, q, r) => (q.x-p.x)*(r.y-p.y) - (q.y-p.y)*(r.x-p.x);
+  const d1 = o(a, b, c), d2 = o(a, b, d), d3 = o(c, d, a), d4 = o(c, d, b);
+  return ((d1>0 && d2<0) || (d1<0 && d2>0)) && ((d3>0 && d4<0) || (d3<0 && d4>0));
+}
+// would the next edge (last point → p) cross an earlier edge of the shape being drawn?
+function crossesPath(pts, p){
+  const n = pts.length; if(n<3 || !p) return false;
+  const a = xyOf(pts[n-1]), b = xyOf(p);
+  for(let i=0; i<n-2; i++) if(segCross(a, b, xyOf(pts[i]), xyOf(pts[i+1]))) return true;
+  return false;
+}
+// would the closing edge (last → first) cross?
+function closeCrosses(pts){
+  const n = pts.length; if(n<4) return false;
+  const a = xyOf(pts[n-1]), b = xyOf(pts[0]);
+  for(let i=1; i<n-2; i++) if(segCross(a, b, xyOf(pts[i]), xyOf(pts[i+1]))) return true;
+  return false;
+}
+function polySelfCrosses(pts){
+  const n = pts.length; if(n<4) return false;
+  const q = pts.map(xyOf);
+  for(let i=0; i<n; i++) for(let j=i+2; j<n; j++){
+    if(i===0 && j===n-1) continue;   // neighbours share a corner
+    if(segCross(q[i], q[(i+1)%n], q[j], q[(j+1)%n])) return true;
+  }
+  return false;
+}
+function drawCross(d){
+  if(d.type!=="area" || !mousePdf || bending() || bendDrag) return false;
+  return crossesPath(d.pts, snap(mousePdf));
+}
+function editCrosses(){ return !!editDrag && editDrag.m.type==="area" && editDrag.kind==="vertex" && polySelfCrosses(editDrag.m.pts); }
+var crossWarnAt = 0;
+function crossWarn(edit, closing){
+  if(Date.now()-crossWarnAt < 1200) return;
+  crossWarnAt = Date.now();
+  toast(edit ? "That would make the edges cross — the corner went back"
+      : closing ? "The closing edge would cross your lines — add a corner or take one back (Backspace)"
+      : "Edges can't cross — click a spot that keeps the shape clean", 3200);
+}
+function closesOnFirst(d, p){
+  const f = d.pts[0];
+  if(d.src==="map") return !!map && map.latLngToContainerPoint(p).distanceTo(map.latLngToContainerPoint(f)) < 10;
+  return dist(p, f) < 9/zoom;
+}
+
+// ---- snapping onto corners ----
+function shownOnPage(m){ return m.src==="pdf" && m.page===pageNum && m.doc===curDocId && !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id); }
+function cornerSnapPdf(p){
+  if(!p || !snapOn() || altHeld || !(tool==="line" || tool==="area")) return null;
+  let best = null, bd = 9/zoom;
+  const look = q => { const d = dist(p, q); if(d < bd){ bd = d; best = q; } };
+  if(drawing && drawing.src!=="map") drawing.pts.slice(0, -1).forEach(look);   // not the point just placed
+  for(const m of measurements) if(m.type!=="count" && shownOnPage(m)) m.pts.forEach(look);
+  return best ? {x:best.x, y:best.y} : null;
+}
+function mapCornerSnap(ll){
+  if(!map || !snapOn() || altHeld || !(tool==="line" || tool==="area")) return null;
+  const P = map.latLngToContainerPoint(ll);
+  let best = null, bd = 10;
+  const look = q => { const d = map.latLngToContainerPoint(q).distanceTo(P); if(d < bd){ bd = d; best = q; } };
+  if(drawing && drawing.src==="map") drawing.pts.slice(0, -1).forEach(look);
+  for(const m of measurements) if(m.src==="map" && m.type!=="count" && !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id)) m.pts.forEach(look);
+  return best ? {lat:best.lat, lng:best.lng} : null;
+}
+// a green ring where the next click will land (a corner), or around a corner you can drag
+var ringAt = null, overPlan = false;
+function drawSnapRing(){
+  ringAt = null;
+  if(mode!=="pdf" || !overPlan || !mousePdf || editDrag || panning) return;
+  let c = cornerSnapPdf(mousePdf), drag = false;
+  if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count")){ const h = cornerAt(mousePdf); if(h){ c = h.m.pts[h.idx]; drag = true; } }
+  if(!c) return;
+  ringAt = c;
+  const s = pdfToScreen(c);
+  octx.save();
+  octx.beginPath(); octx.arc(s.x, s.y, 8*dpr, 0, 7);
+  octx.lineWidth = 2*dpr; octx.strokeStyle = drag ? "#2f6fdb" : "#16a34a"; octx.setLineDash([]); octx.stroke();
+  octx.restore();
+}
+
+// ---- corners can be dragged with any drawing tool (a plain click on one still starts / adds a point there) ----
+function cornerAt(p){
+  const vt = 9/zoom;
+  const list = measurements.filter(m => m.src==="pdf" && m.page===pageNum && m.doc===curDocId && (m.id===selectedId || (!hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id))));
+  list.sort((a, b) => (b.id===selectedId) - (a.id===selectedId));
+  for(const m of list) for(let i=m.pts.length-1; i>=0; i--) if(dist(p, m.pts[i]) < vt) return {m, idx:i, kind:m.type==="count" ? "dot" : "vertex"};
+  return null;
+}
+overlay.addEventListener("mousedown", e => {
+  cornerArm = null;
+  if(e.button!==0 || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
+  if(typeof viewOnly!=="undefined" && viewOnly) return;
+  const p = evtPdf(e), hit = cornerAt(p);
+  if(hit) cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot()};
+});
+window.addEventListener("mousemove", e => {
+  if(!cornerArm || editDrag) return;
+  if(!(e.buttons & 1)){ cornerArm = null; return; }
+  if(Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y) < 4) return;
+  const {hit, start, pre} = cornerArm; cornerArm = null;
+  selectedId = hit.m.id; selVertex = {mId:hit.m.id, idx:hit.idx};
+  editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start, orig:hit.m.pts.map(q=>({...q})), pre, moved:false};
+  staticExclude = hit.m.id; markStatic(); renderList(); drawOverlay();
+  suppressClick = true;   // the click at the end of the drag doesn't add a point
+});
+window.addEventListener("mouseup", () => { cornerArm = null; });
+overlay.addEventListener("mousemove", e => {
+  overPlan = true;
+  if(drawing && overlay.style.cursor==="move") overlay.style.cursor = DRAW_CURSOR;
+  if(mode!=="pdf" || drawing || editDrag) return;
+  if(tool==="line" || tool==="area" || tool==="count"){
+    const p = evtPdf(e), h = cornerAt(p);
+    const cur = h ? "move" : DRAW_CURSOR;
+    if(overlay.style.cursor!==cur) overlay.style.cursor = cur;
+    const c = cornerSnapPdf(p) || (h ? h.m.pts[h.idx] : null);
+    if(c!==ringAt && !(c && ringAt && c.x===ringAt.x && c.y===ringAt.y)) requestDraw();
+  }
+});
+overlay.addEventListener("mouseleave", () => { overPlan = false; if(ringAt) requestDraw(); });
+// Select tool: double-click an edge to add a corner there
+overlay.addEventListener("dblclick", e => {
+  if(tool!=="select" || drawing) return;
+  const p = evtPdf(e), hit = hitTest(p);
+  if(hit && hit.kind==="body" && hit.m.type!=="count" && distToPath(p, shapePts(hit.m), hit.m.type==="area") < 7/zoom) insertCorner(hit.m, p);
+});
+
+// ---- shape actions (right-click menu) ----
+// the point on edge a–b closest to p
+function segNear(p, a, b){
+  const dx = b.x-a.x, dy = b.y-a.y, L2 = dx*dx + dy*dy;
+  const k = L2 ? Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy)/L2)) : 0;
+  return {x:a.x+k*dx, y:a.y+k*dy};
+}
+function insertCorner(m, p){
+  if(!p || m.type==="count") return;
+  const toXY = m.src==="map" ? (q => map.latLngToContainerPoint(q)) : (q => q);
+  const P = toXY(p), n = m.pts.length, segs = m.type==="area" ? n : n-1;
+  let bi = -1, bd = Infinity, at = null;
+  for(let i=0; i<segs; i++){
+    const q = segNear(P, toXY(m.pts[i]), toXY(m.pts[(i+1)%n])), d = Math.hypot(P.x-q.x, P.y-q.y);
+    if(d < bd){ bd = d; bi = i; at = q; }
+  }
+  if(bi<0) return;
+  pushHistory();
+  // the new corner goes on the nearest edge, so the shape keeps its size until you drag it
+  if(m.src==="map"){ const ll = map.containerPointToLatLng(L.point(at.x, at.y)); m.pts.splice(bi+1, 0, {lat:ll.lat, lng:ll.lng}); }
+  else m.pts.splice(bi+1, 0, {x:at.x, y:at.y});
+  if(m.arcs){ m.arcs[bi] = 0; m.arcs.splice(bi+1, 0, 0); tidyArcs(m); }
+  selectedId = m.id; selVertex = {mId:m.id, idx:bi+1};
+  refreshAll(); toast("Corner added — drag it where you want it");
+}
+function dupMeasure(m){
+  pushHistory();
+  const c = JSON.parse(JSON.stringify(m));
+  c.id = nextId++; c.name = m.name+" (copy)";
+  if(m.src==="map"){
+    const a = map.containerPointToLatLng(map.latLngToContainerPoint(m.pts[0]).add([16, 16]));
+    const dLat = a.lat-m.pts[0].lat, dLng = a.lng-m.pts[0].lng;
+    c.pts = c.pts.map(q => ({lat:q.lat+dLat, lng:q.lng+dLng}));
+  } else { const o = 16/zoom; c.pts = c.pts.map(q => ({x:q.x+o, y:q.y+o})); }
+  measurements.push(c); selectedId = c.id; refreshAll();
+  toast("Copy added — drag it into place with Select (V)");
+}
+function deleteMeasure(m){
+  pushHistory();
+  measurements = measurements.filter(x => x.id!==m.id);
+  if(selectedId===m.id) selectedId = null;
+  if(drawing===m) drawing = null;
+  selVertex = null; refreshAll(); toast("Measurement deleted");
+}
+function hideMeasure(m){
+  hiddenItems.add(m.id);
+  if(selectedId===m.id){ selectedId = null; selVertex = null; }
+  markStatic(); renderList(); drawOverlay(); redrawMapLayers();
+  toast("Hidden — show it again with 👁 in the list");
+}
+function renameMeasure(m){
+  selectedId = m.id; collapsedCats.delete(m.cat||""); refreshAll();
+  const side = document.getElementById("side");
+  if(getComputedStyle(document.getElementById("listToggle")).display!=="none") side.classList.add("open");
+  setTimeout(() => {
+    const inp = document.querySelector('.mitem[data-id="'+m.id+'"] .name');
+    if(inp){ inp.scrollIntoView({block:"center"}); inp.focus(); inp.select(); }
+  }, 60);
+}
+function moveToCat(m, id){
+  if((m.cat||"")===id) return;
+  pushHistory(); m.cat = id;
+  const c = catOf(id); if(c) m.color = c.color;
+  refreshAll();
+}
+function straighten(m, i){
+  if(m.arcs && m.arcs[i]){ pushHistory(); m.arcs[i] = 0; tidyArcs(m); refreshAll(); toast("Straightened"); }
+}
+function clickId(id){ const b = document.getElementById(id); if(b && !b.disabled) b.click(); }
+function openPopAt(name, anchor){
+  const p = document.getElementById("pop-"+name), b = typeof anchor==="string" ? document.getElementById(anchor) : anchor;
+  if(!p || !b) return;
+  closePops(); positionPop(p, b);
+}
+
+// ---- the menus ----
+function toolItems(){
+  return [{head:"TOOLS"},
+    {label:"↖ Select / edit", k:"V", on:tool==="select", fn:() => setTool("select")},
+    {label:"📏 Linear", k:"L", on:tool==="line", fn:() => setTool("line")},
+    {label:"⬠ Area", k:"A", on:tool==="area", fn:() => setTool("area")},
+    {label:"● Count", k:"K", on:tool==="count", fn:() => setTool("count")}];
+}
+function projectItems(){
+  const u = document.getElementById("undoBtn"), r = document.getElementById("redoBtn");
+  return [{sep:1},
+    {label:"↶ Undo", k:"⌘Z", off:u && u.disabled, fn:() => clickId("undoBtn")},
+    {label:"↷ Redo", k:"⇧⌘Z", off:r && r.disabled, fn:() => clickId("redoBtn")},
+    {label:"💾 Save", k:"⌘S", fn:() => clickId("saveBtn")},
+    {label:"⬇️ Export PDF with markups", fn:() => clickId("markBtn")},
+    {label:"📊 Export CSV", k:"⌘E", fn:() => clickId("exportBtn")},
+    {label:"❓ How to use the tools", fn:() => openPopAt("help", "toolHelp")}];
+}
+function generalItems(){
+  const it = toolItems();
+  const hide = document.getElementById("hideAllBtn");
+  if(mode==="pdf"){
+    it.push({head:"VIEW"},
+      {label:"⤢ Fit page", k:"F", off:!pdfDoc, fn:() => pdfDoc && fitPage()},
+      {label:"＋ Zoom in", k:"+", off:!pdfDoc, fn:() => clickId("zoomIn")},
+      {label:"－ Zoom out", k:"−", off:!pdfDoc, fn:() => clickId("zoomOut")});
+    if(pdfDoc && (pageCount>1 || docs.length>1)) it.push({label:"‹ Previous page", k:"PgUp", fn:() => goPage(-1)}, {label:"Next page ›", k:"PgDn", fn:() => goPage(1)});
+    if(hide && hide.style.display!=="none") it.push({label:hide.textContent.trim(), fn:() => clickId("hideAllBtn")});
+    it.push({head:"PLAN"},
+      {label:"📐 Set the scale…", off:!pdfDoc, fn:() => openPopAt("scale", "scaleChip")},
+      {label:"📐 Calibrate on plan", k:"C", off:!pdfDoc, fn:() => clickId("scCalib")},
+      {label:"📄 Add PDF plans…", fn:() => clickId("openBtn")});
+  } else {
+    it.push({head:"MAP"},
+      {label:"🔍 Search an address", fn:() => { const a = document.getElementById("addrInput"); if(a){ a.focus(); a.select(); } }},
+      ...[...document.getElementById("baseSwitch").options].map(o => ({label:"🛰️ "+o.text, on:o.selected, fn:() => setBase(o.value)})),
+      {label:"🕐 Older imagery dates", fn:() => clickId("histBtn")});
+    if(hide && hide.style.display!=="none") it.push({label:hide.textContent.trim(), fn:() => clickId("hideAllBtn")});
+  }
+  return it.concat(projectItems());
+}
+function setBase(v){ const s = document.getElementById("baseSwitch"); if(s.value!==v){ s.value = v; s.dispatchEvent(new Event("change")); } }
+function drawingItems(){
+  const d = drawing;
+  if(d.type==="count") return [{head:"COUNTING"},
+    {label:"✓ Done counting", k:"Enter", fn:finishDrawing},
+    {label:"↩ Take back the last one", k:"⌫", off:!d.pts.length, fn:undoPoint}];
+  const n = d.pts.length, need = d.type==="area" ? 3 : 2;
+  return [{head:d.type==="area" ? "DRAWING AN AREA" : "DRAWING A LINE"},
+    {label:d.type==="area" ? "✓ Close and finish the area" : "✓ Finish the line", k:"Enter", off:n<need, fn:finishDrawing},
+    {label:"↩ Take back the last point", k:"⌫", off:!n, fn:undoPoint},
+    {label:"⌒ Curve the last segment", k:"U", off:n<2, on:curveMode, fn:() => clickId("fabCurve")},
+    {label:"🧲 Snap to corners", on:snapOn(), fn:() => { prefSet("tt_snap", snapOn() ? "0" : "1"); syncPrefsUI(); requestDraw(); }},
+    {label:"✕ Cancel this shape", k:"Esc", fn:cancelDrawing}];
+}
+function shapeItems(hit, p){
+  const m = hit.m, it = [{head:m.name, nm:1}];
+  if(hit.kind==="vertex") it.push({label:"🗑 Delete this corner", fn:() => deleteVertex(m, hit.idx)});
+  if(hit.kind==="dot") it.push({label:"🗑 Delete this one", fn:() => deleteVertex(m, hit.idx)});
+  if(hit.kind==="bend" && m.arcs && m.arcs[hit.idx]) it.push({label:"⟋ Make this edge straight", fn:() => straighten(m, hit.idx)});
+  if(p && m.type!=="count" && hit.kind!=="vertex") it.push({label:"➕ Add a corner here", fn:() => insertCorner(m, p)});
+  if(tool!=="select") it.push({label:"↖ Edit it with Select", fn:() => { setTool("select"); selectedId = m.id; refreshAll(); }});
+  it.push({label:"✏️ Rename…", fn:() => renameMeasure(m)},
+    {label:"⧉ Duplicate", fn:() => dupMeasure(m)},
+    {label:"🙈 Hide", fn:() => hideMeasure(m)},
+    {label:"🗑 Delete measurement", danger:1, fn:() => deleteMeasure(m)});
+  const cats = orderedCats();
+  if(cats.length){
+    it.push({head:"MOVE TO CATEGORY"});
+    for(const c of cats.slice(0, 14)) it.push({label:(isChildCat(c) ? "  · " : "")+c.name, nt:1, on:m.cat===c.id, fn:() => moveToCat(m, c.id)});
+    it.push({label:"No category", on:!m.cat, fn:() => moveToCat(m, "")});
+  }
+  return it.concat(toolItems());
+}
+var ctxEl = null;
+function ctxClose(){ if(ctxEl) ctxEl.classList.remove("open"); }
+function ctxOpen(ev, items){
+  if(!ctxEl){
+    ctxEl = document.createElement("div"); ctxEl.className = "pop ctxMenu"; ctxEl.id = "ctxMenu"; ctxEl.setAttribute("role", "menu");
+    document.body.appendChild(ctxEl);
+    ctxEl.addEventListener("click", e => {
+      e.stopPropagation();
+      const b = e.target.closest("[data-ci]"); if(!b || b.disabled) return;
+      const f = ctxEl._items[+b.dataset.ci].fn;
+      ctxClose();
+      if(f) setTimeout(f, 0);
+    });
+    ctxEl.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("mousedown", e => { if(ctxEl.classList.contains("open") && !ctxEl.contains(e.target)) ctxClose(); }, true);
+    document.addEventListener("keydown", e => { if(e.key==="Escape" && ctxEl.classList.contains("open")){ ctxClose(); e.stopPropagation(); } }, true);
+    addEventListener("blur", ctxClose); addEventListener("resize", ctxClose);
+    document.getElementById("canvasWrap").addEventListener("scroll", ctxClose, {passive:true});
+  }
+  closePops();
+  ctxEl._items = items;
+  let html = "", lastSep = true;
+  items.forEach((it, i) => {
+    if(it.sep || it.head){
+      if(it.head) html += '<div class="ph'+(it.nm ? ' nm" data-nt' : '"')+'>'+esc2(it.head)+'</div>';
+      else if(!lastSep) html += '<div class="sep"></div>';
+      lastSep = true; return;
+    }
+    lastSep = false;
+    html += '<button class="mi'+(it.on ? " sel" : "")+'" data-ci="'+i+'"'+(it.danger ? ' style="color:#e5493a"' : "")+(it.off ? " disabled" : "")+'>'+
+      '<span'+(it.nt ? " data-nt" : "")+'>'+esc2(it.label)+'</span>'+(it.k ? '<span class="k">'+esc2(it.k)+'</span>' : "")+'</button>';
+  });
+  ctxEl.innerHTML = html;
+  ctxEl.style.visibility = "hidden"; ctxEl.classList.add("open");
+  const w = ctxEl.offsetWidth, h = ctxEl.offsetHeight;
+  let x = ev.clientX + 2, y = ev.clientY + 2;
+  if(x + w > innerWidth - 8) x = Math.max(8, ev.clientX - w - 2);
+  if(y + h > innerHeight - 8) y = Math.max(8, innerHeight - h - 8);
+  ctxEl.style.left = x+"px"; ctxEl.style.top = y+"px"; ctxEl.style.visibility = "";
+}
+// map: the same menus — what's under the mouse is found on screen, like on the plan
+function mapHit(ll){
+  const P = map.latLngToContainerPoint(ll);
+  for(const m of [...measurements].reverse()){
+    if(m.src!=="map") continue;
+    if((hiddenCats.has(m.cat||"") || hiddenItems.has(m.id)) && m.id!==selectedId) continue;
+    for(let i=m.pts.length-1; i>=0; i--) if(map.latLngToContainerPoint(m.pts[i]).distanceTo(P) < 9) return {kind:m.type==="count" ? "dot" : "vertex", m, idx:i};
+    if(m.type==="count") continue;
+    const q = shapePts(m).map(x => map.latLngToContainerPoint(x));
+    if(m.type==="area" && q.length>2 && (pointInPoly(P, q) || distToPath(P, q, true) < 6)) return {kind:"body", m};
+    if(m.type==="line" && q.length>1 && distToPath(P, q, false) < 6) return {kind:"body", m};
+  }
+  return null;
+}
+function mapCtxEvent(e){
+  const ev = e.originalEvent; if(!ev) return;
+  L.DomEvent.preventDefault(ev);
+  if(drawing && drawing.src==="map"){ ctxOpen(ev, drawingItems()); return; }
+  const ll = {lat:e.latlng.lat, lng:e.latlng.lng}, hit = mapHit(ll);
+  if(hit){
+    if(selectedId!==hit.m.id){ selectedId = hit.m.id; selVertex = null; refreshAll(); }
+    ctxOpen(ev, shapeItems(hit, ll));
+    return;
+  }
+  ctxOpen(ev, generalItems());
+}
+
+// ---- prepared pages: a compressed picture of each page rendered, and of the next ones ahead of time ----
+var PIC_TYPE = (function(){ try{ const c = document.createElement("canvas"); c.width = c.height = 1; return c.toDataURL("image/webp").indexOf("image/webp")>0 ? "image/webp" : "image/jpeg"; }catch{ return "image/jpeg"; } })();
+function keepPlanImg(key, base, done){
+  if(planImgs.has(key) || !base.canvas.toBlob){ if(done) done(); return; }
+  base.canvas.toBlob(b => {
+    if(done) done();
+    if(!b || planImgs.has(key)) return;
+    planImgs.set(key, {blob:b, scale:base.scale}); planImgBytes += b.size;
+    while(planImgBytes > 150e6 && planImgs.size > 1){ const k0 = planImgs.keys().next().value; planImgBytes -= planImgs.get(k0).blob.size; planImgs.delete(k0); }
+  }, PIC_TYPE, 0.9);
+}
+function schedulePrefetch(){ clearTimeout(prefetchTimer); prefetchTimer = setTimeout(prefetchNext, 1500); }
+async function prefetchNext(){
+  if(!pdfDoc || mode!=="pdf" || document.hidden) return;
+  if(baseBusy || hiTask || wz || editDrag || pinchActive || panning){ schedulePrefetch(); return; }
+  const doc = pdfDoc, docId = curDocId;
+  const n = [pageNum+1, pageNum-1, pageNum+2].filter(k => k>=1 && k<=pageCount).find(k => !planImgs.has(docId+":"+k) && !baseCache.has(docId+":"+k));
+  if(!n) return;
+  try{
+    const page = await doc.getPage(n);
+    if(doc!==pdfDoc) return;
+    const vp1 = page.getViewport({scale:1});
+    const bscale = Math.min(3, (BASE_MAX*dpr)/Math.max(vp1.width, vp1.height));
+    const bvp = page.getViewport({scale:bscale});
+    const c = document.createElement("canvas");
+    c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
+    const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
+    await page.render({canvasContext:cx, viewport:bvp}).promise;
+    keepPlanImg(docId+":"+n, {canvas:c, scale:bscale}, () => { c.width = c.height = 0; });
+  }catch{}
+  schedulePrefetch();
+}
+
+// ---- Settings → Mouse & drawing ----
+function syncPrefsUI(){
+  const sel = (id, on) => { const b = document.getElementById(id); if(b) b.classList.toggle("sel", !!on); };
+  sel("setWheelZoom", wheelPref()==="zoom"); sel("setWheelPan", wheelPref()!=="zoom");
+  sel("setSnap", snapOn()); sel("setCurves", curvesOn()); sel("setHints", hintsOn());
+}
+function prefClick(id, fn){ const b = document.getElementById(id); if(b) b.addEventListener("click", e => { e.stopPropagation(); fn(); syncPrefsUI(); }); }
+prefClick("setWheelZoom", () => { prefSet("tt_wheel", "zoom"); toast("Scroll wheel zooms the plan — hold Shift to move sideways"); });
+prefClick("setWheelPan", () => { prefSet("tt_wheel", "pan"); toast("Scroll wheel moves the plan — ⌘ / Ctrl + scroll or pinch to zoom"); });
+prefClick("setSnap", () => { prefSet("tt_snap", snapOn() ? "0" : "1"); toast(snapOn() ? "Snap to corners: on (hold Alt to place a point freely)" : "Snap to corners: off"); requestDraw(); });
+prefClick("setCurves", () => {
+  prefSet("tt_curves", curvesOn() ? "0" : "1");
+  toast(curvesOn() ? "Curve handles on — drag the ◆ on an edge to curve it" : "Curve handles off — while drawing, use ⌒ Curve (U) for a curved edge");
+  markStatic(); drawOverlay(); tempSig = ""; drawTemp(); redrawMapLayers();
+});
+prefClick("setHints", () => { prefSet("tt_hints", hintsOn() ? "0" : "1"); if(hintsOn()) prefSet("tt_guide_off", "0"); updateHint(); });
+syncPrefsUI();
+document.getElementById("pmScale").onclick = () => setTimeout(() => { if(!pdfDoc){ toast("Open a plan first"); return; } openPopAt("scale", "scaleChip"); }, 0);
+document.getElementById("pmExport").onclick = () => setTimeout(() => clickId("markBtn"), 0);
+document.getElementById("pmHelp").onclick = () => setTimeout(() => openPopAt("help", "toolHelp"), 0);
+
+// ---- tips for the tool in use + getting started ----
+var dock = document.createElement("div"); dock.id = "helpDock";
+dock.innerHTML = '<div id="hintBar" style="display:none"><span id="hintTxt"></span><button class="x" id="hintX" title="Hide tips (Settings → Tips)">✕</button></div>'+
+  '<div id="guideCard" style="display:none"><button class="x" id="guideX" title="Hide">✕</button><h4>Getting started</h4>'+
+  '<button class="gs" data-g="plan"><span class="n">1</span><span>Add your plan PDF — or measure on the Map</span></button>'+
+  '<button class="gs" data-g="scale"><span class="n">2</span><span>Set the scale (📐 Scale on the left)</span></button>'+
+  '<button class="gs" data-g="meas"><span class="n">3</span><span>Measure: pick Line, Area or Count and click on the plan</span></button>'+
+  '<button class="gs" data-g="out"><span class="n">4</span><span>Export your takeoff (Export ▾ at the top)</span></button></div>';
+document.body.appendChild(dock);
+document.getElementById("hintX").onclick = () => { prefSet("tt_hints", "0"); syncPrefsUI(); updateHint(); toast("Tips hidden — turn them back on in ⚙️ Settings"); };
+document.getElementById("guideX").onclick = () => { prefSet("tt_guide_off", "1"); updateHint(); };
+["exportBtn", "markBtn", "markAllBtn", "printBtn", "copyBtn"].forEach(id => { const b = document.getElementById(id); if(b) b.addEventListener("click", () => { prefSet("tt_exported", "1"); setTimeout(updateHint, 50); }); });
+dock.addEventListener("click", e => {
+  const g = e.target.closest(".gs"); if(!g) return;
+  e.stopPropagation();
+  const k = g.dataset.g;
+  if(k==="plan") clickId("openBtn");
+  else if(k==="scale"){ if(mode!=="pdf" || !pdfDoc) toast("On the Map the scale is already set — on a plan, open it first"); else openPopAt("scale", "toolScale"); }
+  else if(k==="meas") setTool("area");
+  else if(k==="out"){ const b = document.getElementById("shareBtn"); if(b) b.click(); }
+});
+function guideState(){
+  return {plan:!!pdfDoc || docs.length>0 || measurements.some(m => m.src==="map"),
+    scale:Object.keys(docScale).length>0 || Object.keys(ftPerUnit).length>0 || measurements.some(m => m.src==="map"),
+    meas:measurements.length>0, out:prefGet("tt_exported", "0")==="1"};
+}
+function hintText(){
+  const d = drawing, map_ = mode==="map";
+  const unset = !map_ && pdfDoc && !(ftPerUnit[PK()] || docScale[curDocId]);
+  const warn = unset && tool!=="select" && tool!=="calibrate" ? '<span class="warn">Set the scale first</span> (📐 Scale on the left) — ' : "";
+  if(d && d.type==="area") return warn+'<b>Area:</b> click each corner · <b>click the first corner</b> or press Enter to close · Backspace takes back a point · edges can\'t cross';
+  if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
+  if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
+  if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
+  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag any corner to adjust it · <b>right-click</b> for options';
+  if(tool==="line") return warn+'<b>Line:</b> click to start · drag any corner to adjust it · <b>right-click</b> for options';
+  if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
+  return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
+}
+var hintLast = "";
+function updateHint(){
+  const bar = document.getElementById("hintBar"), card = document.getElementById("guideCard");
+  if(!bar) return;
+  const blocked = document.querySelector("#loginGate.show, #payGate.show");
+  const showBar = hintsOn() && !blocked && (mode==="map" || !!pdfDoc);
+  bar.style.display = showBar ? "" : "none";
+  if(showBar){ const h = hintText(); if(h!==hintLast){ hintLast = h; document.getElementById("hintTxt").innerHTML = h; } }
+  const g = guideState(), all = g.plan && g.scale && g.meas && g.out;
+  if(all && prefGet("tt_guide_off", "0")!=="1"){ prefSet("tt_guide_off", "1"); toast("✓ You've done it all — the getting-started list is tucked away"); }
+  const showCard = hintsOn() && !blocked && prefGet("tt_guide_off", "0")!=="1";
+  card.style.display = showCard ? "" : "none";
+  if(showCard) card.querySelectorAll(".gs").forEach(b => b.classList.toggle("ok", !!g[b.dataset.g]));
+}
+// the tips follow every change of tool, drawing and plan
+const _updateFab117 = updateFab;
+updateFab = function(){ _updateFab117(); updateHint(); };
+setInterval(updateHint, 2500);
+setTimeout(updateHint, 300);
 </script>
 </body>
 </html>
