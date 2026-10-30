@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UGQXhxeDsDjTKNPV91JSDQvbMel2jikXoPc8sGNtw64=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EMF7QGGwK2h72hXTND15++AZxYVZNVTM+A9rw6PeVLo=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -293,6 +293,10 @@
   #pop-layers .lrow:hover{background:var(--panel2);}
   #pop-layers .lrow input{width:16px; height:16px; margin:0; flex:none; accent-color:var(--amber); cursor:pointer;}
   #pop-layers .lrow.off span{color:var(--faint);}
+  #pop-layers .lall{display:flex; gap:6px; padding:4px 8px 6px;}
+  #pop-layers .lbtn{flex:1; padding:7px 8px; border:1px solid var(--hair); border-radius:8px; background:var(--solid); color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer;}
+  #pop-layers .lbtn:hover{background:var(--amber); color:#fff; border-color:transparent;}
+  #pop-layers .lbtn:disabled{opacity:.4; cursor:default; background:var(--solid); color:var(--ink); border-color:var(--hair);}
   #pop-layers .lnote{padding:4px 10px 6px; font-size:11px; color:var(--faint); line-height:1.35;}
   /* the ◆ in the middle of a map segment: drag it to curve the segment */
   .bendDot{width:10px; height:10px; margin:2px; background:#fff; border:2px solid var(--amber); border-radius:2px;
@@ -606,7 +610,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.2.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.2.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -698,10 +702,9 @@
 </div>
 <div class="pop" id="pop-layers">
   <div class="ph">LAYERS IN THIS PDF</div>
+  <div class="lall"><button class="lbtn" id="layersAllOn">👁 All on</button><button class="lbtn" id="layersAllOff">🙈 All off</button></div>
   <div id="layerList"></div>
   <div class="lnote">Hiding a layer only changes what you see, print and export — the PDF itself isn't changed.</div>
-  <div class="sep"></div>
-  <button class="mi" id="layersAllOn">👁 Show all layers</button>
 </div>
 <div class="pop" id="pop-docs">
   <div class="ph">PLANS IN THIS PROJECT</div>
@@ -7150,8 +7153,10 @@ function renderLayerList(){
   const el = document.getElementById("layerList");
   if(!el) return;
   const info = layerInfo.get(curDocId);
-  if(!info){ el.innerHTML = '<div class="lnote">This PDF has no layers.</div>'; return; }
+  if(!info){ el.innerHTML = '<div class="lnote">This PDF has no layers.</div>'; document.getElementById("layersAllOn").disabled = document.getElementById("layersAllOff").disabled = true; return; }
   const off = new Set(layersOffOf(curDocId));
+  document.getElementById("layersAllOn").disabled = !off.size;
+  document.getElementById("layersAllOff").disabled = off.size>=info.groups.length;
   el.innerHTML = info.groups.map(g => '<label class="lrow'+(off.has(g.id) ? " off" : "")+'" style="padding-left:'+(10 + Math.min(g.depth, 4)*16)+'px">'+
     '<input type="checkbox" data-id="'+esc2(g.id)+'"'+(off.has(g.id) ? "" : " checked")+'><span data-nt>'+esc2(g.name)+'</span></label>').join("");
 }
@@ -7159,7 +7164,14 @@ document.getElementById("layerList").addEventListener("change", e => {
   const i = e.target.closest("input[data-id]");
   if(i) setLayer(curDocId, i.dataset.id, i.checked);
 });
-document.getElementById("layersAllOn").addEventListener("click", () => { docLayersOff[curDocId] = []; layersChanged(curDocId); toast("All layers showing"); });
+document.getElementById("layersAllOn").addEventListener("click", e => {
+  e.stopPropagation(); docLayersOff[curDocId] = []; layersChanged(curDocId); toast("All layers showing");
+});
+document.getElementById("layersAllOff").addEventListener("click", e => {
+  e.stopPropagation();
+  const info = layerInfo.get(curDocId); if(!info) return;
+  docLayersOff[curDocId] = info.groups.map(g => g.id); layersChanged(curDocId); toast("All layers hidden — only what isn't on a layer shows");
+});
 // exported PDFs open with the same layers hidden (the layer list of the PDF is set to match; nothing is removed)
 function hideLayersIn(L, pdf, docId){
   const off = layerInfo.get(docId) ? layersOffOf(docId) : [];
