@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-OnMKml3pCfVLpQvvBUATt28ZvWMA6rmuDyQp7Bm+Vv8=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-P6LA8yxRCMWxydAp4V7JiOd2En79lyJkQ1x4I6s5OMw=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -277,6 +277,22 @@
   #fab.show ~ #livePill{display:none;}
   #fab .btn{font-size:13px;}
   #fab .btn.on{background:var(--amber); color:#fff; border-color:transparent;}
+  /* Cut-out: plainly a button — dashed outline like the cut-out it makes, filled once it's on */
+  #fab #fabCut{border:1.5px dashed var(--amber); color:var(--amber); font-weight:700; background:var(--solid);}
+  #fab #fabCut:hover{background:rgba(232,140,30,.12);}
+  #fab #fabCut.on{background:var(--amber); color:#fff; border-style:solid;}
+  #toolsPill #toolCut svg .hole{stroke-dasharray:2.2 1.7;}
+  /* PDF layers */
+  #layersChip{white-space:nowrap;}
+  #navPill{left:calc((100vw - 304px) / 2); max-width:calc(100vw - 304px - 24px);}   /* centred over the plan, beside the side panel */
+  @media (max-width:840px){ #navPill{left:50%; max-width:96vw;} }
+  #layersChip .n{display:inline-block; min-width:16px; margin-left:4px; padding:0 4px; border-radius:8px; background:var(--amber); color:#fff; font-size:10.5px; font-weight:700; line-height:16px; text-align:center;}
+  #pop-layers{min-width:240px; max-width:340px; max-height:60vh; overflow-y:auto;}
+  #pop-layers .lrow{display:flex; align-items:center; gap:8px; padding:6px 10px; font-size:12.5px; border-radius:8px; cursor:pointer; user-select:none; -webkit-user-select:none;}
+  #pop-layers .lrow:hover{background:var(--panel2);}
+  #pop-layers .lrow input{width:16px; height:16px; margin:0; flex:none; accent-color:var(--amber); cursor:pointer;}
+  #pop-layers .lrow.off span{color:var(--faint);}
+  #pop-layers .lnote{padding:4px 10px 6px; font-size:11px; color:var(--faint); line-height:1.35;}
   /* the ◆ in the middle of a map segment: drag it to curve the segment */
   .bendDot{width:10px; height:10px; margin:2px; background:#fff; border:2px solid var(--amber); border-radius:2px;
     transform:rotate(45deg); box-shadow:0 1px 3px rgba(0,0,0,.45); cursor:grab;}
@@ -334,7 +350,7 @@
   .catTog:hover,.catEye:hover,.catEdit:hover{color:var(--amber); background:var(--panel2);}
   .catEye.off{opacity:.4;}
   .catTog,.catEye,.catEdit{font-size:12px;}
-  .iCut{background:none; border:none; color:var(--faint); cursor:pointer; font-size:11px; padding:2px 4px; border-radius:6px; opacity:.55;}
+  .iCut{background:var(--solid); border:1px solid var(--hair); color:var(--dim); cursor:pointer; font-size:11px; padding:2px 6px; border-radius:6px;}
   .iCut:hover{opacity:1; background:var(--panel2);}
   .iCut.on{opacity:1; background:var(--amber); color:#fff;}
   .mitem.cut .qty{color:var(--dim);}
@@ -589,7 +605,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.1.2</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.2.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -679,6 +695,13 @@
   <div class="sep"></div>
   <div id="scaleList"></div>
 </div>
+<div class="pop" id="pop-layers">
+  <div class="ph">LAYERS IN THIS PDF</div>
+  <div id="layerList"></div>
+  <div class="lnote">Hiding a layer only changes what you see, print and export — the PDF itself isn't changed.</div>
+  <div class="sep"></div>
+  <button class="mi" id="layersAllOn">👁 Show all layers</button>
+</div>
 <div class="pop" id="pop-docs">
   <div class="ph">PLANS IN THIS PROJECT</div>
   <div id="docList"></div>
@@ -745,6 +768,10 @@
     <svg viewBox="0 0 24 24"><path d="M5 8l5-4 9 3-2 11-11 2z"/></svg>
     <span class="cap">Area</span><span class="tip" id="tipArea">Area — SF (A)</span>
   </button>
+  <button class="tool" id="toolCut" aria-label="Cut-out: subtract an area">
+    <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path class="hole" d="M9 9h6v6H9z"/></svg>
+    <span class="cap">Cut-out</span><span class="tip">Cut-out — subtract an area, e.g. a patio inside a lawn (X)</span>
+  </button>
   <button class="tool" data-tool="count" aria-label="Count items">
     <svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="17" r="2"/></svg>
     <span class="cap">Count</span><span class="tip">Count — EA (K)</span>
@@ -784,6 +811,8 @@
   </button>
   <div class="pdiv"></div>
   <button class="pbtn" id="pdfInvert" title="Invert plan colors">🌓</button>
+  <div class="pdiv" id="layersDiv" style="display:none"></div>
+  <button class="pbtn" id="layersChip" data-pop="layers" title="Layers in this PDF — show or hide them" style="display:none">◫ Layers<span class="n" id="layersN" style="display:none"></span></button>
 </div>
 
 <div id="fab">
@@ -2097,6 +2126,7 @@ function ensureDoc(id, progress){
         st.refBytes = st.data.byteLength;
       }
       st.pdf = await pdfjsLib.getDocument({data: st.data.slice(0), isEvalSupported: false}).promise;  // pdf.js keeps the copy; no eval, so a crafted PDF can't run code (CVE-2024-4367)
+      layerInfo.delete(id); await layersOf(id);   // its layers, if it has any
       const d = docMeta(id); if(d) d.pages = st.pdf.numPages;
       return st;
     })();
@@ -2331,7 +2361,7 @@ async function renderPage(){
         c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
         const bctx = c.getContext("2d");
         bctx.fillStyle = "#fff"; bctx.fillRect(0,0,c.width,c.height);
-        await page.render({canvasContext:bctx, viewport:bvp}).promise;
+        await page.render({canvasContext:bctx, viewport:bvp, optionalContentConfigPromise:ocFor(curDocId)}).promise;
         base = {canvas:c, scale:bscale};
         baseCache.set(key, base); keepPlanImg(key, base);
         if(baseCache.size > 4) baseCache.delete(baseCache.keys().next().value);
@@ -2348,6 +2378,7 @@ async function renderPage(){
   drawOverlay();
   scheduleHi(60);
   schedulePrefetch();
+  syncLayersChip();
 }
 function scheduleHi(delay=120){
   clearTimeout(hiTimer);
@@ -2385,7 +2416,7 @@ async function updateHi(){
   const bctx = buf.getContext("2d");
   bctx.fillStyle = "#fff"; bctx.fillRect(0,0,pw,ph);
   const rvp = page.getViewport({scale:z});
-  const task = page.render({canvasContext:bctx, viewport:rvp, transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
+  const task = page.render({canvasContext:bctx, viewport:rvp, optionalContentConfigPromise:ocFor(curDocId), transform:[dpr,0,0,dpr,-x*dpr,-y*dpr]});
   hiTask = task;
   try{
     await task.promise;
@@ -2837,11 +2868,11 @@ function finishDrawing(){
     if(cutNext){ m.sub = true; joinParentCat(m); }
     measurements.push(m); selectedId = m.id;
   }
-  drawing = null; curveMode = false; cutNext = false; refreshAll();
+  drawing = null; curveMode = false; cutNext = cutTool; refreshAll();
 }
 function cancelDrawing(){
   if(drawing && drawing.type==="count"){ finishDrawing(); return; }
-  drawing = null; curveMode = false; cutNext = false;
+  drawing = null; curveMode = false; cutNext = cutTool;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
 // ⌘Z while drawing takes back the last step — a point, or the bend you just gave a segment
@@ -2886,7 +2917,10 @@ function updateFab(){
   cb.style.display = d && (d.type==="line" || d.type==="area") && d.pts.length>=2 ? "" : "none";
   cb.classList.toggle("on", !!curveMode);
   const cu = document.getElementById("fabCut");
-  if(cu){ cu.style.display = d && (d.type==="line" || d.type==="area") ? "" : "none"; cu.classList.toggle("on", !!cutNext); }
+  if(cu){
+    cu.style.display = d && (d.type==="line" || d.type==="area") ? "" : "none"; cu.classList.toggle("on", !!cutNext);
+    const txt = cutNext ? "✓ Cut-out" : "➖ Cut-out"; if(cu.textContent!==txt) cu.textContent = txt;
+  }
   updateUndoBtns();
   updateHint();   // the tips follow every change of tool, drawing and plan
 }
@@ -2939,6 +2973,7 @@ window.addEventListener("keydown", e => {
     else toast("Curves are part of Linear (L) and Area (A): after 2 points, press U or drag the ◆", 4000);
     return;
   }
+  if(e.key.toLowerCase()==="x" && !e.metaKey && !e.ctrlKey && !e.altKey){ setTool("area", true); return; }   // X = Cut-out
   const map_ = {v:"select", c:"calibrate", l:"line", a:"area", k:"count"};
   if(map_[e.key.toLowerCase()] && !e.metaKey && !e.ctrlKey){
     if(e.key.toLowerCase()==="c" && mode==="map") return;
@@ -3034,10 +3069,12 @@ wrap.addEventListener("wheel", e => {
 }, {passive:false});
 
 // ================= tools / topbar =================
-function setTool(t){
+// cut = the Cut-out tool: the Area tool, with every shape drawn subtracted from its category
+function setTool(t, cut){
   tool = t;
+  cutTool = !!cut && t==="area"; cutNext = cutTool;
   if(drawing && drawing.type!=="count") drawing = null;
-  document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active", b.dataset.tool===t));
+  document.querySelectorAll(".tool").forEach(b=>b.classList.toggle("active", cutTool ? b.id==="toolCut" : b.dataset.tool===t));
   const _tn = document.getElementById("toolName"); if(_tn) _tn.textContent = t.toUpperCase();
   overlay.style.cursor = t==="select" ? "grab" : DRAW_CURSOR;
   overlay.style.touchAction = t==="select" ? "auto" : "none";
@@ -3045,7 +3082,7 @@ function setTool(t){
   curveMode = false;
   drawOverlay(); drawTemp(); updateFab(); updateLive();
 }
-var bendTipShown = false, curveMode = false, altHeld = false;
+var bendTipShown = false, curveMode = false, altHeld = false, cutTool = false;
 // holding Alt (Option on a Mac) while drawing shows the last segment bending through the mouse — click to keep it
 window.addEventListener("keydown", e => {
   if(e.key==="Alt" && drawing){ e.preventDefault(); if(!altHeld){ altHeld = true; requestDraw(); scheduleTemp(); updateLive(); } }
@@ -3054,7 +3091,7 @@ window.addEventListener("keyup", e => {
   if(e.key==="Alt" && (altHeld || drawing)){ e.preventDefault(); altHeld = false; requestDraw(); scheduleTemp(); updateLive(); }
 });
 window.addEventListener("blur", () => { altHeld = false; });
-document.querySelectorAll(".tool").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+document.querySelectorAll(".tool").forEach(b => b.onclick = () => b.id==="toolCut" ? setTool("area", true) : setTool(b.dataset.tool));
 
 function goPage(delta){
   if(!pdfDoc) return;
@@ -3551,7 +3588,7 @@ async function pageSnapshot(docId, pageNo){
   const c = document.createElement("canvas");
   c.width = vp.width; c.height = vp.height;
   const ctx = c.getContext("2d");
-  await page.render({canvasContext:ctx, viewport:vp}).promise;
+  await page.render({canvasContext:ctx, viewport:vp, optionalContentConfigPromise:ocFor(docId)}).promise;
   const mine = measurements.filter(m => m.src==="pdf" && m.doc===docId && m.page===pageNo &&
     !hiddenCats.has(m.cat||"") && !hiddenItems.has(m.id));
   for(const m of mine) drawMeasureOn(ctx, m, sc);
@@ -4156,7 +4193,7 @@ async function rasterPages(L, pdf, st, items){
     c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
     const ctx = c.getContext("2d");
     ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
-    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    await page.render({canvasContext:ctx, viewport:vp, optionalContentConfigPromise:ocFor(docIdOf(st))}).promise;
     const k = clamp(Math.min(vp1.width, vp1.height)/100, 7, 16)*sc/11;   // same label size as the vector version
     const mine = items.filter(m => m.page===pg);
     for(const m of mine) drawMeasureOn(ctx, m, sc, k);
@@ -4181,6 +4218,7 @@ async function markedPlanBytes(L, docId, withSummary){
   const d = docMeta(docId), sub = d ? shortName(d.name, 60) : "";
   try{
     const pdf = await L.PDFDocument.load(st.data.slice(0), {updateMetadata:false});
+    hideLayersIn(L, pdf, docId);   // the exported PDF opens with the same layers hidden
     const font = await pdf.embedFont(L.StandardFonts.Helvetica), bold = await pdf.embedFont(L.StandardFonts.HelveticaBold);
     const pages = pdf.getPages(), keys = [], mode = pdfLabelMode();
     for(let pg=1; pg<=Math.min(pages.length, st.pdf.numPages); pg++){
@@ -4369,7 +4407,7 @@ function serializeProject(){
     docs: docs.map(d => { const st = docStore.get(d.id) || {};
       return {id:d.id, name:d.name, pages:d.pages||0, ref:st.ref||null, parts:st.parts||0}; }),
     curDocId, curPage:pageNum, nextDocNum,
-    ftPerUnit, docScale, scaleLabels, measurements, nextId, counters, categories, activeCatId, nextCatId, versions,
+    ftPerUnit, docScale, scaleLabels, measurements, nextId, counters, categories, activeCatId, nextCatId, versions, layersOff:docLayersOff,
     // read by older copies of the app (they only know one plan)
     pdfName: docs[0] ? docs[0].name : "", pdfRef: first.ref || undefined, pdfParts: first.parts || undefined,
     defaultFtPerUnit: docs[0] && docScale[docs[0].id] ? docScale[docs[0].id].fpu : null};
@@ -4414,6 +4452,12 @@ function cleanProject(d, depth){
   if(d.activeCatId!=null) d.activeCatId = safeIdStr(d.activeCatId);
   if(Array.isArray(d.docs)) d.docs = d.docs.filter(x => x && safeIdStr(x.id)).map(x => Object.assign(x, {id:safeIdStr(x.id), name:String(x.name==null ? "plan.pdf" : x.name).slice(0, 300), pages:Math.max(0, parseInt(x.pages, 10)||0)}));
   if(d.curDocId!=null) d.curDocId = safeIdStr(d.curDocId);
+  if(d.layersOff!=null){   // hidden PDF layers: plan id → layer ids like "12R"
+    const lo = {};
+    if(typeof d.layersOff==="object" && !Array.isArray(d.layersOff))
+      for(const k of Object.keys(d.layersOff)) if(safeIdStr(k) && Array.isArray(d.layersOff[k])) lo[k] = d.layersOff[k].map(String).filter(x => /^\d+R\d*$/.test(x)).slice(0, 500);
+    d.layersOff = lo;
+  }
   if(Array.isArray(d.measurements)){
     let top = 0;
     for(const m of d.measurements) if(m && Number.isFinite(+m.id)) top = Math.max(top, +m.id);
@@ -4441,6 +4485,7 @@ function cleanProject(d, depth){
 }
 function applyProject(data){
   cleanProject(data);
+  docLayersOff = data.layersOff || {}; layerInfo.clear();
   verClockStart = Date.now();
   docStore.clear(); baseCache.clear(); if(planImgs){ planImgs.clear(); planImgBytes = 0; }
   undoStack.length = 0; redoStack.length = 0; updateUndoBtns();   // a different job starts a fresh undo history
@@ -4845,7 +4890,7 @@ function resetProject(){
   selectedId=null; selVertex=null; drawing=null; calibPts=null;
   docs=[]; // the PDFs stay in memory until another job is opened, so ⌘Z can restore them
   clearPlanView();
-  fileHandle=null; versions=[];
+  fileHandle=null; versions=[]; docLayersOff = {}; layerInfo.clear();
   baseCache.clear(); if(planImgs){ planImgs.clear(); planImgBytes = 0; }
   collapsedCats.clear(); hiddenCats.clear(); hiddenItems.clear();
   document.getElementById("measSearch").value="";
@@ -5339,6 +5384,7 @@ document.querySelectorAll("[data-pop]").forEach(b => {
     closePops();
     if(!was){
       if(b.dataset.pop==="docs"){ docArm = null; docRen = null; renderDocList(); }
+      if(b.dataset.pop==="layers") renderLayerList();
       positionPop(p,b); b.classList.add("on");
     }
   });
@@ -6348,7 +6394,8 @@ function toolItems(){
   return [{head:"TOOLS"},
     {label:"↖ Select / edit", k:"V", on:tool==="select", fn:() => setTool("select")},
     {label:"📏 Linear", k:"L", on:tool==="line", fn:() => setTool("line")},
-    {label:"⬠ Area", k:"A", on:tool==="area", fn:() => setTool("area")},
+    {label:"⬠ Area", k:"A", on:tool==="area" && !cutTool, fn:() => setTool("area")},
+    {label:"➖ Cut-out (subtract an area)", k:"X", on:tool==="area" && cutTool, fn:() => setTool("area", true)},
     {label:"● Count", k:"K", on:tool==="count", fn:() => setTool("count")}];
 }
 function projectItems(){
@@ -6526,7 +6573,7 @@ async function prefetchNext(){
     const c = document.createElement("canvas");
     c.width = Math.floor(bvp.width); c.height = Math.floor(bvp.height);
     const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
-    await page.render({canvasContext:cx, viewport:bvp}).promise;
+    await page.render({canvasContext:cx, viewport:bvp, optionalContentConfigPromise:ocFor(docId)}).promise;
     keepPlanImg(docId+":"+n, {canvas:c, scale:bscale}, () => { c.width = c.height = 0; });
   }catch{}
   schedulePrefetch();
@@ -6590,10 +6637,12 @@ function toolHint(){
   const d = drawing, map_ = mode==="map";
   const unset = !map_ && pdfDoc && !(ftPerUnit[PK()] || docScale[curDocId]);
   const warn = unset && tool!=="select" && tool!=="calibrate" ? '<span class="warn">Set the scale first</span> (📐 Scale on the left) — ' : "";
+  if(d && d.type==="area" && cutNext) return warn+'<b>Cut-out:</b> click each corner of the part to subtract · <b>click the first corner</b> or press Enter to close · it comes off its category\'s total';
   if(d && d.type==="area") return warn+'<b>Area:</b> click each corner · <b>click the first corner</b> or press Enter to close · Backspace takes back a point · edges can\'t cross';
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
+  if(tool==="area" && cutTool) return warn+'<b>Cut-out:</b> draw the part to subtract (a patio inside a lawn) — it comes off the total of the area around it · click the first corner to start';
   if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
@@ -6663,6 +6712,8 @@ async function readLineWork(doc, pg){
     const O = pdfjsLib.OPS, U = pdfjsLib.Util, fn = ol.fnArray, ar = ol.argsArray;
     const DRAWN = new Set([O.stroke, O.closeStroke, O.fill, O.eoFill, O.fillStroke, O.eoFillStroke, O.closeFillStroke, O.closeEOFillStroke]);
     const segs = [], curved = [], MAX = 400000*4, stack = [];
+    const oc = layerInfo.get(docIdOfPdf(doc)) ? await ocFor(docIdOfPdf(doc)) : null, mc = [];   // marked content: hidden layers
+    let hidden = 0;
     let inCurve = 0;
     let ctm = vt;
     const tp = (x, y) => [ctm[0]*x + ctm[2]*y + ctm[4], ctm[1]*x + ctm[3]*y + ctm[5]];
@@ -6672,6 +6723,11 @@ async function readLineWork(doc, pg){
     };
     for(let i=0; i<fn.length && segs.length<MAX; i++){
       const f = fn[i], a = ar[i];
+      if(f===O.beginMarkedContentProps || f===O.beginMarkedContent){
+        const off = !!(oc && f===O.beginMarkedContentProps && a && a[0]==="OC" && a[1] && !oc.isVisible(a[1]));
+        mc.push(off); if(off) hidden++;
+      } else if(f===O.endMarkedContent){ if(mc.pop()) hidden--; }
+      if(hidden) continue;   // inside a hidden layer
       if(f===O.save) stack.push(ctm);
       else if(f===O.restore){ if(stack.length) ctm = stack.pop(); }
       else if(f===O.transform) ctm = U.transform(ctm, a);
@@ -7023,6 +7079,100 @@ function tick(){
 }
 setInterval(tick, 1500);
 document.addEventListener("visibilitychange", tick);
+
+// ================= PDF layers (optional content): show or hide them =================
+// Some plan sets keep information on layers (planting, utilities, dimensions…). Each layer can be shown or hidden;
+// only what's drawn changes, the PDF isn't edited. Hidden layers are kept with the project, per plan.
+var layerInfo = new Map(), docLayersOff = {};   // plan id → {groups:[{id, name, depth}], startOff:[…]} or null · plan id → hidden ids
+async function layersOf(docId){
+  if(layerInfo.has(docId)) return layerInfo.get(docId);
+  const st = docStore.get(docId);
+  if(!st || !st.pdf) return null;
+  let info = null;
+  try{
+    const cfg = await st.pdf.getOptionalContentConfig(), gs = cfg && cfg.getGroups();
+    if(gs && Object.keys(gs).length){
+      const groups = [], seen = new Set();
+      const walk = (arr, depth) => {   // the PDF's own order, sub-layers indented
+        for(const x of arr || []){
+          if(typeof x==="string"){ if(gs[x] && !seen.has(x)){ seen.add(x); groups.push({id:x, name:String(gs[x].name || "Layer"), depth}); } }
+          else if(Array.isArray(x)) walk(x, depth+1);
+          else if(x && Array.isArray(x.order)) walk(x.order, depth + (x.name ? 1 : 0));
+        }
+      };
+      walk(cfg.getOrder ? cfg.getOrder() : null, 0);
+      for(const id of Object.keys(gs)) if(!seen.has(id)) groups.push({id, name:String(gs[id].name || "Layer"), depth:0});
+      info = {groups, startOff:groups.filter(g => !gs[g.id].visible).map(g => g.id), cfg};
+    }
+  }catch(e){ console.warn("layers", e); }
+  layerInfo.set(docId, info);
+  return info;
+}
+function layersOffOf(docId){ const info = layerInfo.get(docId); return docLayersOff[docId] || (info ? info.startOff : []); }
+// the layer settings a page is drawn with (undefined = the PDF has no layers: drawn as it is)
+function ocFor(docId){
+  const info = layerInfo.get(docId);
+  if(!info) return undefined;
+  const off = new Set(layersOffOf(docId));
+  for(const g of info.groups) info.cfg.setVisibility(g.id, !off.has(g.id));
+  return Promise.resolve(info.cfg);
+}
+function docIdOf(st){ for(const [k, v] of docStore) if(v===st) return k; return ""; }
+function docIdOfPdf(pdf){ for(const [k, v] of docStore) if(v.pdf===pdf) return k; return ""; }
+function setLayer(docId, id, on){
+  const off = new Set(layersOffOf(docId));
+  if(on) off.delete(id); else off.add(id);
+  docLayersOff[docId] = [...off];
+  layersChanged(docId);
+}
+// a layer shown or hidden: that plan's pages are drawn again (the stored pictures of them are dropped)
+function layersChanged(docId){
+  const pre = docId+":";
+  for(const k of [...baseCache.keys()]) if(k.startsWith(pre)) baseCache.delete(k);
+  for(const k of [...planImgs.keys()]) if(k.startsWith(pre)){ planImgBytes -= planImgs.get(k).blob.size; planImgs.delete(k); }
+  for(const k of [...magnetPages.keys()]) if(k.startsWith(pre)) magnetPages.delete(k);
+  magMemo = null;
+  if(docId===curDocId){ hiState = null; hiCanvas.style.display = "none"; renderPage(); }
+  scheduleAutosave();
+  renderLayerList(); syncLayersChip();
+}
+function syncLayersChip(){
+  const info = mode==="pdf" && pdfDoc ? layerInfo.get(curDocId) : null, b = document.getElementById("layersChip");
+  if(!b) return;
+  const show = !!(info && info.groups.length);
+  b.style.display = show ? "" : "none"; document.getElementById("layersDiv").style.display = show ? "" : "none";
+  const n = show ? layersOffOf(curDocId).length : 0, badge = document.getElementById("layersN");
+  badge.style.display = n ? "" : "none"; badge.textContent = n;
+}
+function renderLayerList(){
+  const el = document.getElementById("layerList");
+  if(!el) return;
+  const info = layerInfo.get(curDocId);
+  if(!info){ el.innerHTML = '<div class="lnote">This PDF has no layers.</div>'; return; }
+  const off = new Set(layersOffOf(curDocId));
+  el.innerHTML = info.groups.map(g => '<label class="lrow'+(off.has(g.id) ? " off" : "")+'" style="padding-left:'+(10 + Math.min(g.depth, 4)*16)+'px">'+
+    '<input type="checkbox" data-id="'+esc2(g.id)+'"'+(off.has(g.id) ? "" : " checked")+'><span data-nt>'+esc2(g.name)+'</span></label>').join("");
+}
+document.getElementById("layerList").addEventListener("change", e => {
+  const i = e.target.closest("input[data-id]");
+  if(i) setLayer(curDocId, i.dataset.id, i.checked);
+});
+document.getElementById("layersAllOn").addEventListener("click", () => { docLayersOff[curDocId] = []; layersChanged(curDocId); toast("All layers showing"); });
+// exported PDFs open with the same layers hidden (the layer list of the PDF is set to match; nothing is removed)
+function hideLayersIn(L, pdf, docId){
+  const off = layerInfo.get(docId) ? layersOffOf(docId) : [];
+  if(!off.length) return;
+  try{
+    const ocp = pdf.catalog.lookupMaybe(L.PDFName.of("OCProperties"), L.PDFDict);
+    const d = ocp && ocp.lookupMaybe(L.PDFName.of("D"), L.PDFDict);
+    if(!d) return;
+    const ref = s => { const m = /^(\d+)R(\d*)$/.exec(s); return m ? L.PDFRef.of(+m[1], m[2] ? +m[2] : 0) : null; };
+    const offSet = new Set(off), refs = off.map(ref).filter(Boolean);
+    const on = d.lookupMaybe(L.PDFName.of("ON"), L.PDFArray);
+    if(on) d.set(L.PDFName.of("ON"), pdf.context.obj(on.asArray().filter(x => !(x instanceof L.PDFRef && offSet.has(x.objectNumber+"R"+(x.generationNumber || ""))))));
+    d.set(L.PDFName.of("OFF"), pdf.context.obj(refs));
+  }catch(e){ console.warn("layers in export", e); }
+}
 </script>
 </body>
 </html>
