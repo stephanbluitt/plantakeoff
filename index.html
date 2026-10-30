@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-P6LA8yxRCMWxydAp4V7JiOd2En79lyJkQ1x4I6s5OMw=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UGQXhxeDsDjTKNPV91JSDQvbMel2jikXoPc8sGNtw64=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -283,7 +283,8 @@
   #fab #fabCut.on{background:var(--amber); color:#fff; border-style:solid;}
   #toolsPill #toolCut svg .hole{stroke-dasharray:2.2 1.7;}
   /* PDF layers */
-  #layersChip{white-space:nowrap;}
+  #layersChip{white-space:nowrap; border:1px solid var(--hair); margin-left:4px; font-weight:600; color:var(--ink);}
+  #layersChip.none{font-weight:400; color:var(--faint); border-style:dashed;}   /* this PDF has no layers */
   #navPill{left:calc((100vw - 304px) / 2); max-width:calc(100vw - 304px - 24px);}   /* centred over the plan, beside the side panel */
   @media (max-width:840px){ #navPill{left:50%; max-width:96vw;} }
   #layersChip .n{display:inline-block; min-width:16px; margin-left:4px; padding:0 4px; border-radius:8px; background:var(--amber); color:#fff; font-size:10.5px; font-weight:700; line-height:16px; text-align:center;}
@@ -605,7 +606,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.2.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.2.1</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -797,6 +798,7 @@
 <!-- floating plan controls -->
 <div class="pill pdfOnly" id="navPill">
   <button class="pbtn" id="docChip" data-pop="docs" title="Plans in this project" style="display:none">📄 <span id="docName">Plans</span><span class="chev">▾</span></button>
+  <button class="pbtn" id="layersChip" data-pop="layers" title="Layers in this PDF — show or hide them" style="display:none">◫ Layers<span class="n" id="layersN" style="display:none"></span></button>
   <div class="pdiv" id="docDiv" style="display:none"></div>
   <button class="pbtn" id="prevPg" title="Previous page (Page Up)">‹</button>
   <div id="pageInfo">– / –</div>
@@ -811,8 +813,6 @@
   </button>
   <div class="pdiv"></div>
   <button class="pbtn" id="pdfInvert" title="Invert plan colors">🌓</button>
-  <div class="pdiv" id="layersDiv" style="display:none"></div>
-  <button class="pbtn" id="layersChip" data-pop="layers" title="Layers in this PDF — show or hide them" style="display:none">◫ Layers<span class="n" id="layersN" style="display:none"></span></button>
 </div>
 
 <div id="fab">
@@ -7140,7 +7140,9 @@ function syncLayersChip(){
   const info = mode==="pdf" && pdfDoc ? layerInfo.get(curDocId) : null, b = document.getElementById("layersChip");
   if(!b) return;
   const show = !!(info && info.groups.length);
-  b.style.display = show ? "" : "none"; document.getElementById("layersDiv").style.display = show ? "" : "none";
+  b.style.display = mode==="pdf" && pdfDoc ? "" : "none";   // always there with a plan open; dimmed when it has no layers
+  b.classList.toggle("none", !show);
+  b.title = show ? "Layers in this PDF — show or hide them" : "This PDF has no layers";
   const n = show ? layersOffOf(curDocId).length : 0, badge = document.getElementById("layersN");
   badge.style.display = n ? "" : "none"; badge.textContent = n;
 }
