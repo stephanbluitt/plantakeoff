@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EMF7QGGwK2h72hXTND15++AZxYVZNVTM+A9rw6PeVLo=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-I+Iq5kXhkC/yaB52LVP2huQn/REumFiwEtCpxZC3y3g=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -294,6 +294,8 @@
   #pop-layers .lrow input{width:16px; height:16px; margin:0; flex:none; accent-color:var(--amber); cursor:pointer;}
   #pop-layers .lrow.off span{color:var(--faint);}
   #pop-layers .lall{display:flex; gap:6px; padding:4px 8px 6px;}
+  #pop-layers .lpage{font-size:12px; color:var(--dim);}
+  #pop-layers .lpage b{margin-left:auto; font-family:var(--mono); font-size:10.5px; font-weight:600; color:var(--faint);}
   #pop-layers .lbtn{flex:1; padding:7px 8px; border:1px solid var(--hair); border-radius:8px; background:var(--solid); color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer;}
   #pop-layers .lbtn:hover{background:var(--amber); color:#fff; border-color:transparent;}
   #pop-layers .lbtn:disabled{opacity:.4; cursor:default; background:var(--solid); color:var(--ink); border-color:var(--hair);}
@@ -610,7 +612,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.2.2</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.2.3</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -702,6 +704,7 @@
 </div>
 <div class="pop" id="pop-layers">
   <div class="ph">LAYERS IN THIS PDF</div>
+  <label class="lrow lpage"><input type="checkbox" id="layersPageOnly" checked><span>Only layers on this page</span><b id="layersCount"></b></label>
   <div class="lall"><button class="lbtn" id="layersAllOn">👁 All on</button><button class="lbtn" id="layersAllOff">🙈 All off</button></div>
   <div id="layerList"></div>
   <div class="lnote">Hiding a layer only changes what you see, print and export — the PDF itself isn't changed.</div>
@@ -7105,7 +7108,7 @@ async function layersOf(docId){
       };
       walk(cfg.getOrder ? cfg.getOrder() : null, 0);
       for(const id of Object.keys(gs)) if(!seen.has(id)) groups.push({id, name:String(gs[id].name || "Layer"), depth:0});
-      info = {groups, startOff:groups.filter(g => !gs[g.id].visible).map(g => g.id), cfg};
+      info = {groups, startOff:groups.filter(g => !gs[g.id].visible).map(g => g.id), cfg, pages:new Map()};
     }
   }catch(e){ console.warn("layers", e); }
   layerInfo.set(docId, info);
@@ -7148,29 +7151,67 @@ function syncLayersChip(){
   b.title = show ? "Layers in this PDF — show or hide them" : "This PDF has no layers";
   const n = show ? layersOffOf(curDocId).length : 0, badge = document.getElementById("layersN");
   badge.style.display = n ? "" : "none"; badge.textContent = n;
+  const pop = document.getElementById("pop-layers");
+  if(pop && pop.classList.contains("open") && (pop._at!==curDocId+":"+pageNum)){ pop._at = curDocId+":"+pageNum; renderLayerList(); }
 }
+// which layers a page actually draws with (read once per page from its drawing instructions)
+function layersOnPage(docId, pg){
+  const info = layerInfo.get(docId), st = docStore.get(docId);
+  if(!info || !st || !st.pdf) return Promise.resolve(null);
+  if(!info.pages.has(pg)) info.pages.set(pg, (async () => {
+    const ids = new Set();
+    try{
+      const ol = await (await st.pdf.getPage(pg)).getOperatorList(), O = pdfjsLib.OPS;
+      for(let i=0; i<ol.fnArray.length; i++){
+        if(ol.fnArray[i]!==O.beginMarkedContentProps) continue;
+        const a = ol.argsArray[i];
+        if(!a || a[0]!=="OC" || !a[1]) continue;
+        if(a[1].id) ids.add(a[1].id);
+        if(Array.isArray(a[1].ids)) for(const x of a[1].ids) ids.add(x);   // a layer set (OCMD)
+      }
+    }catch(err){ console.warn("page layers", err); return null; }
+    return ids;
+  })());
+  return info.pages.get(pg);
+}
+function layersPageOnly(){ return prefGet("tt_layers_page", "1")!=="0"; }
+var layersListed = [];   // the layer ids the menu shows right now (All on / All off work on these)
 function renderLayerList(){
   const el = document.getElementById("layerList");
   if(!el) return;
-  const info = layerInfo.get(curDocId);
-  if(!info){ el.innerHTML = '<div class="lnote">This PDF has no layers.</div>'; document.getElementById("layersAllOn").disabled = document.getElementById("layersAllOff").disabled = true; return; }
-  const off = new Set(layersOffOf(curDocId));
-  document.getElementById("layersAllOn").disabled = !off.size;
-  document.getElementById("layersAllOff").disabled = off.size>=info.groups.length;
-  el.innerHTML = info.groups.map(g => '<label class="lrow'+(off.has(g.id) ? " off" : "")+'" style="padding-left:'+(10 + Math.min(g.depth, 4)*16)+'px">'+
-    '<input type="checkbox" data-id="'+esc2(g.id)+'"'+(off.has(g.id) ? "" : " checked")+'><span data-nt>'+esc2(g.name)+'</span></label>').join("");
+  const info = layerInfo.get(curDocId), on = document.getElementById("layersAllOn"), offB = document.getElementById("layersAllOff"), cnt = document.getElementById("layersCount");
+  document.getElementById("layersPageOnly").checked = layersPageOnly();
+  layersListed = [];
+  if(!info){ el.innerHTML = '<div class="lnote">This PDF has no layers.</div>'; on.disabled = offB.disabled = true; cnt.textContent = ""; return; }
+  const doc = curDocId, pg = pageNum, draw = used => {
+    if(doc!==curDocId || pg!==pageNum) return;   // the view moved on meanwhile
+    const off = new Set(layersOffOf(doc));
+    const list = used ? info.groups.filter(g => used.has(g.id)) : info.groups;
+    layersListed = list.map(g => g.id);
+    cnt.textContent = used ? list.length+" / "+info.groups.length : info.groups.length+"";
+    on.disabled = !list.some(g => off.has(g.id)); offB.disabled = !list.some(g => !off.has(g.id));
+    el.innerHTML = list.length ? list.map(g => '<label class="lrow'+(off.has(g.id) ? " off" : "")+'" style="padding-left:'+(10 + (used ? 0 : Math.min(g.depth, 4)*16))+'px">'+
+      '<input type="checkbox" data-id="'+esc2(g.id)+'"'+(off.has(g.id) ? "" : " checked")+'><span data-nt>'+esc2(g.name)+'</span></label>').join("")
+      : '<div class="lnote">No layers on this page — untick "Only layers on this page" to see all '+info.groups.length+'.</div>';
+  };
+  if(!layersPageOnly()){ draw(null); return; }
+  el.innerHTML = '<div class="lnote">Reading this page\'s layers…</div>'; on.disabled = offB.disabled = true;
+  layersOnPage(doc, pg).then(used => draw(used || null));   // couldn't read the page: show them all
 }
+document.getElementById("layersPageOnly").addEventListener("change", e => { prefSet("tt_layers_page", e.target.checked ? "1" : "0"); renderLayerList(); });
 document.getElementById("layerList").addEventListener("change", e => {
   const i = e.target.closest("input[data-id]");
   if(i) setLayer(curDocId, i.dataset.id, i.checked);
 });
 document.getElementById("layersAllOn").addEventListener("click", e => {
-  e.stopPropagation(); docLayersOff[curDocId] = []; layersChanged(curDocId); toast("All layers showing");
+  e.stopPropagation();
+  const listed = new Set(layersListed);
+  docLayersOff[curDocId] = layersOffOf(curDocId).filter(id => !listed.has(id)); layersChanged(curDocId); toast("All layers showing");
 });
 document.getElementById("layersAllOff").addEventListener("click", e => {
   e.stopPropagation();
   const info = layerInfo.get(curDocId); if(!info) return;
-  docLayersOff[curDocId] = info.groups.map(g => g.id); layersChanged(curDocId); toast("All layers hidden — only what isn't on a layer shows");
+  docLayersOff[curDocId] = [...new Set([...layersOffOf(curDocId), ...layersListed])]; layersChanged(curDocId); toast("All layers hidden — only what isn't on a layer shows");
 });
 // exported PDFs open with the same layers hidden (the layer list of the PDF is set to match; nothing is removed)
 function hideLayersIn(L, pdf, docId){

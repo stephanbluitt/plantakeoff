@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v3.2.2
+# PLAN TAKEOFF v3.2.3
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Only this page's layers (v3.2.3)** — the Layers menu lists just the layers used on the page on screen ("2 / 48"), so a big plan set stays a short list; untick "Only layers on this page" to see all of them. All on / All off work on the layers listed.
 - **All layers on / off (v3.2.2)** — "All on" and "All off" at the top of the Layers menu.
 - **Layers next to the plan name (v3.2.1)** — the ◫ Layers button sits right after the plan's name at the start of the bottom bar, and shows whenever a plan is open (dimmed when that PDF has no layers).
 - **Cut-out tool and PDF layers (v3.2)** — Cut-out is a tool of its own in the tool bar (X): every area drawn with it is subtracted from its category; the ➖ Cut-out button while drawing is clearly a button (dashed outline, filled "✓ Cut-out" when on). Plans with layers get a ◫ Layers button in the bottom bar to show or hide each layer — only what's drawn changes (also when zoomed in, for the Magnet, the print report and exported PDFs, which open with the same layers hidden); the PDF isn't edited, and hidden layers are kept with the project.
