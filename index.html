@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ttkDNZkNtAJac8Kh3Tl3SXopT7fumsTYP6/QaLddg84=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ZYXubY7XyzTRKa38AAvXU9sBEjLzNnaLxL+qgJb+7Hc=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -624,7 +624,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.3.2</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.3.3</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -1664,6 +1664,7 @@ function initMap(){
   tempGroup = L.layerGroup().addTo(map);
   map.on("click", e => {
     if(e.originalEvent && isCtxClick(e.originalEvent)) return;
+    if(tool!=="select" && Date.now() - (window.__downAt || 0) > 500) return;   // held down a while: not a click to measure
     if(tool==="select"){
       if(selectedId!=null || selVertex){ selectedId=null; selVertex=null; refreshAll(); }
       return;
@@ -2809,6 +2810,7 @@ overlay.addEventListener("pointercancel", endBendDrag);
 overlay.addEventListener("click", e => {
   if(isCtxClick(e)) return;
   if(suppressClick){ suppressClick = false; return; }
+  if(Date.now() - (window.__downAt || 0) > 500) return;   // held down a while: that wasn't a click to measure
   if(panning || tool==="select" || tool==="smart" || spaceDown || pinchActive) return;
   if(e.detail > 1) return; // second click of a double-click — dblclick handler finishes the shape
   const p = snap(evtPdf(e));
@@ -6672,8 +6674,8 @@ function toolHint(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="smart" && smartCut) return warn+'<b>Smart cut-out (beta):</b> zig-zag inside the part to subtract (a patio inside a lawn) — it comes off the area around it · a straight drag moves the plan · X switches cut-out off';
-  if(tool==="smart") return warn+'<b>Smart area (beta):</b> zig-zag inside a space — or loop around it — and let go: it finds the outline · a straight drag (or hold, then drag) moves the plan · drag a corner to adjust it';
+  if(tool==="smart" && smartCut) return warn+'<b>Smart cut-out (beta):</b> click or scribble inside the part to subtract (a patio inside a lawn) — it comes off the area around it · X switches cut-out off';
+  if(tool==="smart") return warn+'<b>Smart area (beta):</b> click or scribble inside a space — or loop around it: it finds the outline · move the plan with the scroll wheel, or hold Space and drag · drag a corner to adjust it';
   if(tool==="area" && cutTool) return warn+'<b>Cut-out:</b> draw the part to subtract (a patio inside a lawn) — it comes off the total of the area around it · click the first corner to start';
   if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
@@ -7270,7 +7272,8 @@ overlay.addEventListener("pointerdown", e => {
   const p0 = evtPdf(e);
   const h = cornerAt(p0); if((h && h.kind!=="dot") || bendAt(p0)) return;   // a corner or ◆: that's moved instead
   smartG = {id:e.pointerId, x:e.clientX, y:e.clientY, t:Date.now(), rect:pdfCanvas.getBoundingClientRect(), l:wrap.scrollLeft, tp:wrap.scrollTop,
-            pts:[[e.clientX, e.clientY]], len:0, mode:"", turns:0, curl:0, ang:null, ax:e.clientX, ay:e.clientY};
+            pts:[[e.clientX, e.clientY]], len:0, mode:"scribble", turns:0, curl:0, ang:null, ax:e.clientX, ay:e.clientY};
+  scribble = {pts:[p0]};   // it's a scribble from the start (the plan moves with the wheel, or Space + drag)
   try{ overlay.setPointerCapture(e.pointerId); }catch{}
   e.preventDefault(); hideTip(); magnetPage();   // the plan's line work is read meanwhile, for the corners
 });
@@ -7310,7 +7313,7 @@ overlay.addEventListener("pointerup", e => {
   if(!g || e.pointerId!==g.id) return;
   smartG = null; suppressClick = true; overlay.style.cursor = DRAW_CURSOR;
   if(g.mode==="pan"){ window.__panEndAt = Date.now(); return; }
-  if(g.mode!=="scribble"){ toast("✨ Scribble (zig-zag) inside a space — or loop around it — and let go · a straight drag moves the plan", 4500); return; }
+  if(g.mode!=="scribble") return;
   const pts = scribble.pts; scribble = null; requestDraw();
   toast("✨ Finding the outline…", 1500);
   setTimeout(() => { try{ smartArea(pts); }catch(err){ console.warn("smart area", err); toast("Smart area couldn't read this spot — try again, or draw it with Area"); } }, 30);
@@ -7565,6 +7568,9 @@ function endTouchPan(e){
 }
 overlay.addEventListener("pointerup", endTouchPan);
 overlay.addEventListener("pointercancel", endTouchPan);
+
+// when the button went down on the plan or the map (only a quick click measures — see the click handlers)
+document.addEventListener("mousedown", e => { if(e.button===0 && e.target.closest && e.target.closest("#canvasWrap, #mapDiv")) window.__downAt = Date.now(); }, true);
 </script>
 </body>
 </html>

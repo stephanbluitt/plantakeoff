@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v3.3.2
+# PLAN TAKEOFF v3.3.3
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Only a quick click measures; Smart scribbles at once (v3.3.3)** — in Line / Area / Count / Cut-out / Calibrate (and on the map) a press held longer than ~½ s never places a point, moved or not; any drag moves the plan. In Smart, pressing starts the scribble straight away (the plan moves with the wheel or Space + drag), and a single click inside a space measures it.
 - **Move the plan in any tool (v3.3.2)** — press and hold still a moment, then drag: always moves the plan (never a point or a scribble, Smart included); on touch screens a one-finger drag moves the plan in every tool (a tap still places a point, two fingers zoom).
 - **Smart area moves like the other tools (v3.3.1)** — in Smart, a straight drag moves the plan; a zig-zag, a back-and-forth or a loop is a scribble (the app tells them apart and puts the plan back); a measurement's corner or ◆ can be dragged; a loop takes everything it circles, joined across shared lines; a space that runs off the screen is found by reading the whole page.
 - **Smart area — beta (v3.3)** — a Smart tool (✨, BETA) in the tool bar: scribble inside a space, or loosely around it, and let go. It finds the space's outline in the plan (as it's on screen, so scans and hidden layers work too): fills up to the plan's lines, bridges hatching and text, puts the edges on the middle of the lines, straightens them and locks the corners onto the plan's own corners. With the bar's ➖ Cut-out switch (or X) the smart areas are cut-outs. The result is a normal area (category, undo, editing). Tested: rooms exact on drawn plans, within ~1% on scans and curves.
