@@ -1,4 +1,4 @@
-# PLAN TAKEOFF v3.1.1
+# PLAN TAKEOFF v3.1.2
 
 **Professional takeoff & estimating tool for landscapers and contractors** — made by Stephan Bluitt · Made in the USA 🇺🇸
 
@@ -17,6 +17,7 @@ Measure construction plans and real properties, get instant quantities for estim
 
 - **Material estimates (v2.5)** — give a category an estimate type and get the order list as you measure: bulk material by depth with presets (topsoil, mulch, gravel, crushed stone, sand, decomposed granite, road base, asphalt…) in cubic yards, tons and bags; concrete slabs and footings (CY, order amount, 40/60/80 lb bags, rebar, wire mesh, gravel base); pavers (pieces, pallets, base); sod (pallets, rolls); seed, fertilizer or lime (lb, bags); edging and fence pieces with posts; wall blocks (blocks, courses, caps, drain gravel); and any amount per counted item. Waste included; shows in the list, reports, copies, CSV and PDFs.
 - **Units your way (v2.5)** — US lengths as decimal feet (5.5 LF), feet and inches (5'-6") or inches (66"), optionally with metric shown alongside (or US alongside metric); sizes can be typed any way — 4, 4in, 10cm, 3'6", 3 1/2 — including the calibrate length.
+- **Corners drag right away, curves can't cross, security (v3.1.2)** — with Line / Area / Count, dragging a corner moves it at once (a click still starts measuring there); bending an edge (◆, ⌒ Curve / U, Alt, on the plan or the map) can no longer make an area cross itself; the page now carries a security policy (only its own script and the named libraries can run), outside libraries are checked by fingerprint, and opened project files are checked before use.
 - **Curves drag right away (v3.1.1)** — with Line / Area, pressing a curve ◆ and dragging bends the edge at once (it used to move the plan unless you held it first). Corners are unchanged: click = start measuring there, hold ½ s = move it.
 - **Faster everywhere (v3.1)** — the drawing code was rebuilt for speed, with every feature kept: labels on the plan are placed once and remembered (selecting, hovering, dragging and zooming no longer re-place them all — on a crowded page a selection went from ~2.4 s to ~50 ms and a zoom from ~2.3 s to ~20 ms), the measurement list only lays out the rows you can see and doesn't rebuild when you only select, the hidden plan isn't redrawn while you're on the map (and the map isn't redrawn while you're on a plan), one mouse handler instead of three (each move ~7× less work), and the small background timers rest while the tab is hidden.
 - **Know where you are (v3.0.1)** — over a corner or a curve ◆ the cursor changes, the corner gets a ring, the ◆ grows, and a tip by the mouse says what click / hold / drag will do.

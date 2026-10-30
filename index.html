@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-OnMKml3pCfVLpQvvBUATt28ZvWMA6rmuDyQp7Bm+Vv8=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,9 +17,9 @@
 <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 <link rel="dns-prefetch" href="https://photon.komoot.io">
 <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root{
     --bg:#f2f2f7; --panel:#fafafc; --solid:#ffffff; --panel2:#eceef1;
@@ -588,7 +589,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.1.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.1.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -646,7 +647,7 @@
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
   <div class="hrow"><span>Start measuring from another corner</span><b>click it</b></div>
-  <div class="hrow"><span>Adjust a corner (any tool)</span><b>hold it ½ s, then drag</b></div>
+  <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag it</b></div>
   <div class="hrow"><span>Adjust a curve (any tool)</span><b>drag its ◆</b></div>
   <div class="hrow"><span>Add a corner to an edge</span><b>right-click the edge</b></div>
   <div class="hrow"><span>Delete a corner</span><b>right-click it</b></div>
@@ -690,7 +691,7 @@
     <div class="big" id="hintBig">Drop PDF plans here (several at once is fine), or add them from the menu</div>
     <div>Or switch to <b>Map</b> to measure any property from satellite</div>
     <div>Finish shapes with <kbd>double-click</kbd> / <kbd>Enter</kbd> · <kbd>⌘Z</kbd> undo · <kbd>⌘S</kbd> save</div>
-    <div>Right-click anywhere for options · hold a corner, then drag it to adjust it, in any tool</div>
+    <div>Right-click anywhere for options · drag a corner to adjust it, in any tool</div>
   </div>
   <div id="stage">
     <canvas id="pdfCanvas"></canvas>
@@ -1463,7 +1464,7 @@ function newDrawing(src){ return {src, type:tool, pts:[], arcs:[], hist:[], redo
 function addDrawPoint(p){
   const d = drawing;
   if(d.type==="area" && d.pts.length>=3 && closesOnFirst(d, p)){ finishDrawing(); return; }
-  if(d.type==="area" && crossesPath(d.pts, p)){ crossWarn(); return; }
+  if(d.type==="area" && outlineCrosses([...d.pts, p], [...(d.arcs || []).slice(0, d.pts.length-1), 0], false)){ crossWarn(); return; }
   d.pts.push(p);
   if(d.pts.length>1) d.arcs.push(0);
   d.hist.push({t:"pt"}); d.redo = [];
@@ -1471,6 +1472,7 @@ function addDrawPoint(p){
 function setDrawingBend(i, b){
   const d = drawing, prev = d.arcs[i] || 0;
   curveMode = false;
+  if(d.type==="area"){ const a = d.arcs.slice(); a[i] = b; if(outlineCrosses(d.pts, a, false)){ crossWarn("bend"); drawOverlay(); tempSig = ""; drawTemp(); updateFab(); return; } }
   if(prev!==b){ d.arcs[i] = b; d.hist.push({t:"bend", i, prev, next:b}); d.redo = []; }
   drawOverlay(); tempSig = ""; drawTemp(); updateFab(); updateLive();
 }
@@ -1689,10 +1691,10 @@ function addVertexHandles(layer, m){
     mk.on("drag", e => {
       m.pts[i] = {lat:e.latlng.lat, lng:e.latlng.lng};
       layer.setLatLngs(shapePts(m));
-      if(m.type==="area") layer.setStyle({color: polySelfCrosses(m.pts) ? "#e5493a" : m.color});
+      if(m.type==="area") layer.setStyle({color: outlineCrosses(m.pts, m.arcs, true) ? "#e5493a" : m.color});
     });
     mk.on("dragend", ()=>{
-      if(m.type==="area" && orig && polySelfCrosses(m.pts)){ m.pts = orig; crossWarn(true); refreshAll(); return; }   // edges can't cross
+      if(m.type==="area" && orig && outlineCrosses(m.pts, m.arcs, true)){ m.pts = orig; crossWarn(true); refreshAll(); return; }   // edges can't cross
       if(pre) commitHistory(pre); refreshAll();
     });
     mk.on("contextmenu", e => { L.DomEvent.stopPropagation(e); L.DomEvent.preventDefault(e); ctxOpen(e.originalEvent, shapeItems({kind:"vertex", m, idx:i}, null)); });
@@ -1753,16 +1755,20 @@ function addBendHandles(layer, m){
   bendHandles(m.pts, m.arcs, m.type==="area").forEach((pos, i) => {
     if(!mapShowsBend(m.pts[i], m.pts[(i+1)%n]) || !bendOK(m.arcs, i)) return;
     const mk = L.marker(pos, {draggable:true, icon:bendIcon(!!(m.arcs && m.arcs[i])), zIndexOffset:400}).addTo(mapLayerGroup);
-    let pre = null;
-    mk.on("dragstart", () => { pre = snapshot(); });
+    let pre = null, was = 0;
+    mk.on("dragstart", () => { pre = snapshot(); was = (m.arcs && m.arcs[i]) || 0; });
     mk.on("drag", e => {
       if(!m.arcs) m.arcs = [];
       m.arcs[i] = mapBulge(m.pts[i], m.pts[(i+1)%n], e.latlng);
       layer.setLatLngs(shapePts(m));
+      if(m.type==="area") layer.setStyle({color: outlineCrosses(m.pts, m.arcs, true) ? "#e5493a" : m.color});
       const v = measureValue(m);
       document.getElementById("liveVal").textContent = v==null ? "" : fQty(m.type, v, 1, 0);
     });
-    mk.on("dragend", () => { tidyArcs(m); if(pre) commitHistory(pre); refreshAll(); });
+    mk.on("dragend", () => {
+      if(m.type==="area" && outlineCrosses(m.pts, m.arcs, true)){ m.arcs[i] = was; tidyArcs(m); crossWarn("bend"); refreshAll(); return; }   // a curve can't make edges cross
+      tidyArcs(m); if(pre) commitHistory(pre); refreshAll();
+    });
     mk.on("contextmenu", e => {
       L.DomEvent.stopPropagation(e);
       if(m.arcs && m.arcs[i]){ pushHistory(); m.arcs[i] = 0; tidyArcs(m); refreshAll(); toast("Straightened"); }
@@ -1808,6 +1814,7 @@ function addTempBendHandles(d){
     mk.on("drag", e => { d.arcs[i] = mapBulge(d.pts[i], d.pts[i+1], e.latlng); scheduleTemp(); });
     mk.on("dragend", () => {
       mapBendDrag = false;
+      if(d.type==="area" && outlineCrosses(d.pts, d.arcs, false)){ d.arcs[i] = prev; crossWarn("bend"); }
       if(d.arcs[i]!==prev){ d.hist.push({t:"bend", i, prev, next:d.arcs[i]}); d.redo = []; }
       tempSig = ""; drawTemp(); updateFab(); updateLive();
     });
@@ -2639,7 +2646,7 @@ overlay.addEventListener("mousedown", e => {
       selectedId = hit.m.id;
       selVertex = hit.kind==="body" || hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
       editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start:evtPdf(e),
-                  orig: hit.m.pts.map(q=>({...q})), pre:snapshot(), moved:false};
+                  orig: hit.m.pts.map(q=>({...q})), origArcs: hit.m.arcs ? hit.m.arcs.slice() : null, pre:snapshot(), moved:false};
       staticExclude = hit.m.id; markStatic();
       renderList(); drawOverlay();
       e.preventDefault(); return;
@@ -2697,7 +2704,7 @@ window.addEventListener("mouseup", () => {
   if(editDrag){
     let {moved, pre, m} = editDrag;
     // an area can't be dragged into a shape whose edges cross: the corner goes back
-    if(moved && editCrosses()){ m.pts = editDrag.orig; moved = false; crossWarn(true); }
+    if(moved && editCrosses()){ const k = editDrag.kind; m.pts = editDrag.orig; if(editDrag.origArcs!==undefined) m.arcs = editDrag.origArcs; moved = false; crossWarn(k==="bend" ? "bend" : true); }
     editDrag = null; staticExclude = null; markStatic();
     tidyArcs(m);
     if(moved){ commitHistory(pre); refreshAll(); }
@@ -2736,6 +2743,7 @@ function endBendDrag(e){
   if(!bendDrag || e.pointerId!==bendDrag.id) return;
   const d = drawing, b = bendDrag;
   bendDrag = null; suppressClick = true;   // the click that ends a drag doesn't add a point
+  if(d && d.type==="area" && outlineCrosses(d.pts, d.arcs, false)){ d.arcs[b.i] = b.prev; crossWarn("bend"); }
   if(d && d.arcs[b.i]!==b.prev){ d.hist.push({t:"bend", i:b.i, prev:b.prev, next:d.arcs[b.i]}); d.redo = []; }
   requestDraw(); updateFab(); updateLive();
 }
@@ -2814,7 +2822,7 @@ function finishDrawing(){
   const near = (a,b) => drawing.src==="map" ? havFt(a,b) < 1.5 : dist(a,b) < 4/zoom;
   let pops = 0;
   while(pts.length>1 && pops<2 && near(pts[pts.length-1], pts[pts.length-2])){ pts.pop(); pops++; }
-  if(drawing.type==="area" && closeCrosses(pts)){ crossWarn(false, true); return; }
+  if(drawing.type==="area" && outlineCrosses(pts, [...(drawing.arcs || []).slice(0, pts.length-1), 0], true)){ crossWarn(false, true); return; }
   const need = drawing.type==="area" ? 3 : 2;
   if(pts.length >= need){
     pushHistory();
@@ -3176,7 +3184,7 @@ function catSubtotal(items, cat){
   if(cy) parts.push(fVol(cy.withWaste, 1));
   const ex = estText(cat, t);
   if(ex) parts.push(ex);
-  return parts.join(" · ") || "—";
+  return esc2(parts.join(" · ")) || "—";
 }
 function filterLabel(){
   const filt = document.getElementById("filterSel").value;
@@ -3639,6 +3647,7 @@ document.getElementById("printBtn").onclick = async () => {
 // ================= marked-up PDF download =================
 // Your measurements drawn onto the original plan as real PDF shapes (sharp at any zoom), plus a
 // takeoff summary page. Secured (locked) plans can't be edited, so those are rebuilt from page images.
+const PDFLIB_SRI = "sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI";
 const PDFLIB_URLS = [
   "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
   "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js",
@@ -3652,7 +3661,8 @@ function loadPdfLib(){
       try{
         await new Promise((res, rej) => {
           const sc = document.createElement("script");
-          sc.src = u; sc.onload = res; sc.onerror = () => { sc.remove(); rej(new Error("load")); };
+          sc.src = u; sc.integrity = PDFLIB_SRI; sc.crossOrigin = "anonymous";   // the same file on both CDNs: a changed copy is refused
+          sc.onload = res; sc.onerror = () => { sc.remove(); rej(new Error("load")); };
           document.head.appendChild(sc);
         });
         if(window.PDFLib) return window.PDFLib;
@@ -4384,7 +4394,53 @@ function normMeas(arr){
 }
 // load a project's data; its plans are fetched afterwards by the caller (openLoadedProject)
 var verClockStart = Date.now();   // var: used by the session restore while the page loads
+// A project can come from a file someone sent, so before any of it reaches the page it's checked: colours must be
+// real colours, ids plain ids and types known types. Anything else is replaced or left out — never run as code.
+const SAFE_ID = /^[\w.:-]{1,64}$/;
+const SAFE_COLOR = /^(#[0-9a-f]{3,8}|rgba?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*(,\s*[\d.]+\s*)?\)|[a-z]{3,20})$/i;
+function safeColor(c){ return typeof c==="string" && SAFE_COLOR.test(c.trim()) ? c.trim() : "#8a8f98"; }
+function safeIdStr(v){ return v!=null && SAFE_ID.test(String(v)) ? String(v) : ""; }
+function cleanProject(d, depth){
+  if(!d || typeof d!=="object") return d;
+  if(d.projectName!=null) d.projectName = String(d.projectName).slice(0, 300);
+  if(Array.isArray(d.categories)){
+    d.categories = d.categories.filter(c => c && typeof c==="object" && safeIdStr(c.id)).map(c => {
+      c.id = safeIdStr(c.id); c.name = String(c.name==null ? "" : c.name).slice(0, 200); c.color = safeColor(c.color);
+      if(c.parent!=null) c.parent = safeIdStr(c.parent) || null;
+      if(c.notes!=null) c.notes = String(c.notes).slice(0, 5000);
+      return c;
+    });
+  }
+  if(d.activeCatId!=null) d.activeCatId = safeIdStr(d.activeCatId);
+  if(Array.isArray(d.docs)) d.docs = d.docs.filter(x => x && safeIdStr(x.id)).map(x => Object.assign(x, {id:safeIdStr(x.id), name:String(x.name==null ? "plan.pdf" : x.name).slice(0, 300), pages:Math.max(0, parseInt(x.pages, 10)||0)}));
+  if(d.curDocId!=null) d.curDocId = safeIdStr(d.curDocId);
+  if(Array.isArray(d.measurements)){
+    let top = 0;
+    for(const m of d.measurements) if(m && Number.isFinite(+m.id)) top = Math.max(top, +m.id);
+    d.measurements = d.measurements.filter(m => m && typeof m==="object" && ["line", "area", "count"].includes(m.type) && Array.isArray(m.pts)).map(m => {
+      m.id = Number.isFinite(+m.id) && String(m.id).trim()!=="" ? +m.id : ++top;
+      m.src = m.src==="map" ? "map" : "pdf";
+      m.color = safeColor(m.color); m.cat = safeIdStr(m.cat);
+      m.name = String(m.name==null ? "" : m.name).slice(0, 300);
+      if(m.doc!=null) m.doc = safeIdStr(m.doc) || "d1";
+      if(m.page!=null) m.page = Math.max(1, parseInt(m.page, 10)||1);
+      m.pts = m.pts.filter(p => p && typeof p==="object").map(p => m.src==="map" ? {lat:+p.lat, lng:+p.lng} : {x:+p.x, y:+p.y});
+      if(m.arcs!=null) m.arcs = Array.isArray(m.arcs) ? m.arcs.map(b => +b || 0) : undefined;
+      if(m.sub) m.sub = true; else delete m.sub;
+      return m;
+    });
+  }
+  // saved versions hold whole projects of their own
+  if(Array.isArray(d.versions) && !depth) d.versions = d.versions.filter(v => v && typeof v==="object").map(v => {
+    v.id = safeIdStr(v.id) || String(Math.random()).slice(2, 12); v.name = String(v.name==null ? "" : v.name).slice(0, 120);
+    v.kind = v.kind==="auto" ? "auto" : "manual";
+    if(v.snap) cleanProject(v.snap, 1);
+    return v;
+  });
+  return d;
+}
 function applyProject(data){
+  cleanProject(data);
   verClockStart = Date.now();
   docStore.clear(); baseCache.clear(); if(planImgs){ planImgs.clear(); planImgBytes = 0; }
   undoStack.length = 0; redoStack.length = 0; updateUndoBtns();   // a different job starts a fresh undo history
@@ -5201,7 +5257,7 @@ function seasonOf(date){
 function wbRefilter(){
   wbCur = wbSeason==="all" ? wbList : wbList.filter(x=>seasonOf(x.date)===wbSeason);
   const sel = document.getElementById("histSel");
-  sel.innerHTML = wbCur.map(x=>'<option value="'+x.num+'">'+x.date+'</option>').join("");
+  sel.innerHTML = wbCur.map(x=>'<option value="'+esc2(x.num)+'">'+esc2(x.date)+'</option>').join("");
   return wbCur.length;
 }
 function wbApply(i){
@@ -6085,16 +6141,32 @@ function polySelfCrosses(pts){
   }
   return false;
 }
-function drawCross(d){
-  if(d.type!=="area" || !mousePdf || bending() || bendDrag) return false;
-  return crossesPath(d.pts, snap(mousePdf));
+// does an outline cross itself, curves included? closed = a finished area; open = an area still being drawn
+function outlineCrosses(pts, arcs, closed){
+  if(pts.length < 3) return false;
+  const q = bentPts(pts, arcs, closed).map(xyOf), n = q.length, segs = closed ? n : n-1;
+  for(let i=0; i<segs; i++){
+    const a = q[i], b = q[(i+1)%n];
+    for(let j=i+2; j<segs; j++){
+      if(closed && i===0 && j===segs-1) continue;   // the first and last pieces meet at the first corner
+      if(segCross(a, b, q[j], q[(j+1)%n])) return true;
+    }
+  }
+  return false;
 }
-function editCrosses(){ return !!editDrag && editDrag.m.type==="area" && editDrag.kind==="vertex" && polySelfCrosses(editDrag.m.pts); }
+// the area being drawn, with the piece to the mouse (or the curve being bent) — red in the preview when it would cross
+function drawCross(d){
+  if(d.type!=="area") return false;
+  const g = drawingShape(d, drawCursor(d));
+  return outlineCrosses(g.pts, g.arcs, false);
+}
+function editCrosses(){ return !!editDrag && editDrag.m.type==="area" && (editDrag.kind==="vertex" || editDrag.kind==="bend") && outlineCrosses(editDrag.m.pts, editDrag.m.arcs, true); }
 var crossWarnAt = 0;
 function crossWarn(edit, closing){
   if(Date.now()-crossWarnAt < 1200) return;
   crossWarnAt = Date.now();
-  toast(edit ? "That would make the edges cross — the corner went back"
+  toast(edit==="bend" ? "That curve would make the edges cross — it went back"
+      : edit ? "That would make the edges cross — the corner went back"
       : closing ? "The closing edge would cross your lines — add a corner or take one back (Backspace)"
       : "Edges can't cross — click a spot that keeps the shape clean", 3200);
 }
@@ -6173,21 +6245,15 @@ window.addEventListener("mousemove", e => {
   if(!cornerArm || editDrag) return;
   if(!(e.buttons & 1)){ cornerArm = null; return; }
   const dd = Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y);
-  if(!cornerArm.grab && cornerArm.hit.kind==="bend"){   // a ◆ bends as soon as it's dragged (no hold needed)
-    if(dd < 3) return;
-    clearTimeout(cornerArm.timer); cornerArm.grab = true;
-  }
+  // corners and ◆ move as soon as they're dragged; a click that wobbles a little still starts measuring on the corner
   if(!cornerArm.grab){
-    if(dd < 12) return;   // a wobbly click still starts measuring right on that corner
-    // pressed and dragged straight away: that moves the plan — the corner stays where it is
-    clearTimeout(cornerArm.timer);
-    panArm = {x:cornerArm.x, y:cornerArm.y, l:wrap.scrollLeft, t:wrap.scrollTop, moved:false};
-    cornerArm = null; return;
+    if(dd < (cornerArm.hit.kind==="bend" ? 3 : 6)) return;
+    clearTimeout(cornerArm.timer); cornerArm.grab = true;
   }
   if(dd < 3) return;
   const {hit, start, pre} = cornerArm; cornerArm = null;
   selectedId = hit.m.id; selVertex = hit.kind==="bend" ? null : {mId:hit.m.id, idx:hit.idx};
-  editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start, orig:hit.m.pts.map(q=>({...q})), pre, moved:false};
+  editDrag = {m:hit.m, kind:hit.kind, idx:hit.idx, start, orig:hit.m.pts.map(q=>({...q})), origArcs: hit.m.arcs ? hit.m.arcs.slice() : null, pre, moved:false};
   staticExclude = hit.m.id; markStatic(); renderList(); drawOverlay();
   suppressClick = true;   // the click at the end of the drag doesn't add a point
 });
@@ -6528,8 +6594,8 @@ function toolHint(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · hold a corner, then drag, to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
-  if(tool==="line") return warn+'<b>Line:</b> click to start · hold a corner, then drag, to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
+  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
+  if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
@@ -6920,7 +6986,7 @@ function overlayMove(e){
     if(c){
       key = "c"+c.m.id+":"+c.idx;
       if(tool==="select"){ cur = "move"; html = c.kind==="dot" ? "<b>Drag</b> to move it · right-click for options" : "<b>Drag</b> to move this corner · right-click for options"; }
-      else { cur = "pointer"; html = c.kind==="dot" ? "<b>Click</b> to count here · <b>hold</b> to move this one" : "<b>Click</b> to start here · <b>hold</b> to move this corner"; }
+      else { cur = "pointer"; html = c.kind==="dot" ? "<b>Click</b> to count here · <b>drag</b> to move this one" : "<b>Click</b> to start here · <b>drag</b> to move this corner"; }
     } else if(b){
       key = "b"+b.m.id+":"+b.idx; hb = {id:b.m.id, idx:b.idx}; cur = "grab";
       html = tool==="select" ? "<b>Drag</b> to bend this edge · right-click to straighten" : "<b>Drag</b> to bend this edge";
