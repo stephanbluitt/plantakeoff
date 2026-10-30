@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-QFYhkzZ/DQQetPZOZmJsk4vaTP2qBYVPUnT91vsc7kk=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CwrAsQPwMK6sbKRpxoZQ1g3DLp5ECARJCzdLrYc9mYs=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -624,7 +624,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.3.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.3.1</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -6282,7 +6282,7 @@ function drawSnapRing(){
   else if(editDrag) c = dragSnapAt;   // a corner being dragged onto a line or corner
   else if(overPlan){
     c = cornerSnapPdf(mousePdf);
-    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="select")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
+    if(!c && !drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="select" || tool==="smart")){ const h = cornerAt(mousePdf); if(h && h.kind!=="bend"){ c = h.m.pts[h.idx]; drag = true; } }
   }
   if(!c) return;
   ringAt = c;
@@ -6305,9 +6305,10 @@ function cornerAt(p){
 }
 overlay.addEventListener("mousedown", e => {
   cornerArm = null;
-  if(isCtxClick(e) || !(tool==="line" || tool==="area" || tool==="count") || spaceDown || drawing || mode!=="pdf") return;
+  if(isCtxClick(e) || !(tool==="line" || tool==="area" || tool==="count" || tool==="smart") || spaceDown || drawing || mode!=="pdf") return;
   if(typeof viewOnly!=="undefined" && viewOnly) return;
   const p = evtPdf(e), hit = cornerAt(p) || (tool!=="count" ? bendAt(p) : null);
+  if(hit && tool==="smart" && hit.m.type==="count") return;   // Smart: corners of lines and areas
   if(hit){
     const arm = cornerArm = {hit, x:e.clientX, y:e.clientY, start:p, pre:snapshot(), grab:false};
     // held still for half a second: now it's grabbed (blue ring, move cursor) and a drag moves it
@@ -6671,8 +6672,8 @@ function toolHint(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="smart" && smartCut) return warn+'<b>Smart cut-out (beta):</b> scribble inside the part to subtract (a patio inside a lawn) — it comes off the area around it · X switches cut-out off';
-  if(tool==="smart") return warn+'<b>Smart area (beta):</b> scribble inside a space — or loosely around it — and let go: it finds the outline · zoom so the whole space is on screen';
+  if(tool==="smart" && smartCut) return warn+'<b>Smart cut-out (beta):</b> zig-zag inside the part to subtract (a patio inside a lawn) — it comes off the area around it · a straight drag moves the plan · X switches cut-out off';
+  if(tool==="smart") return warn+'<b>Smart area (beta):</b> zig-zag inside a space — or loop around it — and let go: it finds the outline · a straight drag moves the plan · drag a corner to adjust it';
   if(tool==="area" && cutTool) return warn+'<b>Cut-out:</b> draw the part to subtract (a patio inside a lawn) — it comes off the total of the area around it · click the first corner to start';
   if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
@@ -7067,12 +7068,14 @@ function overlayMove(e){
   if(mode!=="pdf" || editDrag || panning || (panArm && panArm.moved) || bendDrag){ hideTip(); setHover("", null); return; }
   if(cornerArm && cornerArm.grab){ overlay.style.cursor = "grabbing"; grabTip(); return; }
   let html = "", cur = null, key = "", hb = null, c = null;
-  if(!drawing && tool!=="calibrate" && tool!=="smart"){
+  if(!drawing && tool!=="calibrate"){
     c = cornerAt(p);
+    if(c && tool==="smart" && c.kind==="dot") c = null;
     const b = c || tool==="count" ? null : bendAt(p);
     if(c){
       key = "c"+c.m.id+":"+c.idx;
       if(tool==="select"){ cur = "move"; html = c.kind==="dot" ? "<b>Drag</b> to move it · right-click for options" : "<b>Drag</b> to move this corner · right-click for options"; }
+      else if(tool==="smart"){ cur = "move"; html = "<b>Drag</b> to move this corner"; }
       else { cur = "pointer"; html = c.kind==="dot" ? "<b>Click</b> to count here · <b>drag</b> to move this one" : "<b>Click</b> to start here · <b>drag</b> to move this corner"; }
     } else if(b){
       key = "b"+b.m.id+":"+b.idx; hb = {id:b.m.id, idx:b.idx}; cur = "grab";
@@ -7089,7 +7092,7 @@ function overlayMove(e){
   if(overlay.style.cursor!==want) overlay.style.cursor = want;
   setHover(key, hb);
   // the ring where the next click lands (a corner to snap to, or one you can move)
-  if(!drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="calibrate")){
+  if(!drawing && (tool==="line" || tool==="area" || tool==="count" || tool==="calibrate" || tool==="smart")){
     const r = cornerSnapPdf(p) || (c ? c.m.pts[c.idx] : null);
     if(r!==ringAt && !(r && ringAt && r.x===ringAt.x && r.y===ringAt.y)) requestDraw();
   }
@@ -7259,26 +7262,61 @@ function hideLayersIn(L, pdf, docId){
 // filled from the scribble up to them (hatching and text inside are bridged), the outline is traced and straightened, and
 // its corners lock onto the plan's own corners. If the space isn't closed, a scribble around it becomes the outline.
 var scribble = null;
+// A straight drag moves the plan (like every tool). A drag that zig-zags or loops back in its first moments is a
+// scribble: the plan goes back to where it was and the scribble is drawn. After ~0.8 s or 240 px a pan stays a pan.
+var smartG = null;
 overlay.addEventListener("pointerdown", e => {
   if(tool!=="smart" || mode!=="pdf" || !pdfDoc || e.button!==0 || isCtxClick(e) || spaceDown || drawing) return;
-  if(typeof viewOnly!=="undefined" && viewOnly){ viewBlocked(); return; }
-  scribble = {id:e.pointerId, pts:[evtPdf(e)]};
+  const p0 = evtPdf(e);
+  const h = cornerAt(p0); if((h && h.kind!=="dot") || bendAt(p0)) return;   // a corner or ◆: that's moved instead
+  smartG = {id:e.pointerId, x:e.clientX, y:e.clientY, t:Date.now(), rect:pdfCanvas.getBoundingClientRect(), l:wrap.scrollLeft, tp:wrap.scrollTop,
+            pts:[[e.clientX, e.clientY]], len:0, mode:"", turns:0, curl:0, ang:null, ax:e.clientX, ay:e.clientY};
   try{ overlay.setPointerCapture(e.pointerId); }catch{}
   e.preventDefault(); hideTip(); magnetPage();   // the plan's line work is read meanwhile, for the corners
 });
 overlay.addEventListener("pointermove", e => {
-  if(!scribble || e.pointerId!==scribble.id) return;
-  const p = evtPdf(e), q = scribble.pts[scribble.pts.length-1];
-  if(Math.hypot(p.x-q.x, p.y-q.y)*zoom >= 3){ scribble.pts.push(p); requestDraw(); }
+  const g = smartG;
+  if(!g || e.pointerId!==g.id) return;
+  const last = g.pts[g.pts.length-1], d = Math.hypot(e.clientX-last[0], e.clientY-last[1]);
+  if(d < 3) return;
+  g.pts.push([e.clientX, e.clientY]); g.len += d;
+  const toPdf = ([x, y]) => ({x:(x-g.rect.left)/zoom, y:(y-g.rect.top)/zoom});   // where it was on the plan when the drag began
+  if(g.mode==="scribble"){ scribble.pts.push(toPdf([e.clientX, e.clientY])); requestDraw(); return; }
+  // measured over pieces of 10 px, so a shaky hand doesn't count: sharp reversals (> ~100°) and steady turning (a loop)
+  const sx = e.clientX-g.ax, sy = e.clientY-g.ay;
+  if(Math.hypot(sx, sy) >= 10){
+    const ang = Math.atan2(sy, sx);
+    if(g.ang!=null){ let d = ang-g.ang; while(d > Math.PI) d -= 2*Math.PI; while(d < -Math.PI) d += 2*Math.PI; if(Math.abs(d) > 1.75) g.turns++; else g.curl += d; }
+    g.ang = ang; g.ax = e.clientX; g.ay = e.clientY;
+  }
+  const dt = Date.now()-g.t, straight = Math.hypot(e.clientX-g.x, e.clientY-g.y) / (g.len || 1);
+  const zig = g.turns >= 2 && g.len < 260 && dt < 900;                          // zig-zag
+  const back = g.turns >= 1 && straight < 0.35 && g.len > 40 && g.len < 260 && dt < 900;   // there and back
+  const loop = Math.abs(g.curl) > 2.1 && g.len < 1000 && dt < 2600;              // round and round (even a big loop)
+  if(zig || back || loop){   // a scribble
+    wrap.scrollLeft = g.l; wrap.scrollTop = g.tp;
+    g.mode = "scribble"; scribble = {pts:g.pts.map(toPdf)}; overlay.style.cursor = DRAW_CURSOR; requestDraw();
+    return;
+  }
+  if(g.len > 6){   // so far a straight drag: it moves the plan
+    g.mode = "pan";
+    wrap.scrollLeft = g.l - (e.clientX-g.x); wrap.scrollTop = g.tp - (e.clientY-g.y);
+    if(overlay.style.cursor!=="grabbing") overlay.style.cursor = "grabbing";
+  }
 });
 overlay.addEventListener("pointerup", e => {
-  if(!scribble || e.pointerId!==scribble.id) return;
-  const pts = scribble.pts; scribble = null; suppressClick = true; requestDraw();
-  if(pts.length < 3){ toast("Keep the button down and scribble inside the space you want — or loosely around it", 4000); return; }
+  const g = smartG;
+  if(!g || e.pointerId!==g.id) return;
+  smartG = null; suppressClick = true; overlay.style.cursor = DRAW_CURSOR;
+  if(g.mode==="pan"){ window.__panEndAt = Date.now(); return; }
+  if(g.mode!=="scribble"){ toast("✨ Scribble (zig-zag) inside a space — or loop around it — and let go · a straight drag moves the plan", 4500); return; }
+  const pts = scribble.pts; scribble = null; requestDraw();
   toast("✨ Finding the outline…", 1500);
   setTimeout(() => { try{ smartArea(pts); }catch(err){ console.warn("smart area", err); toast("Smart area couldn't read this spot — try again, or draw it with Area"); } }, 30);
 });
-overlay.addEventListener("pointercancel", e => { if(scribble && e.pointerId===scribble.id){ scribble = null; requestDraw(); } });
+overlay.addEventListener("pointercancel", e => {
+  if(smartG && e.pointerId===smartG.id){ if(smartG.mode==="scribble"){ scribble = null; requestDraw(); } smartG = null; }
+});
 function drawScribble(){
   const s = scribble.pts.map(pdfToScreen);
   octx.save(); octx.lineJoin = octx.lineCap = "round";
@@ -7323,7 +7361,7 @@ function maskFill(open, W, H, seeds){
     if(y>0 && open[i-W] && !m[i-W]){ m[i-W] = 1; q[qt++] = i-W; }
     if(y<H-1 && open[i+W] && !m[i+W]){ m[i+W] = 1; q[qt++] = i+W; }
   }
-  return {m, n, edge};
+  return {m, n, edge, q, qt};   // q[0..qt) = the filled pixels
 }
 // the outline of a filled mask (Moore neighbour tracing from its top-left pixel), as pixel corners
 function maskOutline(m, W, H){
@@ -7375,20 +7413,23 @@ function simplifyClosed(pts, eps){
   }
   return out;
 }
-function smartArea(stroke){
+function smartArea(stroke, whole){
   if(!pdfDoc || mode!=="pdf") return;
+  // what's read: the screen (and the margin around it), or — when the space runs off it — the whole page
+  const rx = whole ? 0 : ovX, ry = whole ? 0 : ovY, rw = whole ? pageW : ovW, rh = whole ? pageH : ovH;
+  let edgeHit = false;
   // 1) the plan around the scribble, as it is on screen
   let k = Math.min(2, Math.max(1, dpr));
-  if(ovW*k > 2600 || ovH*k > 2600) k = 2600/Math.max(ovW, ovH);
-  const W = Math.max(8, Math.round(ovW*k)), H = Math.max(8, Math.round(ovH*k));
+  if(rw*k > 2600 || rh*k > 2600) k = 2600/Math.max(rw, rh);
+  const W = Math.max(8, Math.round(rw*k)), H = Math.max(8, Math.round(rh*k));
   const c = document.createElement("canvas"); c.width = W; c.height = H;
   const cx = c.getContext("2d", {willReadFrequently:true});
   cx.fillStyle = "#fff"; cx.fillRect(0, 0, W, H);
   const bs = pdfCanvas.width/pageW;
-  cx.drawImage(pdfCanvas, ovX*bs, ovY*bs, ovW*bs, ovH*bs, 0, 0, W, H);
+  cx.drawImage(pdfCanvas, rx*bs, ry*bs, rw*bs, rh*bs, 0, 0, W, H);
   if(hiCanvas.style.display==="block"){
     const pr = pdfCanvas.getBoundingClientRect(), hr = hiCanvas.getBoundingClientRect(), z = pr.width/pageW || 1;
-    cx.drawImage(hiCanvas, ((hr.left-pr.left)/z - ovX)*k, ((hr.top-pr.top)/z - ovY)*k, hr.width/z*k, hr.height/z*k);
+    cx.drawImage(hiCanvas, ((hr.left-pr.left)/z - rx)*k, ((hr.top-pr.top)/z - ry)*k, hr.width/z*k, hr.height/z*k);
   }
   const px = cx.getImageData(0, 0, W, H).data, N = W*H, lum = new Uint8Array(N), hist = new Uint32Array(256);
   for(let i=0; i<N; i++){ const l = (px[4*i]*299 + px[4*i+1]*587 + px[4*i+2]*114)/1000 | 0; lum[i] = l; hist[l]++; }
@@ -7398,7 +7439,7 @@ function smartArea(stroke){
   for(let i=0; i<N; i++) ink[i] = lum[i] < thr ? 1 : 0;
   const g = Math.max(1, Math.round(1.2*k)), wall = maskGrow(ink, W, H, g);   // small gaps in the lines closed
   const open = new Uint8Array(N); for(let i=0; i<N; i++) open[i] = wall[i] ? 0 : 1;
-  const toPx = p => [Math.round((p.x*zoom - ovX)*k), Math.round((p.y*zoom - ovY)*k)];
+  const toPx = p => [Math.round((p.x*zoom - rx)*k), Math.round((p.y*zoom - ry)*k)];
   const sp = stroke.map(toPx);
   // a scribble that comes back near where it started is drawn around the space
   let per = 0; for(let i=1; i<sp.length; i++) per += Math.hypot(sp[i][0]-sp[i-1][0], sp[i][1]-sp[i-1][1]);
@@ -7406,9 +7447,9 @@ function smartArea(stroke){
   const loopArea = Math.abs(sp.reduce((a, p, i) => { const q = sp[(i+1)%sp.length]; return a + p[0]*q[1] - q[0]*p[1]; }, 0))/2;
   const loop = sp.length > 8 && gap < Math.max(30*k, per*0.18) && loopArea > (40*k)*(40*k);
   // 3) fill the space, from inside the scribble
-  const tryFill = seeds => {
-    const f = maskFill(open, W, H, seeds);
-    if(!f.n || f.edge || f.n > N*0.65) return null;   // ran off the screen or out into the whole sheet: not a closed space
+  const tryFill = (seeds, pre) => {
+    const f = pre || maskFill(open, W, H, seeds);
+    if(!pre){ if(f.edge) edgeHit = true; if(!f.n || f.edge || f.n > N*0.65) return null; }   // ran off the screen or out into the whole sheet: not a closed space
     // hatching and text inside are bridged, the outline is moved onto the middle of the plan's lines
     const R = Math.max(3, Math.round(4*k));
     let m = maskGrow(maskGrow(f.m, W, H, R), W, H, R, true);
@@ -7426,26 +7467,45 @@ function smartArea(stroke){
     return {m, n};
   };
   let region = null;
-  if(loop){   // drawn around it: fill from the middle of the loop
-    let mx = 0, my = 0; for(const p of sp){ mx += p[0]; my += p[1]; } mx /= sp.length; my /= sp.length;
-    const cand = []; for(let d=0; d<=24*k && cand.length<40; d+=2) for(const [dx, dy] of [[0,0],[d,0],[-d,0],[0,d],[0,-d]]){ const x = Math.round(mx+dx), y = Math.round(my+dy); if(x>=0 && y>=0 && x<W && y<H && open[y*W+x]) cand.push([x, y]); }
-    const r = cand.length ? tryFill(cand.slice(0, 1)) : null;
-    if(r && r.n > loopArea*0.35 && r.n < loopArea*2.2) region = r;
+  if(loop){   // drawn around it: everything it circles — every closed space mostly inside the loop, joined across their lines
+    const inLoop = (x, y) => { let c = false; for(let i=0, j=sp.length-1; i<sp.length; j=i++){ const [xi, yi] = sp[i], [xj, yj] = sp[j]; if((yi>y)!==(yj>y) && x < (xj-xi)*(y-yi)/(yj-yi)+xi) c = !c; } return c; };
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for(const [x, y] of sp){ x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+    x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(W-1, Math.ceil(x1)); y1 = Math.min(H-1, Math.ceil(y1));
+    const step = Math.max(3, Math.round(Math.min(x1-x0, y1-y0)/16)), seen = new Uint8Array(N), uni = new Uint8Array(N);
+    let got = 0;
+    for(let y=y0; y<=y1; y+=step) for(let x=x0; x<=x1; x+=step){
+      const i = y*W+x;
+      if(!open[i] || seen[i] || !inLoop(x, y)) continue;
+      const f = maskFill(open, W, H, [[x, y]]);
+      for(let j=0; j<f.qt; j++) seen[f.q[j]] = 1;
+      if(f.edge || f.n > N*0.65) continue;
+      let ins = 0, tot = 0;
+      for(let j=0; j<f.qt; j+=5){ const p = f.q[j], px = p%W; tot++; if(inLoop(px, (p-px)/W)) ins++; }
+      if(ins < tot*0.8) continue;   // mostly outside the loop: not part of it
+      for(let j=0; j<f.qt; j++) uni[f.q[j]] = 1;
+      got += f.n;
+    }
+    if(got > loopArea*0.25){
+      const B = g + Math.max(3, Math.round(3*k));   // the lines the spaces share are bridged
+      region = tryFill(null, {m:maskGrow(maskGrow(uni, W, H, B), W, H, B, true)});
+    }
   }
   if(!region) region = tryFill(sp.filter(([x, y]) => x>=0 && y>=0 && x<W && y<H && open[y*W+x]));
+  if(!region && edgeHit && !whole && (rw < pageW || rh < pageH)) return smartArea(stroke, true);   // ran off the screen: read the whole page
   let poly;
   if(region){
     poly = simplifyClosed(maskOutline(region.m, W, H), Math.max(0.9, 0.9*k));   // tight enough that curves keep their shape (~1% at most)
   } else if(loop){   // no closed edges there: the scribble itself becomes the outline, cleaned into straight edges
     poly = simplifyClosed(sp, Math.max(4*k, per*0.012));
   } else {
-    toast("✨ No closed outline found there — zoom out so the whole space is on screen, scribble around it, or draw it with Area", 6000);
+    toast("✨ No closed outline found there — the lines around that space may have a gap: loop around it, or draw it with Area", 6000);
     return;
   }
   if(poly.length < 3){ toast("✨ That space is too small to measure — zoom in and try again", 4000); return; }
   // 4) back to the plan, corners locked onto the plan's own corners (drawn plans)
   const lw = magnetPage();
-  let pts = poly.map(([x, y]) => ({x:(x/k + ovX)/zoom, y:(y/k + ovY)/zoom}));
+  let pts = poly.map(([x, y]) => ({x:(x/k + rx)/zoom, y:(y/k + ry)/zoom}));
   if(lw && !lw.raster) pts = pts.map(p => { const s = lineSnap(lw, p); return s && s.kind==="corner" && Math.hypot(s.x-p.x, s.y-p.y)*zoom < 8 ? {x:s.x, y:s.y} : p; });
   pts = pts.filter((p, i) => { const q = pts[(i+1)%pts.length]; return Math.hypot(p.x-q.x, p.y-q.y)*zoom > 1.5; });
   if(pts.length < 3 || outlineCrosses(pts, null, true)){ toast("✨ Couldn't make a clean outline there — try again, or draw it with Area", 5000); return; }
