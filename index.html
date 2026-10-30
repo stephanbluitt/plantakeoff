@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CwrAsQPwMK6sbKRpxoZQ1g3DLp5ECARJCzdLrYc9mYs=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-ttkDNZkNtAJac8Kh3Tl3SXopT7fumsTYP6/QaLddg84=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -624,7 +624,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.3.1</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.3.2</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -6673,7 +6673,7 @@ function toolHint(){
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
   if(tool==="smart" && smartCut) return warn+'<b>Smart cut-out (beta):</b> zig-zag inside the part to subtract (a patio inside a lawn) — it comes off the area around it · a straight drag moves the plan · X switches cut-out off';
-  if(tool==="smart") return warn+'<b>Smart area (beta):</b> zig-zag inside a space — or loop around it — and let go: it finds the outline · a straight drag moves the plan · drag a corner to adjust it';
+  if(tool==="smart") return warn+'<b>Smart area (beta):</b> zig-zag inside a space — or loop around it — and let go: it finds the outline · a straight drag (or hold, then drag) moves the plan · drag a corner to adjust it';
   if(tool==="area" && cutTool) return warn+'<b>Cut-out:</b> draw the part to subtract (a patio inside a lawn) — it comes off the total of the area around it · click the first corner to start';
   if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
@@ -7290,9 +7290,10 @@ overlay.addEventListener("pointermove", e => {
     g.ang = ang; g.ax = e.clientX; g.ay = e.clientY;
   }
   const dt = Date.now()-g.t, straight = Math.hypot(e.clientX-g.x, e.clientY-g.y) / (g.len || 1);
-  const zig = g.turns >= 2 && g.len < 260 && dt < 900;                          // zig-zag
-  const back = g.turns >= 1 && straight < 0.35 && g.len > 40 && g.len < 260 && dt < 900;   // there and back
-  const loop = Math.abs(g.curl) > 2.1 && g.len < 1000 && dt < 2600;              // round and round (even a big loop)
+  if(g.pts.length===2 && dt > 250) g.held = true;   // held still before it first moved: it's for moving the plan
+  const zig = !g.held && g.turns >= 2 && g.len < 260 && dt < 900;                          // zig-zag
+  const back = !g.held && g.turns >= 1 && straight < 0.35 && g.len > 40 && g.len < 260 && dt < 900;   // there and back
+  const loop = !g.held && Math.abs(g.curl) > 2.1 && g.len < 1000 && dt < 2600;              // round and round (even a big loop)
   if(zig || back || loop){   // a scribble
     wrap.scrollLeft = g.l; wrap.scrollTop = g.tp;
     g.mode = "scribble"; scribble = {pts:g.pts.map(toPdf)}; overlay.style.cursor = DRAW_CURSOR; requestDraw();
@@ -7535,6 +7536,35 @@ function syncSmartBar(){
   const txt = smartCut ? "✓ Cut-out" : "➖ Cut-out"; if(b.textContent!==txt) b.textContent = txt;
 }
 document.getElementById("smartCut").addEventListener("click", e => { e.stopPropagation(); setSmartCut(!smartCut); });
+
+// ================= touch: one finger moves the plan in every tool =================
+// (Select already scrolls natively.) A tap still places a point; a drag of more than a few pixels moves the plan and
+// places nothing; two fingers still pinch-zoom; a finger that starts on a corner or ◆ adjusts it instead.
+var touchPan = null;
+overlay.addEventListener("pointerdown", e => {
+  if(e.pointerType!=="touch" || mode!=="pdf" || tool==="select" || tool==="smart") return;
+  if(touchPan){ touchPan = null; return; }   // a second finger: that's a pinch
+  if(bendDrag || editDrag || cornerArm) return;
+  const p = evtPdf(e), h = cornerAt(p) || bendAt(p);
+  if(h) return;
+  touchPan = {id:e.pointerId, x:e.clientX, y:e.clientY, l:wrap.scrollLeft, t:wrap.scrollTop, moved:false};
+});
+overlay.addEventListener("pointermove", e => {
+  const t = touchPan;
+  if(!t || e.pointerId!==t.id || pinchActive || bendDrag || editDrag){ if(pinchActive) touchPan = null; return; }
+  const dx = e.clientX-t.x, dy = e.clientY-t.y;
+  if(!t.moved && Math.hypot(dx, dy) < 8) return;   // a tap that wobbles is still a tap
+  t.moved = true;
+  wrap.scrollLeft = t.l - dx; wrap.scrollTop = t.t - dy;
+});
+function endTouchPan(e){
+  const t = touchPan;
+  if(!t || e.pointerId!==t.id) return;
+  touchPan = null;
+  if(t.moved){ suppressClick = true; window.__panEndAt = Date.now(); setTimeout(() => { suppressClick = false; }, 400); }   // the lift doesn't place a point
+}
+overlay.addEventListener("pointerup", endTouchPan);
+overlay.addEventListener("pointercancel", endTouchPan);
 </script>
 </body>
 </html>
