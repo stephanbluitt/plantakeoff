@@ -588,7 +588,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.1.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.1.1</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -6173,6 +6173,10 @@ window.addEventListener("mousemove", e => {
   if(!cornerArm || editDrag) return;
   if(!(e.buttons & 1)){ cornerArm = null; return; }
   const dd = Math.hypot(e.clientX-cornerArm.x, e.clientY-cornerArm.y);
+  if(!cornerArm.grab && cornerArm.hit.kind==="bend"){   // a ◆ bends as soon as it's dragged (no hold needed)
+    if(dd < 3) return;
+    clearTimeout(cornerArm.timer); cornerArm.grab = true;
+  }
   if(!cornerArm.grab){
     if(dd < 12) return;   // a wobbly click still starts measuring right on that corner
     // pressed and dragged straight away: that moves the plan — the corner stays where it is
@@ -6524,8 +6528,8 @@ function toolHint(){
   if(d && d.type==="line") return warn+'<b>Line:</b> click each point · <b>double-click</b> or press Enter to finish · Backspace takes back a point · U curves the last segment';
   if(d && d.type==="count") return '<b>Count:</b> click each item · press Enter when you\'re done';
   if(tool==="calibrate") return '<b>Calibrate:</b> click both ends of a dimension you know, then type its length';
-  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · hold a corner or ◆, then drag, to adjust it · <b>right-click</b> for options';
-  if(tool==="line") return warn+'<b>Line:</b> click to start · hold a corner or ◆, then drag, to adjust it · <b>right-click</b> for options';
+  if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · hold a corner, then drag, to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
+  if(tool==="line") return warn+'<b>Line:</b> click to start · hold a corner, then drag, to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
@@ -6919,7 +6923,7 @@ function overlayMove(e){
       else { cur = "pointer"; html = c.kind==="dot" ? "<b>Click</b> to count here · <b>hold</b> to move this one" : "<b>Click</b> to start here · <b>hold</b> to move this corner"; }
     } else if(b){
       key = "b"+b.m.id+":"+b.idx; hb = {id:b.m.id, idx:b.idx}; cur = "grab";
-      html = tool==="select" ? "<b>Drag</b> to bend this edge · right-click to straighten" : "<b>Hold</b>, then drag to bend this edge";
+      html = tool==="select" ? "<b>Drag</b> to bend this edge · right-click to straighten" : "<b>Drag</b> to bend this edge";
     } else if(tool==="select"){
       const h = hitTest(p);
       if(h && h.kind==="body"){
