@@ -1,4 +1,4 @@
-/* TerraTakeoff 1.20 — supplier quote comparison, value engineering, pricing, reports, team. Uses the app's own colours. */
+/* TerraTakeoff 1.20 — supplier quote comparison, value engineering, pricing, reports, team. Uses the app's own colours (Evergreen 1.22). */
 #qPanel{position:fixed; inset:0; z-index:5000; background:var(--bg); display:none; flex-direction:column; color:var(--ink); font-size:13px;}
 #qPanel.open{display:flex;}
 #qPanel *{box-sizing:border-box;}
