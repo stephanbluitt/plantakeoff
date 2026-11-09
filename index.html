@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8JAVn/rrdlpTyMyJUAcqJQgLKwObvPp86qZ5AgP0cm8=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-HMVL2z7SzY5oxqBz9lXhTM+uQ5uyDwDTaEVd083rJb4=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,10 +17,10 @@
 <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 <link rel="dns-prefetch" href="https://photon.komoot.io">
 <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
-<link rel="stylesheet" href="quotes.css?v=3.6.0">
-<script src="plans.js?v=3.6.0"></script>
-<script src="pt-quotes-host.js?v=3.6.0"></script>
-<script type="module" src="quotes.js?v=3.6.0"></script>
+<link rel="stylesheet" href="quotes.css?v=3.7.0">
+<script src="plans.js?v=3.7.0"></script>
+<script src="pt-quotes-host.js?v=3.7.0"></script>
+<script type="module" src="quotes.js?v=3.7.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -170,6 +170,24 @@
     align-items:center; justify-content:center; color:var(--faint); text-align:center; padding:20px;
   }
   #dropHint .big{font-size:18px; color:var(--dim); font-weight:600;}
+  #dropHint > div{max-width:min(640px, 100%);}   /*1.25*/
+  @media (min-width:841px){ #dropHint{padding-left:84px;} }
+  @media (max-width:840px){ #dropHint{padding-bottom:150px;} }
+  @media (max-width:640px){
+    #topbar{padding-left:10px; padding-right:10px; gap:6px;}
+    #topbar #appMenuBtn .brandTxt, #topbar #appMenuBtn .chev{display:none;}
+    #topbar #appMenuBtn{padding:6px 9px;}
+    #topbar #projTitle{max-width:none; min-width:0; width:clamp(56px, calc(100vw - 290px), 150px); flex:none;}
+    #topbar #modeSeg button{padding:5px 8px;}
+    #topbar #tbNew, #topbar #tbOpen{display:none;}
+    #topRight #saveBtn{order:-2;}
+    #topRight #listToggle{order:-1;}
+  }
+  @media (max-width:520px){
+    #cloudBack .frow{flex-wrap:wrap;}
+    #cloudBack #cloudName{flex:1 1 180px; min-width:0;}
+    #cloudBack #cloudSaveBtn{flex:1 1 auto;}
+  }
   #dropHint kbd{font-family:var(--mono); background:var(--panel2); border:1px solid var(--hair);
     border-radius:4px; padding:1px 6px; font-size:11px;}
   #canvasWrap.dragover{outline:2px dashed var(--amber); outline-offset:-8px;}
@@ -628,7 +646,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.6.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.7.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -962,7 +980,7 @@
       <option value="concrete">Concrete — slabs, footings, curbs</option>
       <option value="pavers">Pavers, tiles or blocks</option>
       <option value="sod">Sod</option>
-      <option value="seed">Seed, fertilizer or lime — spread rate</option>
+      <option value="seed">Spread rate — seed, fertilizer, lime, salt / ice melt</option>
       <option value="pieces">Pieces along a length — edging, fence panels, curb</option>
       <option value="wall">Wall blocks — retaining or garden walls</option>
       <option value="peritem">Amount per item — bags per tree, stakes per shrub…</option>
@@ -4970,6 +4988,13 @@ function storeGet(k){ try{ return localStorage.getItem(k); }catch{ return null; 
 function storeDel(k){ try{ localStorage.removeItem(k); }catch{} }
 
 let autosaveTimer = null;
+// the "Unsaved changes / ✓ Saved" label follows this flag by itself, wherever it's changed
+(function(){
+  let dirty = false;
+  Object.defineProperty(window, "__isDirty", {configurable:true,
+    get(){ return dirty; },
+    set(v){ v = !!v; if(v===dirty) return; dirty = v; try{ if(typeof updateSaveState==="function") updateSaveState(); }catch{} }});
+})();
 window.__isDirty = false;
 function scheduleAutosave(){
   window.__isDirty = true;
@@ -6971,6 +6996,24 @@ window.addEventListener("mouseup", () => {
 document.getElementById("toolCurves").addEventListener("click", e => { e.stopPropagation(); clickId("setCurves"); });
 syncPrefsUI();
 
+// ---- tool captions that don't fit their button (long Spanish words, narrow phones) get a little smaller ----
+(function(){
+  const pill = document.getElementById("toolsPill"); if(!pill) return;
+  function fit(){
+    pill.querySelectorAll(".cap").forEach(c => {
+      c.style.fontSize = ""; c.style.letterSpacing = "";
+      const w = c.parentElement.clientWidth - 4;
+      if(!(w > 0) || c.scrollWidth <= w) return;
+      c.style.letterSpacing = "-.2px";
+      if(c.scrollWidth > w) c.style.fontSize = Math.max(7, parseFloat(getComputedStyle(c).fontSize) * w / c.scrollWidth).toFixed(2) + "px";
+    });
+  }
+  let tm = 0; const soon = () => { clearTimeout(tm); tm = setTimeout(fit, 80); };
+  new MutationObserver(soon).observe(pill, {subtree:true, childList:true, characterData:true});
+  addEventListener("resize", soon);
+  soon();
+})();
+
 // ---- a new version is out: a button to switch to it (an open tab would otherwise keep the old one) ----
 (function(){
   if(!/^https?:$/.test(location.protocol)) return;
@@ -6984,8 +7027,21 @@ syncPrefsUI();
   async function check(){
     if(Date.now() < later) return;
     try{
-      const html = await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.text() : "");
-      let v = null; for(const rx of RX){ const m = html.match(rx); if(m){ v = m[1]; break; } }
+      const r = await fetch(location.pathname + "?v=" + Date.now(), {cache:"no-store"});
+      if(!r.ok) return;
+      // read only until the version number shows up (near the top), not the whole page
+      let v = null, html = "";
+      const find = () => { for(const rx of RX){ const m = html.match(rx); if(m){ v = m[1]; return; } } };
+      if(r.body && r.body.getReader){
+        const rd = r.body.getReader(), dec = new TextDecoder();
+        while(!v){
+          const {done, value} = await rd.read();
+          if(value) html += dec.decode(value, {stream:true});
+          find();
+          if(done || html.length > 3e6) break;
+        }
+        try{ rd.cancel(); }catch{}
+      } else { html = await r.text(); find(); }
       if(v && v!==own){ newer = v; bar.classList.add("show"); }
     }catch{}
   }
@@ -6999,7 +7055,8 @@ syncPrefsUI();
   };
   setTimeout(check, 20000);
   setInterval(check, 5*60000);
-  document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible") check(); });
+  let visAt = 0;   // coming back to the tab: check, but at most once a minute
+  document.addEventListener("visibilitychange", () => { if(document.visibilityState==="visible" && Date.now() - visAt > 60000){ visAt = Date.now(); check(); } });
 })();
 
 // ================= cut-outs: measurements that are subtracted from their category =================
