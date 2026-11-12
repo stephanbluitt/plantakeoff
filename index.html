@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-PD0t/5aW7daniA47KUYczqgbWqvIX37k0hBqrBlFeU0=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BeEDCd6cG7e1zrGiulA6FDXhlHGbijE+Fevm2fXi1r0=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,10 +17,10 @@
 <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 <link rel="dns-prefetch" href="https://photon.komoot.io">
 <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
-<link rel="stylesheet" href="quotes.css?v=3.8.0">
-<script src="plans.js?v=3.8.0"></script>
-<script src="pt-quotes-host.js?v=3.8.0"></script>
-<script type="module" src="quotes.js?v=3.8.0"></script>
+<link rel="stylesheet" href="quotes.css?v=3.9.0">
+<script src="plans.js?v=3.9.0"></script>
+<script src="pt-quotes-host.js?v=3.9.0"></script>
+<script type="module" src="quotes.js?v=3.9.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
@@ -310,6 +310,16 @@
   #smartBar{position:fixed; left:calc((100vw - 304px) / 2); transform:translateX(-50%); bottom:calc(64px + var(--sab)); z-index:1200;
     display:none; gap:10px; align-items:center; background:var(--solid); border:1px solid var(--hair); border-radius:13px; padding:6px 7px 6px 12px; box-shadow:var(--shadow);}
   #smartBar.show{display:flex;}
+  /*1.28*/ #countBar, #scaleHint{position:fixed; left:calc((100vw - 304px) / 2); transform:translateX(-50%); bottom:calc(64px + var(--sab)); z-index:1200;
+    display:none; gap:10px; align-items:center; background:var(--solid); border:1px solid var(--hair); border-radius:13px; padding:6px 7px 6px 12px; box-shadow:var(--shadow); max-width:calc(100vw - 24px);}
+  #countBar.show, #scaleHint.show{display:flex;}
+  #scaleHint{bottom:calc(116px + var(--sab)); flex-wrap:wrap; justify-content:center;}
+  #countBar .sl, #scaleHint .sl{font-size:12.5px; font-weight:600; color:var(--ink);}
+  #countBar .bt{font-size:8.5px; padding:1px 4px; border-radius:4px; background:var(--amber); color:var(--onacc); margin-right:5px;}
+  #countBar #countSim, #scaleHint .btn{border:1.5px solid var(--amber); color:var(--amber); font-weight:700; background:var(--solid); font-size:13px;}
+  #countBar #countSim.on{background:var(--amber); color:var(--onacc);}
+  #scaleHint .btn.x{border-color:var(--hair); color:var(--faint); font-weight:600;}
+  @media (max-width:840px){ #countBar, #scaleHint{left:50%;} }
   #smartBar .sl{font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
   #smartBar .sl b{font-size:8.5px; padding:1px 4px; border-radius:4px; background:var(--amber); color:var(--onacc); vertical-align:2px; margin-left:2px;}
   #smartBar #smartCut{border:1.5px dashed var(--amber); color:var(--amber); font-weight:700; background:var(--solid); font-size:13px;}
@@ -646,7 +656,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.8.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.9.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -704,6 +714,7 @@
   <div class="hrow"><span>Linear · Area · Count</span><b>L · A · K</b></div>
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Smart area (beta)</span><b>scribble inside a space</b></div>
+      <div class="hrow"><span>Count → ✨ Find similar (beta)</span><b>click one symbol</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
   <div class="hrow"><span>Start measuring from another corner</span><b>click it</b></div>
   <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag it</b></div>
@@ -862,6 +873,8 @@
 </div>
 
 <div id="smartBar"><span class="sl">✨ Smart area <b>BETA</b></span><button class="btn" id="smartCut" title="Make the next smart areas cut-outs: subtracted from the area around them (X)">➖ Cut-out</button></div>
+<div id="countBar"><span class="sl">🔢 Count</span><button class="btn" id="countSim" title="Click one symbol and the ones that look the same on this page are counted for you — always check them">✨ Find similar</button><b class="bt">BETA</b></div>
+<div id="scaleHint"></div>
 <div id="fab">
   <button class="btn" id="fabUndo" title="Undo last point">↩</button>
   <span id="fabVal"></span>
@@ -6726,7 +6739,7 @@ function toolHint(){
   if(tool==="area" && cutTool) return warn+'<b>Cut-out:</b> draw the part to subtract (a patio inside a lawn) — it comes off the total of the area around it · click the first corner to start';
   if(tool==="area") return warn+'<b>Area:</b> click the first corner to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
   if(tool==="line") return warn+'<b>Line:</b> click to start · drag a corner to move it · drag a ◆ to bend an edge · <b>right-click</b> for options';
-  if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>right-click</b> for options';
+  if(tool==="count") return warn+'<b>Count:</b> click each item to count it · <b>✨ Find similar</b> counts the look-alikes for you · <b>right-click</b> for options';
   return '<b>Select:</b> click a shape to edit · drag its corners · drag inside to move it · <b>right-click</b> for options';
 }
 var hintLast = "";
@@ -7496,13 +7509,16 @@ function simplifyClosed(pts, eps){
   }
   return out;
 }
-function smartArea(stroke, whole){
+function smartArea(stroke, whole, opt){
   if(!pdfDoc || mode!=="pdf") return;
+  opt = opt || {gap:1, plain:false};
   // what's read: the screen (and the margin around it), or — when the space runs off it — the whole page
   const rx = whole ? 0 : ovX, ry = whole ? 0 : ovY, rw = whole ? pageW : ovW, rh = whole ? pageH : ovH;
   let edgeHit = false;
   // 1) the plan around the scribble, as it is on screen
-  let k = Math.min(2, Math.max(1, dpr));
+  // 1.28: as sharp as the page's own picture allows (it is drawn once, at up to 3× whatever the zoom), not just as sharp as the screen —
+  // so the answer barely changes with the zoom or with an ordinary (non-Retina) screen
+  let k = Math.max(Math.min(2, Math.max(1, dpr)), Math.min(4, pdfCanvas.width/(pageW || 1)));
   if(rw*k > 2600 || rh*k > 2600) k = 2600/Math.max(rw, rh);
   const W = Math.max(8, Math.round(rw*k)), H = Math.max(8, Math.round(rh*k));
   const c = document.createElement("canvas"); c.width = W; c.height = H;
@@ -7518,12 +7534,29 @@ function smartArea(stroke, whole){
   for(let i=0; i<N; i++){ const l = (px[4*i]*299 + px[4*i+1]*587 + px[4*i+2]*114)/1000 | 0; lum[i] = l; hist[l]++; }
   // 2) the plan's lines: clearly darker than the paper (the paper is the commonest light tone)
   let acc = 0, med = 255; for(let l=0; l<256; l++){ acc += hist[l]; if(acc >= N/2){ med = l; break; } }
-  const thr = Math.min(205, med - 45), ink = new Uint8Array(N);
-  for(let i=0; i<N; i++) ink[i] = lum[i] < thr ? 1 : 0;
-  const g = Math.max(1, Math.round(1.2*k)), wall = maskGrow(ink, W, H, g);   // small gaps in the lines closed
-  const open = new Uint8Array(N); for(let i=0; i<N; i++) open[i] = wall[i] ? 0 : 1;
+  const thr = Math.min(205, med - 45), ink = new Uint8Array(N), dark = new Uint8Array(N);
   const toPx = p => [Math.round((p.x*zoom - rx)*k), Math.round((p.y*zoom - ry)*k)];
   const sp = stroke.map(toPx);
+  // 1.28: the paper's colour, and the tone under the scribble. On plain paper the edges are what's darker (as before) or
+  // clearly coloured. Inside a shaded or coloured space, the space is what looks like that tone and everything else is an edge.
+  let pr = 0, pg = 0, pb = 0, pn = 0;
+  for(let i=0; i<N; i+=7) if(Math.abs(lum[i]-med) <= 4){ pr += px[4*i]; pg += px[4*i+1]; pb += px[4*i+2]; pn++; }
+  const paper = pn ? [pr/pn, pg/pn, pb/pn] : [255, 255, 255];
+  const sr = [], sg = [], sb = [];
+  for(const [x, y] of sp) if(x>=0 && y>=0 && x<W && y<H){ const i = 4*(y*W+x); sr.push(px[i]); sg.push(px[i+1]); sb.push(px[i+2]); }
+  const mid = a => a.sort((p, q) => p-q)[a.length>>1];
+  const tone = sr.length ? [mid(sr), mid(sg), mid(sb)] : paper, toneLum = (tone[0]*299 + tone[1]*587 + tone[2]*114)/1000;
+  const shaded = sr.length>0 && toneLum > 60 && Math.hypot(tone[0]-paper[0], tone[1]-paper[1], tone[2]-paper[2]) > 45;
+  const fillMode = shaded && !opt.plain;
+  for(let i=0; i<N; i++){
+    const r = px[4*i], gg = px[4*i+1], b = px[4*i+2];
+    dark[i] = lum[i] < thr ? 1 : 0;
+    if(fillMode){ const a = r-tone[0], c = gg-tone[1], d = b-tone[2]; ink[i] = Math.abs(lum[i]-toneLum) >= 32 || a*a + c*c + d*d > 3600 ? 1 : 0; }
+    else if(dark[i]) ink[i] = 1;
+    else if(!opt.plain && Math.max(r, gg, b) - Math.min(r, gg, b) > 40){ const a = r-paper[0], c = gg-paper[1], d = b-paper[2]; ink[i] = a*a + c*c + d*d > 4900 ? 1 : 0; }   // a coloured line or fill next to plain paper
+  }
+  const g = Math.max(1, Math.round(1.2*k)) * opt.gap, wall = maskGrow(ink, W, H, g);   // small gaps in the lines closed (wider ones on a second try)
+  const open = new Uint8Array(N); for(let i=0; i<N; i++) open[i] = wall[i] ? 0 : 1;
   // a scribble that comes back near where it started is drawn around the space
   let per = 0; for(let i=1; i<sp.length; i++) per += Math.hypot(sp[i][0]-sp[i-1][0], sp[i][1]-sp[i-1][1]);
   const gap = Math.hypot(sp[0][0]-sp[sp.length-1][0], sp[0][1]-sp[sp.length-1][1]);
@@ -7539,9 +7572,9 @@ function smartArea(stroke, whole){
     m = maskGrow(m, W, H, g);   // up to the edge of the plan's lines
     // then halfway across them: step outward while the new ring is mostly line, and keep half of that
     let across = 0;
-    for(let cur = m; across < Math.round(10*k); across++){
+    for(let cur = m; !fillMode && across < Math.round(10*k); across++){   // (a shaded space ends at its own edge: nothing to cross)
       const nx = maskGrow(cur, W, H, 1); let add = 0, onInk = 0;
-      for(let i=0; i<N; i++) if(nx[i] && !cur[i]){ add++; if(ink[i]) onInk++; }
+      for(let i=0; i<N; i++) if(nx[i] && !cur[i]){ add++; if(dark[i]) onInk++; }
       if(!add || onInk < add*0.5) break;
       cur = nx;
     }
@@ -7575,7 +7608,11 @@ function smartArea(stroke, whole){
     }
   }
   if(!region) region = tryFill(sp.filter(([x, y]) => x>=0 && y>=0 && x<W && y<H && open[y*W+x]));
-  if(!region && edgeHit && !whole && (rw < pageW || rh < pageH)) return smartArea(stroke, true);   // ran off the screen: read the whole page
+  if(!region && edgeHit && !whole && (rw < pageW || rh < pageH)) return smartArea(stroke, true, opt);   // ran off the screen: read the whole page
+  if(!region && !loop){   // 1.28: before giving up
+    if(fillMode) return smartArea(stroke, whole, {gap:1, plain:true});   // the tone under the scribble may be a line's, not a fill's: read it as plain paper
+    if(opt.gap < 4) return smartArea(stroke, whole, {gap:opt.gap*2, plain:opt.plain});   // a gap in the lines around it: close wider gaps and try again
+  }
   let poly;
   if(region){
     poly = simplifyClosed(maskOutline(region.m, W, H), Math.max(0.9, 0.9*k));   // tight enough that curves keep their shape (~1% at most)
@@ -7600,8 +7637,229 @@ function smartArea(stroke, whole){
   const m = measurements.length > before ? measurements[measurements.length-1] : null;
   if(m){
     const v = measureValue(m);
-    toast((m.sub ? "✨ Smart cut-out: −" : "✨ Smart area: ")+(v==null ? "set the scale to see its size" : fQty("area", Math.abs(v), 1, 0))+" · "+m.pts.length+" corners — check it, and drag a corner (Area or Select tool) to adjust", 6000);
+    toast((m.sub ? "✨ Smart cut-out: −" : "✨ Smart area: ")+(v==null ? "set the scale to see its size" : fQty("area", Math.abs(v), 1, 0))+" · "+m.pts.length+" corners — check it, and drag a corner (Area or Select tool) to adjust"+(opt.gap>1 ? " · closed a gap in its outline: check that edge" : ""), opt.gap>1 ? 8000 : 6000);
   }
+}
+
+// ================= 1.28: smarter tools =================
+// ---- the whole page as a picture, and which of its pixels are drawn lines (darker than the paper, or clearly coloured) ----
+function pagePicture(maxSide){
+  let k = Math.max(Math.min(2, Math.max(1, dpr)), Math.min(4, pdfCanvas.width/(pageW || 1)));   // as sharp as the page's own picture allows
+  if(pageW*k > maxSide || pageH*k > maxSide) k = maxSide/Math.max(pageW, pageH);
+  const W = Math.max(8, Math.round(pageW*k)), H = Math.max(8, Math.round(pageH*k));
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const cx = c.getContext("2d", {willReadFrequently:true});
+  cx.fillStyle = "#fff"; cx.fillRect(0, 0, W, H);
+  cx.drawImage(pdfCanvas, 0, 0, pdfCanvas.width, pdfCanvas.height, 0, 0, W, H);
+  const px = cx.getImageData(0, 0, W, H).data, N = W*H, lum = new Uint8Array(N), hist = new Uint32Array(256), ink = new Uint8Array(N);
+  for(let i=0; i<N; i++){ const l = (px[4*i]*299 + px[4*i+1]*587 + px[4*i+2]*114)/1000 | 0; lum[i] = l; hist[l]++; }
+  let acc = 0, med = 255; for(let l=0; l<256; l++){ acc += hist[l]; if(acc >= N/2){ med = l; break; } }
+  const thr = Math.min(205, med - 45);
+  for(let i=0; i<N; i++){
+    if(lum[i] < thr){ ink[i] = 1; continue; }
+    const r = px[4*i], g = px[4*i+1], b = px[4*i+2];
+    if(Math.max(r, g, b) - Math.min(r, g, b) > 60 && lum[i] < med - 12) ink[i] = 1;
+  }
+  return {k, W, H, N, ink};
+}
+// ---- Count → Find similar (beta): one symbol is the pattern; every place on the page that looks the same gets a count dot ----
+// The symbol is read as line pixels inside a box (the box the user dragged, or the one found around the click). A place
+// matches when 9 of every 10 of those line pixels are there too and 9 of every 10 of the symbol's empty spots are empty there as well
+// (strict on purpose: a missed symbol shows — it has no dot — while a wrong dot hides in the total),
+// in any of the four quarter turns. Nothing is assumed about what the symbol means — the user checks the dots.
+var simArmed = false, simG = null;
+function findSimilar(p0, box){
+  if(!pdfDoc || mode!=="pdf") return;
+  const {k, W, H, N, ink} = pagePicture(2600);
+  const toPx = p => [Math.round(p.x*zoom*k), Math.round(p.y*zoom*k)];
+  const maxS = Math.round(Math.min(W, H)*0.2);
+  let x0, y0, x1, y1;
+  if(box){
+    const a = toPx(box[0]), b = toPx(box[1]);
+    x0 = Math.min(a[0], b[0]); x1 = Math.max(a[0], b[0]); y0 = Math.min(a[1], b[1]); y1 = Math.max(a[1], b[1]);
+  } else {
+    const [cx0, cy0] = toPx(p0);
+    if(cx0<0 || cy0<0 || cx0>=W || cy0>=H) return;
+    const ring = (test, R) => { for(let r=0; r<=R; r++) for(let d=-r; d<=r; d++) for(const [x, y] of [[cx0+d, cy0-r], [cx0+d, cy0+r], [cx0-r, cy0+d], [cx0+r, cy0+d]]) if(x>=0 && y>=0 && x<W && y<H && test(y*W+x)) return y*W+x; return -1; };
+    const cand = [];   // what "the symbol" could be; the biggest one that holds the click wins (a circle with a dot in it is the circle, not the dot)
+    // a) what is drawn nearest the click, with everything joined to it
+    const seed = ring(i => ink[i], Math.round(40*k));
+    if(seed>=0){
+      const seen = new Uint8Array(N), q = [seed]; seen[seed] = 1;
+      let bx0 = W, by0 = H, bx1 = 0, by1 = 0, big = false;
+      while(q.length){
+        const i = q.pop(), x = i%W, y = (i-x)/W;
+        if(x<bx0) bx0 = x; if(x>bx1) bx1 = x; if(y<by0) by0 = y; if(y>by1) by1 = y;
+        if(bx1-bx0 > maxS || by1-by0 > maxS){ big = true; break; }   // joined to other line work
+        for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++){
+          const nx = x+dx, ny = y+dy; if(nx<0 || ny<0 || nx>=W || ny>=H) continue;
+          const j = ny*W+nx; if(ink[j] && !seen[j]){ seen[j] = 1; q.push(j); }
+        }
+      }
+      const m = 3;
+      if(!big && cx0 >= bx0-m && cx0 <= bx1+m && cy0 >= by0-m && cy0 <= by1+m) cand.push([bx0, by0, bx1, by1]);
+    }
+    // b) the closed space the click is in (inside a circle, a square…), with the line around it
+    const os = ring(i => !ink[i], Math.round(6*k));
+    if(os>=0){
+      const open = new Uint8Array(N); for(let i=0; i<N; i++) open[i] = ink[i] ? 0 : 1;
+      const f = maskFill(open, W, H, [[os%W, (os - os%W)/W]]);
+      if(!f.edge && f.n <= maxS*maxS){
+        let ax0 = W, ay0 = H, ax1 = 0, ay1 = 0;
+        for(let j=0; j<f.qt; j++){ const i = f.q[j], x = i%W, y = (i-x)/W; if(x<ax0) ax0 = x; if(x>ax1) ax1 = x; if(y<ay0) ay0 = y; if(y>ay1) ay1 = y; }
+        const lw = Math.max(2, Math.round(3*k));
+        cand.push([ax0-lw, ay0-lw, ax1+lw, ay1+lw]);
+      }
+    }
+    if(!cand.length){ toast(seed>=0 ? "✨ That symbol touches other lines — drag a box around just the symbol instead" : "✨ Click on one symbol, or inside it — or drag a box around it — to find the ones that look the same", 6000); return; }
+    cand.sort((u, v) => (v[2]-v[0])*(v[3]-v[1]) - (u[2]-u[0])*(u[3]-u[1]));
+    [x0, y0, x1, y1] = cand[0];
+  }
+  x0 = Math.max(0, x0-2); y0 = Math.max(0, y0-2); x1 = Math.min(W-1, x1+2); y1 = Math.min(H-1, y1+2);
+  const w = x1-x0+1, h = y1-y0+1;
+  if(w < 7 || h < 7){ toast("✨ That symbol is too small on screen — zoom in on it and try again", 5000); return; }
+  if(w > maxS || h > maxS){ toast("✨ That's too big to be one symbol — drag a box around just one", 5000); return; }
+  // the pattern: where the symbol has lines, and where it is clearly empty
+  const inkD = maskGrow(ink, W, H, 1), inkF = maskGrow(ink, W, H, 2), tp = [], tq = [];
+  for(let y=0; y<h; y++) for(let x=0; x<w; x++){ const i = (y0+y)*W + x0+x; if(ink[i]) tp.push([x, y]); else if(!inkF[i]) tq.push([x, y]); }
+  if(tp.length < 12){ toast("✨ There isn't enough drawn there to recognize — pick a symbol with more detail", 5000); return; }
+  const pick = (a, n) => { if(a.length <= n) return a.slice(); const o = [], s = a.length/n; for(let j=0; j<n; j++) o.push(a[Math.floor(j*s)]); return o; };
+  const spread = a => a.map((p, i) => [(i*7919) % a.length, p]).sort((u, v) => u[0]-v[0]).map(u => u[1]);   // so the first checks are all over the symbol
+  const P0 = spread(pick(tp, 420)), Q0 = spread(pick(tq, 320));
+  const found = [];
+  for(let rot=0; rot<4; rot++){
+    const turn = ([x, y]) => rot===0 ? [x, y] : rot===1 ? [h-1-y, x] : rot===2 ? [w-1-x, h-1-y] : [y, w-1-x];
+    const wr = rot%2 ? h : w, hr = rot%2 ? w : h, P = P0.map(turn), Q = Q0.map(turn);
+    const po = new Int32Array(P.length), qo = new Int32Array(Q.length);
+    P.forEach(([x, y], j) => { po[j] = y*W + x; }); Q.forEach(([x, y], j) => { qo[j] = y*W + x; });
+    const ax = P[0][0], ay = P[0][1], nP = P.length, nQ = Q.length;
+    const first = Math.min(nP, 24), firstMiss = 5, maxMiss = Math.floor(nP*0.1), maxQ = Math.floor(nQ*0.1);
+    for(let i=0; i<N; i++){
+      if(!ink[i]) continue;
+      const x = i%W, ox = x-ax, oy = (i-x)/W - ay;
+      if(ox<0 || oy<0 || ox+wr > W || oy+hr > H) continue;
+      const base = oy*W + ox; let miss = 0, j = 1;
+      for(; j<first; j++) if(!inkD[base+po[j]] && ++miss > firstMiss) break;
+      if(j<first) continue;
+      for(; j<nP; j++) if(!inkD[base+po[j]] && ++miss > maxMiss) break;
+      if(j<nP) continue;
+      let qh = 0, u = 0;
+      for(; u<nQ; u++) if(ink[base+qo[u]] && ++qh > maxQ) break;
+      if(u<nQ) continue;
+      found.push([1 - miss/nP - 0.5*qh/Math.max(1, nQ), ox + wr/2, oy + hr/2]);
+    }
+  }
+  found.sort((a, b) => b[0]-a[0]);
+  const keep = [], minD = 0.6*Math.min(w, h);
+  for(const f of found){
+    if(!keep.some(q => Math.abs(q[1]-f[1]) < minD && Math.abs(q[2]-f[2]) < minD)) keep.push(f);
+    if(keep.length > 400) break;
+  }
+  window.__simLast = {box:[x0, y0, x1, y1], k, lines:tp.length, empty:tq.length, hits:found.length, kept:keep.length};   // for tests and support
+  if(keep.length > 400){ toast("✨ That looks like more than 400 places — too many to be one symbol. Drag a tighter box around just the symbol", 7000); return; }
+  if(!keep.length) keep.push([1, x0 + w/2, y0 + h/2]);
+  if(drawing) finishDrawing();
+  if(typeof window.__trialGate==="function" && !window.__trialGate("measure")) return;   // (PLAN TAKEOFF has no trial)
+  pushHistory();
+  const pts = keep.map(f => ({x:f[1]/k/zoom, y:f[2]/k/zoom})).sort((a, b) => Math.abs(a.y-b.y) > minD/k/zoom ? a.y-b.y : a.x-b.x);
+  const m = {id:nextId++, src:"pdf", type:"count", page:pageNum, doc:curDocId, pts, name:newName("count"), color:newColor("count"), cat:activeCatId};
+  measurements.push(m); drawing = m; selectedId = m.id; refreshAll();
+  toast(pts.length > 1 ? "✨ Found "+pts.length+" that look the same — check them: click any I missed, right-click a dot to remove it, Enter when done"
+    : "✨ Found only this one — nothing else on this page looks the same. Click the others to count them by hand", 9000);
+}
+function syncCountBar(){
+  const bar = document.getElementById("countBar"); if(!bar) return;
+  const on = tool==="count" && mode==="pdf" && !!pdfDoc;
+  if(!on) simArmed = false;
+  bar.classList.toggle("show", on);
+  const b = document.getElementById("countSim"); b.classList.toggle("on", simArmed);
+  const txt = simArmed ? "✓ Click one symbol" : "✨ Find similar"; if(b.textContent!==txt) b.textContent = txt;
+}
+document.getElementById("countSim").addEventListener("click", e => {
+  e.stopPropagation(); simArmed = !simArmed; syncCountBar();
+  if(simArmed) toast("✨ Find similar on — click one symbol (or drag a box around it) and I'll find the ones that look the same on this page", 6000);
+});
+// while it's on, the next click or box on the plan is the pattern (it never places a dot or moves the plan)
+wrap.addEventListener("pointerdown", e => {
+  if(!simArmed || tool!=="count" || mode!=="pdf" || !pdfDoc || e.button!==0 || e.target!==overlay || spaceDown) return;
+  e.stopPropagation(); e.preventDefault();
+  simG = {id:e.pointerId, a:evtPdf(e), b:null, x:e.clientX, y:e.clientY, box:false};
+  try{ overlay.setPointerCapture(e.pointerId); }catch{}
+}, true);
+wrap.addEventListener("pointermove", e => {
+  const g = simG; if(!g || e.pointerId!==g.id) return;
+  e.stopPropagation();
+  if(!g.box && Math.hypot(e.clientX-g.x, e.clientY-g.y) < 8) return;
+  g.box = true; const b = g.b = evtPdf(e);
+  scribble = {pts:[g.a, {x:b.x, y:g.a.y}, b, {x:g.a.x, y:b.y}, g.a]}; requestDraw();
+}, true);
+function simEnd(e, run){
+  const g = simG; if(!g || e.pointerId!==g.id) return;
+  e.stopPropagation(); simG = null; scribble = null; requestDraw();
+  suppressClick = true; simArmed = false; syncCountBar();
+  if(!run) return;
+  toast("✨ Looking for the ones that look the same…", 1500);
+  setTimeout(() => { try{ findSimilar(g.a, g.box && g.b ? [g.a, g.b] : null); }catch(err){ console.warn("find similar", err); toast("Find similar couldn't read this spot — try again, or count by hand"); } }, 30);
+}
+wrap.addEventListener("pointerup", e => simEnd(e, true), true);
+wrap.addEventListener("pointercancel", e => simEnd(e, false), true);
+
+// ---- the scale written on the sheet: offered when no scale is set, never applied by itself ----
+// title blocks often space their letters out ("S C A L E : 1 \" = 1 0 '"): those come back as single characters with spaces between
+function unspace(s){ return String(s).split(/ {2,}/).map(w => /^(?:\S ){2,}\S$/.test(w) ? w.replace(/ /g, "") : w).join(" "); }
+function scalesInText(s){
+  s = String(s).replace(/[”″“]/g, '"').replace(/[’′‘]/g, "'").replace(/\s+/g, " ");
+  const out = new Map(), add = (ratio, label) => { const key = Math.round(ratio*100); if(ratio >= 1 && ratio <= 6000 && !out.has(key)) out.set(key, {ratio, label}); };
+  let m;
+  const eng = /(^|[^\d\/.])1\s*(?:"|in\.?|inch)\s*=\s*(\d{1,4})\s*(?:'|ft\.?|feet|foot)(?:\s*-\s*(\d{1,2})\s*")?/gi;   // 1" = 20'   1 inch = 20 feet   1" = 10'-0"
+  while((m = eng.exec(s))){ const ft = +m[2], inch = +(m[3] || 0); if(inch < 12) add(ft*12 + inch, '1" = '+ft+"'"+(inch ? "-"+inch+'"' : "")); }
+  const arch = /(^|[^\d\/.])(?:(\d)[\s-]+)?(\d{1,2})\s*\/\s*(\d{1,2})\s*"\s*=\s*1\s*'/g;   // 1/4" = 1'-0"   1 1/2" = 1'-0"
+  while((m = arch.exec(s))){ const whole = +(m[2] || 0), a = +m[3], b = +m[4]; if(b && a < b) add(12/(whole + a/b), (whole ? whole+" " : "")+a+"/"+b+'" = 1\'-0"'); }
+  const full = /(^|[^\d\/.])([1-9])\s*"\s*=\s*1\s*'(?!\s*\d)/g;   // 3" = 1'-0"
+  while((m = full.exec(s))) add(12/+m[2], m[2]+'" = 1\'-0"');
+  const met = /(?:scale|escala)\s*:?\s*1\s*:\s*(\d{1,4})(?!\d)/gi;   // SCALE 1:100
+  while((m = met.exec(s))) add(+m[1], "1:"+m[1]);
+  return [...out.values()];
+}
+var scaleSeen = {}, scaleNo = new Set();
+async function scaleHintCheck(){
+  const bar = document.getElementById("scaleHint"); if(!bar) return;
+  const now = () => pdfDoc && mode==="pdf" && (typeof entered==="undefined" || entered) && getFPU()==null ? PK() : null;
+  const key = now();
+  if(!key || scaleNo.has(key)){ bar.classList.remove("show"); return; }
+  if(!(key in scaleSeen)){
+    scaleSeen[key] = [];
+    try{ const tc = await (await pdfDoc.getPage(pageNum)).getTextContent(); if(now()===key) scaleSeen[key] = scalesInText(tc.items.map(i => unspace(i.str)).join(" ")).slice(0, 3); else delete scaleSeen[key]; }catch{}
+  }
+  if(now()!==key) return;   // moved on meanwhile
+  const found = scaleSeen[key] || [];
+  if(!found.length){ bar.classList.remove("show"); return; }
+  bar.innerHTML = '<span class="sl">📏 '+t(found.length>1 ? "Scales written on this sheet:" : "This sheet says its scale is")+'</span>'+
+    found.map((f, i) => '<button class="btn" data-i="'+i+'">'+f.label.replace(/"/g, "&quot;")+'</button>').join("")+
+    '<button class="btn x" data-i="x" title="'+t("Not now")+'">✕</button>';
+  bar.classList.add("show");
+}
+document.getElementById("scaleHint").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  e.stopPropagation();
+  const key = PK(), f = (scaleSeen[key] || [])[+b.dataset.i];
+  if(!f){ scaleNo.add(key); scaleHintCheck(); return; }
+  if(typeof viewBlocked==="function" && viewBlocked()) return;
+  applyScale(f.ratio/12/72, f.label);
+  setTimeout(() => toast("Scale set from the sheet — check it against a known dimension before you measure", 7000), 60);
+});
+{ // the hint follows the page: after every draw, a scale change or a change of mode
+  const rp = renderPage; renderPage = async function(){ const r = await rp.apply(this, arguments); scaleHintCheck(); return r; };
+  const as = applyScale; applyScale = function(){ const r = as.apply(this, arguments); scaleHintCheck(); return r; };
+  const sm = setMode; setMode = function(){ const r = sm.apply(this, arguments); scaleHintCheck(); return r; };
+}
+
+// ---- nothing fails silently: an unexpected script error says so once (the work stays; autosave keeps it) ----
+{
+  let last = 0;
+  const say = () => { const n = Date.now(); if(n-last < 20000) return; last = n; try{ toast("Something went wrong with that step — your work is still here. Try again; if it keeps happening, reload the page.", 8000); }catch{} };
+  addEventListener("error", e => { if(e && e.error instanceof Error && e.filename && e.filename.indexOf(location.origin)===0) say(); });
+  addEventListener("unhandledrejection", e => { const r = e && e.reason; if(r instanceof TypeError || r instanceof ReferenceError || r instanceof RangeError){ if(!/fetch|network|load failed|abort/i.test(String(r.message || ""))) say(); } });
 }
 
 // ---- Smart area: its Cut-out switch ----
@@ -7611,6 +7869,7 @@ function setSmartCut(on){
   if(smartCut) toast("✨ Smart cut-out on — scribble inside the part to subtract (a patio inside a lawn)", 4000);
 }
 function syncSmartBar(){
+  syncCountBar();
   const bar = document.getElementById("smartBar"); if(!bar) return;
   bar.classList.toggle("show", tool==="smart" && mode==="pdf" && !!pdfDoc);
   const b = document.getElementById("smartCut");
