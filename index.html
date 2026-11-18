@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-upfQeW2nXSXUv1z5atAwjAGQDGax27HNxauDn78qUHc=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+QTQTy7ZHHb3vPWDkKIuTA726pisXCfjIBajKn5lf/U=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,10 +17,10 @@
 <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 <link rel="dns-prefetch" href="https://photon.komoot.io">
 <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
-<link rel="stylesheet" href="quotes.css?v=3.10.0">
-<script src="plans.js?v=3.10.0"></script>
-<script src="pt-quotes-host.js?v=3.10.0"></script>
-<script type="module" src="quotes.js?v=3.10.0"></script>
+<link rel="stylesheet" href="quotes.css?v=3.11.0">
+<script src="plans.js?v=3.11.0"></script>
+<script src="pt-quotes-host.js?v=3.11.0"></script>
+<script type="module" src="quotes.js?v=3.11.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
@@ -329,6 +329,28 @@
   #nameHint .btn{border:1.5px solid var(--amber); color:var(--amber); font-weight:700; background:var(--solid); font-size:13px; white-space:nowrap;}
   #nameHint .btn.x{border-color:var(--hair); color:var(--faint); font-weight:600;}
   #scaleHint .sl b{font-weight:800;}
+  /*1.30*/ #findBar{position:fixed; top:calc(62px + var(--sat)); right:8px; z-index:1250; display:none; flex-direction:column; width:288px; box-sizing:border-box;   /* over the takeoff list, so it never covers the plan */
+    background:var(--solid); border:1px solid var(--hair); border-radius:13px; box-shadow:var(--shadow); padding:7px 8px;}
+  #findBar.show{display:flex;}
+  #findBar .fq{display:flex; align-items:center; gap:6px;}
+  #findBar .fi{font-size:14px; padding-left:4px;}
+  #findBar input{flex:1 1 auto; min-width:0; font:inherit; font-size:14px; padding:6px 9px; border:1.5px solid var(--hair); border-radius:8px; background:var(--panel2, transparent); color:var(--ink);}
+  #findBar input:focus{outline:none; border-color:var(--amber);}
+  #findN{font-size:12.5px; font-weight:700; color:var(--dim); min-width:44px; text-align:center; white-space:nowrap;}
+  #findBar .btn{border:1.5px solid var(--hair); background:var(--solid); color:var(--ink); font-weight:700; font-size:15px; padding:3px 10px; line-height:1.2;}
+  #findBar .btn.x{color:var(--faint); font-size:13px;}
+  #findNote{font-size:12.5px; color:var(--dim); padding:7px 6px 2px;}
+  #findList{margin-top:6px; max-height:min(46vh, 380px); overflow:auto; border-top:1px solid var(--hair); padding-top:4px;}
+  #findList .fh{font-size:11.5px; font-weight:700; color:var(--dim); padding:7px 6px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  #findList .fr{display:flex; gap:8px; align-items:baseline; width:100%; text-align:left; font:inherit; font-size:13px; color:var(--ink); background:transparent; border:0; border-radius:7px; padding:5px 6px; cursor:pointer;}
+  #findList .fr:hover{background:var(--panel2, rgba(0,0,0,.05));} #findList .fr.cur{background:rgba(232,140,30,.16);}
+  #findList .fr b{flex:0 0 auto; font-size:11.5px; color:var(--dim); min-width:30px;}
+  #findList .fr span{flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  #findList mark{background:#ffd84d; color:#111; border-radius:2px; padding:0 1px;}
+  #findMarks{position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:4;}
+  #findMarks i{position:absolute; background:rgba(255,213,0,.45); outline:1.5px solid rgba(214,140,0,.95); border-radius:2px; mix-blend-mode:multiply;}
+  #findMarks i.cur{background:rgba(255,120,0,.5); outline:2.5px solid #e65100;}
+  @media (max-width:840px){ #findBar{left:10px; right:10px; width:auto; top:calc(58px + var(--sat));} }
   @media (max-width:840px){ #nameHint{left:50%; width:calc(100vw - 20px); bottom:calc(172px + var(--sab));} }
   @media (max-width:840px){ #countBar, #scaleHint{left:50%;} }
   #smartBar .sl{font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
@@ -667,7 +689,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.10.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.11.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -727,6 +749,7 @@
   <div class="hrow"><span>Smart area (beta)</span><b>scribble inside a space</b></div>
       <div class="hrow"><span>Count → ✨ Find similar (beta)</span><b>click one symbol</b></div>
       <div class="hrow"><span>Name for a new plan</span><b>read from its first page</b></div>
+      <div class="hrow"><span>Find a word in the plans</span><b>Ctrl / ⌘ + F</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
   <div class="hrow"><span>Start measuring from another corner</span><b>click it</b></div>
   <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag it</b></div>
@@ -786,6 +809,7 @@
     <canvas id="pdfCanvas"></canvas>
     <canvas id="hiCanvas"></canvas>
     <canvas id="overlay"></canvas>
+    <div id="findMarks"></div>
   </div>
 </div>
 
@@ -868,6 +892,7 @@
 <div class="pill pdfOnly" id="navPill">
   <button class="pbtn" id="docChip" data-pop="docs" title="Plans in this project" style="display:none">📄 <span id="docName">Plans</span><span class="chev">▾</span></button>
   <button class="pbtn" id="layersChip" data-pop="layers" title="Layers in this PDF — show or hide them" style="display:none">◫ Layers<span class="n" id="layersN" style="display:none"></span></button>
+  <button class="pbtn" id="findChip" title="Find a word in the plans (Ctrl / ⌘ F)" style="display:none">🔎 Find</button>
   <div class="pdiv" id="docDiv" style="display:none"></div>
   <button class="pbtn" id="prevPg" title="Previous page (Page Up)">‹</button>
   <div id="pageInfo">– / –</div>
@@ -888,6 +913,7 @@
 <div id="countBar"><span class="sl">🔢 Count</span><button class="btn" id="countSim" title="Click one symbol and the ones that look the same on this page are counted for you — always check them">✨ Find similar</button><b class="bt">BETA</b></div>
 <div id="scaleHint"></div>
 <div id="nameHint"></div>
+<div id="findBar"><div class="fq"><span class="fi">🔎</span><input type="search" id="findIn" placeholder="Find a word in the plans…" autocomplete="off" spellcheck="false" maxlength="80"><span id="findN" data-nt></span><button type="button" class="btn" id="findPrev" title="Previous">‹</button><button type="button" class="btn" id="findNext" title="Next">›</button><button type="button" class="btn x" id="findX" title="Close">✕</button></div><div id="findNote" style="display:none"></div><div id="findList" style="display:none"></div></div>
 <div id="fab">
   <button class="btn" id="fabUndo" title="Undo last point">↩</button>
   <span id="fabVal"></span>
@@ -8109,6 +8135,156 @@ function useSuggestedName(id, typed){
       delete nameSug[id]; nameNo.add(id); nameHintCheck();
     }
     return r; };
+}
+
+// ---- 1.30: find a word inside the plans — every PDF of the project, every page. Read on the spot, kept in memory only: nothing is stored ----
+var findIdx = new WeakMap(), findSt = {open:false, q:"", hits:[], cur:-1, seq:0, busy:false, missing:0, lines:0, more:false};
+// same length as the text it folds, so a match found in the folded text is at the same place in the real one
+function findFold(s){ let o = ""; s = String(s || ""); for(let i = 0; i < s.length; i++){ const c = s[i], f = c.normalize("NFD").charAt(0).toLowerCase(); o += f.length===1 ? f : c; } return o; }
+async function findReadPage(pdf, n){
+  const page = await pdf.getPage(n), vp = page.getViewport({scale:1}), tc = await page.getTextContent();
+  const rows = [];
+  for(const it of tc.items || []){
+    const s = unspace(String(it.str || "")); if(!s.trim()) continue;
+    const m = it.transform || [1,0,0,1,0,0], len = Math.hypot(m[0], m[1]) || 1, ux = m[0]/len, uy = m[1]/len, h = Math.hypot(m[2], m[3]) || it.height || len;
+    rows.push({s, h, ux, uy, ang: Math.round(Math.atan2(uy, ux)/(Math.PI/2)), along: m[4]*ux + m[5]*uy, across: m[5]*ux - m[4]*uy, w: Math.abs(it.width) || s.length*h*0.5});
+  }
+  rows.sort((a, b) => a.ang-b.ang || b.across-a.across);
+  const lines = []; let band = null;
+  const flush = () => {
+    if(!band) return;
+    band.rows.sort((p, q) => p.along-q.along); let cur = null;
+    for(const r of band.rows){
+      const gap = cur ? r.along - cur.end : 0, hh = cur ? Math.max(cur.h, r.h) : r.h;
+      if(cur && gap < hh*3 && gap > -hh){
+        if(gap > hh*0.22 && !/\s$/.test(cur.text) && !/^\s/.test(r.s)) cur.text += " ";
+        cur.parts.push({off:cur.text.length, len:r.s.length, along:r.along, w:r.w}); cur.text += r.s; cur.end = Math.max(cur.end, r.along + r.w); cur.h = hh;
+      } else { cur = {text:r.s, h:r.h, ux:r.ux, uy:r.uy, across:band.across, end:r.along + r.w, parts:[{off:0, len:r.s.length, along:r.along, w:r.w}]}; lines.push(cur); }
+    }
+    band = null;
+  };
+  for(const r of rows){
+    if(band && band.ang===r.ang && Math.abs(band.across-r.across) < Math.min(band.h, r.h)*0.5) band.rows.push(r);
+    else { flush(); band = {ang:r.ang, across:r.across, h:r.h, rows:[r]}; }
+  }
+  flush();
+  for(const l of lines) l.fold = findFold(l.text);
+  return {vw:vp.width || 1, vh:vp.height || 1, tf:(vp.transform || [1,0,0,-1,0,vp.height]).slice(), lines};
+}
+// where on the page the letters i…j of a line are, as fractions of the page (so the mark holds at any zoom)
+function findBox(pg, l, i, j){
+  const at = (k, end) => { let p = l.parts[0]; for(const q of l.parts){ if(q.off <= (end ? k-1 : k)) p = q; else break; }
+    return p.along + Math.max(0, Math.min(1, (k - p.off)/(p.len || 1)))*p.w; };
+  const a0 = at(i, false), a1 = at(j, true), c0 = l.across - l.h*0.28, c1 = l.across + l.h*0.92, t = pg.tf;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for(const [a, c] of [[a0, c0], [a1, c0], [a0, c1], [a1, c1]]){
+    const px = a*l.ux - c*l.uy, py = a*l.uy + c*l.ux, X = t[0]*px + t[2]*py + t[4], Y = t[1]*px + t[3]*py + t[5];
+    x0 = Math.min(x0, X); y0 = Math.min(y0, Y); x1 = Math.max(x1, X); y1 = Math.max(y1, Y);
+  }
+  return {x:x0/pg.vw, y:y0/pg.vh, w:Math.max(0.004, (x1-x0)/pg.vw), h:Math.max(0.004, (y1-y0)/pg.vh)};
+}
+async function findRun(){
+  const st = findSt, inp = document.getElementById("findIn"), seq = ++st.seq;
+  const q = findFold(inp.value.trim().replace(/\s+/g, " "));
+  st.q = q; st.hits = []; st.cur = -1; st.missing = 0; st.lines = 0; st.more = false;
+  if(q.length < 2){ st.busy = false; findDraw(); findMarks(); return; }
+  st.busy = true; findDraw();
+  const order = docs.slice().sort((a, b) => (b.id===curDocId) - (a.id===curDocId));   // the plan on screen first
+  let painted = Date.now();
+  for(const d of order){
+    let pdf = null; try{ pdf = (await ensureDoc(d.id)).pdf; }catch{}
+    if(seq!==st.seq) return;
+    if(!pdf){ st.missing++; continue; }
+    let pages = findIdx.get(pdf); if(!pages){ pages = []; findIdx.set(pdf, pages); }
+    for(let n = 1; n <= pdf.numPages; n++){
+      if(!pages[n]){
+        try{ pages[n] = await findReadPage(pdf, n); }catch{ pages[n] = {vw:1, vh:1, tf:[1,0,0,1,0,0], lines:[]}; }
+        if(seq!==st.seq) return;
+      }
+      const pg = pages[n]; st.lines += pg.lines.length;
+      for(const l of pg.lines){
+        let i = -1;
+        while((i = l.fold.indexOf(q, i+1)) >= 0){
+          if(st.hits.length >= 3000){ st.more = true; break; }
+          st.hits.push({doc:d.id, pdf, page:n, text:l.text, i, len:q.length, box:findBox(pg, l, i, i+q.length)});
+        }
+      }
+      if(Date.now()-painted > 300){ painted = Date.now(); findDraw(n+" / "+pdf.numPages); await new Promise(r => setTimeout(r, 0)); if(seq!==st.seq) return; }
+    }
+  }
+  st.busy = false; findDraw(); findMarks();
+}
+function findDraw(progress){
+  const st = findSt, n = document.getElementById("findN"), note = document.getElementById("findNote"), list = document.getElementById("findList");
+  if(!n) return;
+  n.textContent = st.busy ? "…" : st.hits.length ? (st.cur >= 0 ? (st.cur+1)+" / " : "")+st.hits.length+(st.more ? "+" : "") : "";
+  const notes = [];
+  if(st.busy) notes.push(t("Reading the plans…")+(progress ? " "+progress : ""));
+  else if(st.q.length >= 2 && !st.hits.length) notes.push(st.lines ? t("No matches in these plans") : t("These plans have no text to search — a scanned plan is a picture"));
+  else if(st.q.length < 2 && document.getElementById("findIn").value.trim().length===1) notes.push(t("Type at least 2 letters"));
+  if(!st.busy && st.missing) notes.push(st.missing===1 ? t("1 plan isn't loaded on this computer, so it wasn't searched") : st.missing+" "+t("plans aren't loaded on this computer, so they weren't searched"));
+  note.textContent = notes.join(" · "); note.style.display = notes.length ? "" : "none";
+  const cut = (s, a, b) => esc2(s.slice(a, b)), many = docs.length > 1;
+  let html = "", lastDoc = null; const SHOW = 300;
+  st.hits.slice(0, SHOW).forEach((h, k) => {
+    if(many && h.doc!==lastDoc){ lastDoc = h.doc; const d = docMeta(h.doc); html += '<div class="fh" data-nt>📄 '+esc2(shortName(d ? d.name : "", 60))+'</div>'; }
+    const a = Math.max(0, h.i-26), b = Math.min(h.text.length, h.i+h.len+40);
+    html += '<button type="button" class="fr'+(k===st.cur ? " cur" : "")+'" data-k="'+k+'"><b data-nt>p.'+h.page+'</b><span data-nt>'+(a > 0 ? "…" : "")+cut(h.text, a, h.i)+'<mark>'+cut(h.text, h.i, h.i+h.len)+'</mark>'+cut(h.text, h.i+h.len, b)+(b < h.text.length ? "…" : "")+'</span></button>';
+  });
+  if(st.hits.length > SHOW) html += '<div class="fh">+ '+(st.hits.length-SHOW)+(st.more ? "+" : "")+' '+t("more — type more letters to narrow it down")+'</div>';
+  list.innerHTML = html; list.style.display = html ? "" : "none";
+  const c = list.querySelector(".fr.cur"); if(c) c.scrollIntoView({block:"nearest"});
+}
+function findMarks(){
+  const box = document.getElementById("findMarks"); if(!box) return;
+  const st = findSt; let html = "";
+  if(st.open && pdfDoc && mode==="pdf"){
+    st.hits.forEach((h, k) => { if(h.doc===curDocId && h.page===pageNum && h.pdf===pdfDoc){ const b = h.box;
+      html += '<i'+(k===st.cur ? ' class="cur"' : '')+' style="left:'+(b.x*100).toFixed(3)+'%;top:'+(b.y*100).toFixed(3)+'%;width:'+(b.w*100).toFixed(3)+'%;height:'+(b.h*100).toFixed(3)+'%"></i>'; } });
+  }
+  if(box.dataset.h!==html){ box.innerHTML = html; box.dataset.h = html; }
+}
+async function findGo(k){
+  const st = findSt; if(!st.hits.length) return;
+  k = ((k % st.hits.length) + st.hits.length) % st.hits.length;
+  const h = st.hits[k], seq = st.seq; st.cur = k; findDraw();
+  if(!docMeta(h.doc)){ findRun(); return; }      // that plan is no longer in the project: look again
+  if(h.doc!==curDocId || h.page!==pageNum || h.pdf!==pdfDoc || mode!=="pdf"){ const ok = await showDoc(h.doc, h.page, {focus:true, progress:true}); if(!ok || seq!==st.seq) return; }
+  findMarks();
+  const m = document.querySelector("#findMarks i.cur"); if(m) m.scrollIntoView({block:"center", inline:"center"});
+}
+function findOpen(){
+  const st = findSt, bar = document.getElementById("findBar"), inp = document.getElementById("findIn");
+  st.open = true; bar.classList.add("show"); inp.focus(); inp.select();
+  if(inp.value.trim().length >= 2) findRun(); else findDraw();
+}
+function findClose(){ const st = findSt; st.open = false; st.seq++; st.busy = false; document.getElementById("findBar").classList.remove("show"); findMarks(); }
+function findSync(){ const c = document.getElementById("findChip"); if(c) c.style.display = pdfDoc && mode==="pdf" ? "" : "none"; if(findSt.open && !(docs.length && mode==="pdf")) findClose(); else findMarks(); }
+{
+  const bar = document.getElementById("findBar"), inp = document.getElementById("findIn"); let tm = 0;
+  inp.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(findRun, 260); });
+  inp.addEventListener("keydown", e => {
+    e.stopPropagation();
+    if(e.key==="Enter"){ e.preventDefault(); clearTimeout(tm); if(findSt.q!==findFold(inp.value.trim().replace(/\s+/g, " ")) || findSt.busy){ findRun().then(() => findGo(0)); } else findGo(findSt.cur + (e.shiftKey ? -1 : 1)); }
+    else if(e.key==="Escape"){ e.preventDefault(); findClose(); }
+  });
+  bar.addEventListener("click", e => {
+    e.stopPropagation();
+    const r = e.target.closest(".fr"); if(r){ findGo(+r.dataset.k); return; }
+    const b = e.target.closest("button"); if(!b) return;
+    if(b.id==="findX") findClose(); else if(b.id==="findNext") findGo(findSt.cur+1); else if(b.id==="findPrev") findGo(findSt.cur-1);
+  });
+  for(const ev of ["pointerdown", "mousedown", "dblclick", "wheel", "contextmenu"]) bar.addEventListener(ev, e => e.stopPropagation());
+  document.getElementById("findChip").addEventListener("click", e => { e.stopPropagation(); if(findSt.open) findClose(); else findOpen(); });
+  // Ctrl/⌘ F: the browser's own find can't see inside a drawn plan, so the app's takes its place while a plan is open
+  window.addEventListener("keydown", e => {
+    if(!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || (e.key!=="f" && e.key!=="F")) return;
+    if((typeof entered!=="undefined" && !entered) || !docs.length || mode!=="pdf" || !pdfDoc) return;
+    e.preventDefault(); e.stopPropagation(); findOpen();
+  }, true);
+  const rp = renderPage; renderPage = async function(){ const r = await rp.apply(this, arguments); findSync(); return r; };
+  const sm = setMode; setMode = function(){ const r = sm.apply(this, arguments); findSync(); return r; };
+  const ud = updateDocUI; updateDocUI = function(){ const r = ud.apply(this, arguments); findSync(); return r; };
 }
 
 // ---- nothing fails silently: an unexpected script error says so once (the work stays; autosave keeps it) ----
