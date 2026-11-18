@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BeEDCd6cG7e1zrGiulA6FDXhlHGbijE+Fevm2fXi1r0=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-upfQeW2nXSXUv1z5atAwjAGQDGax27HNxauDn78qUHc=' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://terratakeoff.com https://api.github.com https://*.githubusercontent.com https://*.arcgis.com https://server.arcgisonline.com https://photon.komoot.io https://nominatim.openstreetmap.org https://s3-us-west-2.amazonaws.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://*.googleapis.com https://maps.googleapis.com https://*.gstatic.com https://*.google.com blob: data:; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,10 +17,10 @@
 <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 <link rel="dns-prefetch" href="https://photon.komoot.io">
 <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
-<link rel="stylesheet" href="quotes.css?v=3.9.0">
-<script src="plans.js?v=3.9.0"></script>
-<script src="pt-quotes-host.js?v=3.9.0"></script>
-<script type="module" src="quotes.js?v=3.9.0"></script>
+<link rel="stylesheet" href="quotes.css?v=3.10.0">
+<script src="plans.js?v=3.10.0"></script>
+<script src="pt-quotes-host.js?v=3.10.0"></script>
+<script type="module" src="quotes.js?v=3.10.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
@@ -319,6 +319,17 @@
   #countBar #countSim, #scaleHint .btn{border:1.5px solid var(--amber); color:var(--amber); font-weight:700; background:var(--solid); font-size:13px;}
   #countBar #countSim.on{background:var(--amber); color:var(--onacc);}
   #scaleHint .btn.x{border-color:var(--hair); color:var(--faint); font-weight:600;}
+  /*1.29*/ #nameHint{position:fixed; left:calc((100vw - 304px) / 2); transform:translateX(-50%); bottom:calc(168px + var(--sab)); z-index:1200;
+    display:none; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; background:var(--solid); border:1px solid var(--hair); border-radius:13px; padding:7px 8px 7px 12px; box-shadow:var(--shadow);
+    width:min(820px, calc(100vw - 340px)); box-sizing:border-box;}
+  #nameHint.show{display:flex;}
+  #nameHint .sl{font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
+  #nameHint input{flex:1 1 240px; min-width:0; font:inherit; font-size:13.5px; padding:6px 9px; border:1.5px solid var(--hair); border-radius:8px; background:var(--panel2, transparent); color:var(--ink);}
+  #nameHint input:focus{outline:none; border-color:var(--amber);}
+  #nameHint .btn{border:1.5px solid var(--amber); color:var(--amber); font-weight:700; background:var(--solid); font-size:13px; white-space:nowrap;}
+  #nameHint .btn.x{border-color:var(--hair); color:var(--faint); font-weight:600;}
+  #scaleHint .sl b{font-weight:800;}
+  @media (max-width:840px){ #nameHint{left:50%; width:calc(100vw - 20px); bottom:calc(172px + var(--sab));} }
   @media (max-width:840px){ #countBar, #scaleHint{left:50%;} }
   #smartBar .sl{font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap;}
   #smartBar .sl b{font-size:8.5px; padding:1px 4px; border-radius:4px; background:var(--amber); color:var(--onacc); vertical-align:2px; margin-left:2px;}
@@ -656,7 +667,7 @@
 <div id="topbar">
   <button id="appMenuBtn" data-pop="project" title="Project menu" aria-label="Project menu">
     <svg class="ham" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
-    PLAN<span>TAKEOFF</span> <em>3.9.0</em> <span class="chev">▾</span>
+    PLAN<span>TAKEOFF</span> <em>3.10.0</em> <span class="chev">▾</span>
   </button>
   <input type="text" id="projTitle" placeholder="Untitled project" title="Project name — used when saving and in reports">
   <button id="saveState" class="saveState" hidden></button>
@@ -715,6 +726,7 @@
   <div class="hrow"><span>Finish shape</span><b>dbl-click / Enter</b></div>
   <div class="hrow"><span>Smart area (beta)</span><b>scribble inside a space</b></div>
       <div class="hrow"><span>Count → ✨ Find similar (beta)</span><b>click one symbol</b></div>
+      <div class="hrow"><span>Name for a new plan</span><b>read from its first page</b></div>
   <div class="hrow"><span>Close an area</span><b>click its first corner</b></div>
   <div class="hrow"><span>Start measuring from another corner</span><b>click it</b></div>
   <div class="hrow"><span>Adjust a corner (any tool)</span><b>drag it</b></div>
@@ -875,6 +887,7 @@
 <div id="smartBar"><span class="sl">✨ Smart area <b>BETA</b></span><button class="btn" id="smartCut" title="Make the next smart areas cut-outs: subtracted from the area around them (X)">➖ Cut-out</button></div>
 <div id="countBar"><span class="sl">🔢 Count</span><button class="btn" id="countSim" title="Click one symbol and the ones that look the same on this page are counted for you — always check them">✨ Find similar</button><b class="bt">BETA</b></div>
 <div id="scaleHint"></div>
+<div id="nameHint"></div>
 <div id="fab">
   <button class="btn" id="fabUndo" title="Undo last point">↩</button>
   <span id="fabVal"></span>
@@ -2307,6 +2320,7 @@ function renderDocList(){
   el.innerHTML = docs.map((d, i) => {
     if(docRen===d.id) return '<div class="drow" data-id="'+d.id+'">'+
       '<input class="dren" value="'+esc2(d.name.replace(/\.pdf$/i,""))+'">'+
+      '<button class="dbtn" data-act="rensug" title="Suggest a name from the first page">✨</button>'+
       '<button class="dbtn" data-act="rensave" title="Save name">✓</button></div>';
     const n = measurements.filter(m => m.src==="pdf" && m.doc===d.id).length;
     const pg = d.pages ? d.pages+" pg · " : (docReady(d.id) ? "" : "not loaded · ");
@@ -7822,9 +7836,11 @@ function scalesInText(s){
   return [...out.values()];
 }
 var scaleSeen = {}, scaleNo = new Set();
+// 1.29: a page that is using the scale of another page of the same plan is checked too — the sheets of one set often have different scales
+function scaleInUse(){ const k = PK(); return {own: ftPerUnit[k]!=null, fpu: getFPU(), label: scaleLabels[k] ?? (docScale[curDocId] ? docScale[curDocId].label : null)}; }
 async function scaleHintCheck(){
   const bar = document.getElementById("scaleHint"); if(!bar) return;
-  const now = () => pdfDoc && mode==="pdf" && (typeof entered==="undefined" || entered) && getFPU()==null ? PK() : null;
+  const now = () => pdfDoc && mode==="pdf" && (typeof entered==="undefined" || entered) && ftPerUnit[PK()]==null ? PK() : null;
   const key = now();
   if(!key || scaleNo.has(key)){ bar.classList.remove("show"); return; }
   if(!(key in scaleSeen)){
@@ -7832,26 +7848,267 @@ async function scaleHintCheck(){
     try{ const tc = await (await pdfDoc.getPage(pageNum)).getTextContent(); if(now()===key) scaleSeen[key] = scalesInText(tc.items.map(i => unspace(i.str)).join(" ")).slice(0, 3); else delete scaleSeen[key]; }catch{}
   }
   if(now()!==key) return;   // moved on meanwhile
-  const found = scaleSeen[key] || [];
-  if(!found.length){ bar.classList.remove("show"); return; }
-  bar.innerHTML = '<span class="sl">📏 '+t(found.length>1 ? "Scales written on this sheet:" : "This sheet says its scale is")+'</span>'+
-    found.map((f, i) => '<button class="btn" data-i="'+i+'">'+f.label.replace(/"/g, "&quot;")+'</button>').join("")+
-    '<button class="btn x" data-i="x" title="'+t("Not now")+'">✕</button>';
+  const found = scaleSeen[key] || [], use = scaleInUse();
+  const same = f => use.fpu!=null && Math.abs(f.ratio/12/72 - use.fpu) <= use.fpu*0.01;
+  if(!found.length || found.some(same)){ bar.classList.remove("show"); return; }
+  const btns = found.map((f, i) => '<button class="btn" data-i="'+i+'" data-nt>'+esc2(f.label)+'</button>').join("");
+  if(use.fpu==null){
+    bar.innerHTML = '<span class="sl">📏 '+t(found.length>1 ? "Scales written on this sheet:" : "This sheet says its scale is")+'</span>'+btns+
+      '<button class="btn x" data-i="x" title="'+t("Not now")+'">✕</button>';
+  } else {
+    const lbl = use.label && use.label!=="NOT SET" ? use.label : '1" = '+(use.fpu*72).toFixed(2)+"'";
+    bar.innerHTML = '<span class="sl">⚠️ '+t("This page is using the scale of another page:")+' <b data-nt>'+esc2(lbl)+'</b> · '+t(found.length>1 ? "Scales written on this sheet:" : "This sheet says")+'</span>'+btns+
+      '<button class="btn x" data-i="keep">'+t("Keep")+' <span data-nt>'+esc2(lbl)+'</span></button>';
+  }
   bar.classList.add("show");
 }
 document.getElementById("scaleHint").addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   e.stopPropagation();
-  const key = PK(), f = (scaleSeen[key] || [])[+b.dataset.i];
+  const key = PK();
+  if(b.dataset.i==="keep"){   // this page really is at the scale carried over: make it this page's own, and stop asking
+    if(typeof viewBlocked==="function" && viewBlocked()) return;
+    const use = scaleInUse();
+    if(use.fpu!=null && !use.own){
+      pushHistory(); ftPerUnit[key] = use.fpu; if(use.label) scaleLabels[key] = use.label;
+      refreshAll();
+      toast("This page keeps "+(use.label && use.label!=="NOT SET" ? use.label : "its scale")+" — it won't ask again");
+    }
+    scaleHintCheck(); return;
+  }
+  const f = (scaleSeen[key] || [])[+b.dataset.i];
   if(!f){ scaleNo.add(key); scaleHintCheck(); return; }
   if(typeof viewBlocked==="function" && viewBlocked()) return;
   applyScale(f.ratio/12/72, f.label);
   setTimeout(() => toast("Scale set from the sheet — check it against a known dimension before you measure", 7000), 60);
 });
-{ // the hint follows the page: after every draw, a scale change or a change of mode
-  const rp = renderPage; renderPage = async function(){ const r = await rp.apply(this, arguments); scaleHintCheck(); return r; };
-  const as = applyScale; applyScale = function(){ const r = as.apply(this, arguments); scaleHintCheck(); return r; };
-  const sm = setMode; setMode = function(){ const r = sm.apply(this, arguments); scaleHintCheck(); return r; };
+{ // the hints follow the page: after every draw, a scale change or a change of mode
+  const rp = renderPage; renderPage = async function(){ const r = await rp.apply(this, arguments); scaleHintCheck(); nameHintCheck(); return r; };
+  const as = applyScale; applyScale = function(fpu){
+    // 1.29: other pages of this plan that were measured at the scale carried over keep that scale —
+    // setting this page's scale must not change their numbers
+    const ds = pdfDoc ? docScale[curDocId] : null, kept = new Set();
+    if(ds && ds.fpu!=null && Math.abs(ds.fpu - fpu) > 1e-12){
+      for(const m of measurements){
+        if(m.src!=="pdf" || m.doc!==curDocId || m.page===pageNum || m.type==="count") continue;
+        const k = PK(m.page, m.doc);
+        if(ftPerUnit[k]==null){ ftPerUnit[k] = ds.fpu; if(ds.label) scaleLabels[k] = ds.label; kept.add(m.page); }
+      }
+    }
+    const r = as.apply(this, arguments); scaleHintCheck();
+    if(kept.size){
+      const pages = [...kept].sort((a, b) => a-b), lbl = ds.label && ds.label!=="NOT SET" ? ds.label : "its scale";
+      setTimeout(() => toast(pages.length===1 ? "Page "+pages[0]+" keeps "+lbl+" — its measurements don't change"
+        : "Pages "+pages.join(", ")+" keep "+lbl+" — their measurements don't change", 7000), 3200);
+    }
+    return r; };
+  const sm = setMode; setMode = function(){ const r = sm.apply(this, arguments); scaleHintCheck(); nameHintCheck(); return r; };
+}
+
+// ---- 1.29: a full name for a new plan, read from its first page (project · address · sheet title) — offered, never applied by itself ----
+var nameSug = {}, nameNo = new Set();
+const nameNorm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, " ").trim();
+// the page's text pieces put back into lines, whichever way the text runs (title blocks are often turned a quarter)
+function sheetLines(items){
+  const rows = [];
+  for(const it of items || []){
+    const s = unspace(String(it.str || "")); if(!s.trim()) continue;      // "G R A D I N G" → "GRADING", word by word
+    const m = it.transform || [1,0,0,1,0,0];
+    const len = Math.hypot(m[0], m[1]) || 1, ux = m[0]/len, uy = m[1]/len;
+    const h = Math.hypot(m[2], m[3]) || it.height || len;
+    rows.push({s, h, ang: Math.round(Math.atan2(uy, ux)/(Math.PI/2)), along: m[4]*ux + m[5]*uy, across: m[5]*ux - m[4]*uy, w: Math.abs(it.width) || s.length*h*0.5});
+  }
+  rows.sort((a, b) => a.ang-b.ang || b.across-a.across);
+  const bands = [];
+  for(const r of rows){
+    const b = bands[bands.length-1];
+    if(b && b.ang===r.ang && Math.abs(b.across-r.across) < Math.min(b.h, r.h)*0.5) b.rows.push(r);
+    else bands.push({ang:r.ang, across:r.across, h:r.h, rows:[r]});
+  }
+  const lines = [];
+  for(const b of bands){
+    b.rows.sort((p, q) => p.along-q.along);
+    let cur = null;
+    for(const r of b.rows){
+      const gap = cur ? r.along - cur.end : 0, hh = cur ? Math.max(cur.h, r.h) : r.h;
+      if(cur && gap < hh*3 && gap > -hh){
+        cur.text += (gap > hh*1.5 ? "  " : gap > hh*0.22 && !/\s$/.test(cur.text) && !/^\s/.test(r.s) ? " " : "") + r.s;
+        cur.end = Math.max(cur.end, r.along + r.w); cur.h = hh;
+      } else { cur = {text:r.s, h:r.h, ang:b.ang, across:b.across, start:r.along, end:r.along + r.w}; lines.push(cur); }
+    }
+  }
+  for(const l of lines) l.text = unspace(l.text).replace(/\s+/g, " ").trim();
+  return lines.filter(l => l.text);
+}
+// a letter-spaced title can come back with its words run together ("LANDSCAPEPLAN"): split it when every piece is a word sheets use
+function respace(s){
+  if(!/^[A-Z&]{8,36}$/.test(s)) return s;
+  const W = respace.w || (respace.w = new Set("landscape landscaping planting plant site grading drainage layout hardscape irrigation lighting demolition removal removals erosion sediment control material materials paving pavement construction tree protection preservation lawn snow utility utilities plot key master concept conceptual schematic existing proposed overall enlarged stormwater zoning dimension staking restoration mitigation wetland wetlands pool patio masonry fence fencing sod seeding soil cover title plan plans detail details survey sheet conditions schedule notes general and of the & garden".split(" ")));
+  const x = s.toLowerCase(), best = [[]];
+  for(let i = 1; i <= x.length; i++){
+    best[i] = null;
+    for(let j = Math.max(0, i-14); j < i; j++){
+      if(best[j] && W.has(x.slice(j, i)) && (!best[i] || best[j].length+1 < best[i].length)) best[i] = best[j].concat(s.slice(j, i));
+    }
+  }
+  const r = best[x.length];
+  return r && r.length > 1 ? r.join(" ") : s;
+}
+function planNameFrom(lines){
+  const L = (lines || []).map(l => Object.assign({}, l, {text: respace(l.text)})).filter(l => l.text.length >= 3 && l.text.length <= 80);
+  if(!L.length) return null;
+  const hs = L.map(l => l.h).sort((a, b) => a-b), med = hs[hs.length>>1] || 1;
+  const near = (a, b) => a!==b && a.ang===b.ang && Math.abs(a.across-b.across) < Math.max(a.h, b.h)*4.5 && a.start < b.end + a.h*2 && b.start < a.end + a.h*2;
+  const under = a => L.filter(b => near(a, b) && b.across < a.across).sort((p, q) => q.across-p.across)[0];
+  // the designer's own office is on the sheet too: its address is not the job's
+  const FIRM = /\b(?:tel|phone|fax|architects?|architecture|engineers?|engineering|surveyors?|surveying|associates|consult\w*|pllc|llp|studio|nursery|licensed?|lic)\b|\bp\.\s?c\.|\bdesigns?\s*(?:group|build|associates)\b|www\.|@|\.com\b|\(\d{3}\)\s*\d{3}|\b\d{3}[-.]\d{3}[-.]\d{4}\b/i;
+  const UNIT = /^(?:ft|in|gal|cal|ht|sf|lf|cy|sy|oc|min|max|typ|dia|mm|cm|lbs?|ea|qty|no|pvc|hdpe|x|per|of|at|to|and|or|the|each|spaced|spacing|on|centers?|deep|wide|high|long|thick|apart|minimum|maximum|inch(?:es)?|feet|foot)$/i, isUnit = w => UNIT.test(String(w).replace(/[.,;:]/g, ""));
+  const STATES = " AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY ";
+  const FULL = {"new york":"NY", "new jersey":"NJ", "connecticut":"CT", "pennsylvania":"PA", "massachusetts":"MA", "florida":"FL", "california":"CA", "texas":"TX"};
+  const SUF = "street|st|avenue|ave|av|road|rd|drive|dr|lane|ln|boulevard|blvd|court|ct|place|pl|way|terrace|ter|terr|parkway|pkwy|highway|hwy|circle|cir|turnpike|tpke|trail|trl|plaza";
+  const addrRx = new RegExp("(?:^|[^\\w#/.'-])(\\d{1,6}(?:-\\d{1,4})?[A-Za-z]?)\\s+((?:(?:[A-Za-z][A-Za-z.'’]*|\\d{1,3}(?:st|nd|rd|th))\\s+){1,4}?(?:" + SUF + ")|broadway)\\b\\.?", "i");
+  const cityRx = /^[\s,.]*(?:(?:suite|ste|unit|apt|#)\s*[\w-]+[\s,]*)?([A-Za-z][A-Za-z .'’-]{1,28}?)(,?)\s+([A-Za-z]{2}|new york|new jersey|connecticut|pennsylvania|massachusetts|florida|california|texas)\b\.?(?:[\s,]+(\d{5})(?:-\d{4})?)?\s*$/i;
+  const cityOf = s => { const m = cityRx.exec(s || ""); if(!m) return null;
+    const st = FULL[m[3].toLowerCase()] || (STATES.includes(" "+m[3].toUpperCase()+" ") ? m[3].toUpperCase() : "");
+    if(!st || !(m[2] || m[4] || FULL[m[3].toLowerCase()])) return null;      // "Scarsdale, NY", "Scarsdale NY 10583" or "Scarsdale New York"
+    return m[1].trim().split(/\s+/).some(isUnit) ? null : {city:m[1].trim(), st}; };
+  const JOBW = /\b(?:project|site|location|property|premises|job ?site|owner|client|prepared for|residence|proyecto|obra)\b/i;
+  let best = null;
+  for(const l of L){
+    const m = addrRx.exec(l.text); if(!m) continue;
+    const words = m[2].trim().split(/\s+/); if(words.slice(0, -1).some(isUnit)) continue;
+    const ctx = L.filter(x => near(l, x));
+    const c = cityOf(l.text.slice(m.index + m[0].length)) || cityOf((under(l) || {}).text);
+    let sc = Math.max(-1, Math.min(2, l.h/med - 1));
+    if(FIRM.test(l.text) || ctx.some(x => FIRM.test(x.text))) sc -= 4;
+    if(JOBW.test(l.text) || ctx.some(x => x.across > l.across && JOBW.test(x.text))) sc += 3;
+    if(c) sc += 1.5;
+    if(l.text.split(" ").length > 10) sc -= 2;      // a sentence in the notes, not a title block
+    if(!best || sc > best.sc) best = {sc, street:(m[1]+" "+m[2]).replace(/\s+/g, " ").replace(/\.$/, "").trim(), city:c ? c.city : "", st:c ? c.st : "", key:m[1]+" "+words[0]};
+  }
+  // an address needs something that says it is the job's: its town and state, a PROJECT / SITE label by it, or much larger letters.
+  // A plant list ("12 ACER RUBRUM PL") or the designer's office alone gives none: better no address than the wrong one
+  if(best && best.sc < 1) best = null;
+  // the sheet's title: "LANDSCAPE PLAN", "PLANTING DETAILS"…
+  const TW = /\b(?:landscape|landscaping|planting|plant|site|grading|drainage|layout|hardscape|irrigation|lighting|demolition|removals?|erosion|sediment|materials?|paving|pavement|construction|tree|lawn|snow|utility|utilities|plot|key|master|concept(?:ual)?|schematic|existing|proposed|overall|enlarged|stormwater|zoning|dimension|staking|restoration|mitigation|wetlands?|pool|patio|masonry|fenc(?:e|ing)|sod|seeding|soil|cover|title)\b/i;
+  const TEND = /\b(?:plans?|details?|layout|survey|sheet|conditions)$/i;
+  const st0 = L.filter(l => l.text.length <= 42 && l.text.split(" ").length <= 6 && TW.test(l.text) && TEND.test(l.text.replace(/[\s.:]+$/, "")) && !/\b(?:see|refer|per|shown|notes?|typ)\b/i.test(l.text) && !/[:;]/.test(l.text.replace(/[\s.:]+$/, "")))
+    .sort((a, b) => b.h-a.h)[0];
+  const sheet = st0 ? st0.text.replace(/^[A-Z]{1,2}-?\d{1,3}(?:\.\d{1,2})?\s+/, "").replace(/[\s.:]+$/, "") : "";
+  const cutSheet = v => { v = String(v || ""); if(sheet && nameNorm(v).endsWith(nameNorm(sheet)) && nameNorm(v)!==nameNorm(sheet)) v = v.slice(0, Math.max(0, v.toLowerCase().lastIndexOf(sheet.toLowerCase().split(" ")[0]))); return v.replace(/^[\s:.,;–—-]+|[\s:.,;–—-]+$/g, ""); };
+  const bad = v => !v || v.length < 3 || v.length > 70 || /^[\d\s./#:-]+$/.test(v) || FIRM.test(v) || nameNorm(v)===nameNorm(sheet);
+  // the job's name: after a "PROJECT:" label (or right under it), else a line that reads like a place ("SMITH RESIDENCE")
+  let project = "";
+  for(const l of L){
+    const m = /^(?:project(?:\s+(?:name|title))?|job\s+name|proyecto|obra)\s*[:\-–—]\s*(.*)$/i.exec(l.text);
+    let v = m ? m[1].trim() : null;
+    if(v==="" || /^(?:project(?:\s+(?:name|title))?|job\s+name|proyecto)\s*:?$/i.test(l.text)){ const u = under(l); v = u ? u.text : ""; }
+    if(v!=null){ v = cutSheet(v); if(!bad(v)){ project = v; break; } }
+  }
+  if(!project){
+    const KEY = /\b(?:residences?|property|properties|estates?|plaza|cent(?:er|re)|school|academy|college|university|park|church|temple|synagogue|apartments?|condominiums?|condos?|townhomes?|townhouses?|village|club|hospital|library|mall|campus|homes?|house|gardens?|farms?|development|subdivision|offices?|building|hotel|bank|cemetery|playground|headquarters|association|commons|manor|courtyard|restaurant|shopping|community|complex|facility|warehouse|dealership|clinic|daycare)\b/i;
+    const STRONG = /\b(?:residences?|property|properties|estates?|apartments?|condominiums?|townhomes?|townhouses?|school|church|club|association|development|subdivision)\b/i;
+    let top = null;
+    for(const l of L){
+      const v = cutSheet(l.text);
+      if(bad(v) || !KEY.test(v) || v.split(" ").length < 2 || v.split(" ").length > 7 || /[:;]|\.\s/.test(v)) continue;
+      if(/^(?:existing|proposed|new|future|adjacent|neighbou?r\w*|see|to|remove|relocate|protect|typ)\b/i.test(v)) continue;
+      const sc = l.h/med + (STRONG.test(v) ? 1 : 0);
+      if(sc >= 1.6 && (!top || sc > top.sc)) top = {sc, v};
+    }
+    if(top) project = top.v;
+  }
+  const tc = s => { s = String(s || "").trim(); if(!s || /[a-z]/.test(s)) return s;      // ALL CAPS reads badly in a list: Title Case it
+    return s.toLowerCase().replace(/(^|[\s\-\/(&.,])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase())
+      .replace(/\b(?:Llc|Ii|Iii|Iv|Hoa|Nyc|Usa|Pc|Po|Ny|Nj)\b/g, x => x.toUpperCase()).replace(/\s(?:Of|And|At|The|For|De|La|Del|In|On)\s/g, x => x.toLowerCase()); };
+  const where = best && best.city ? tc(best.city) + " " + best.st : "";
+  let job;
+  if(project && best && nameNorm(project).includes(nameNorm(best.street))) job = tc(project) + (where ? ", " + where : "");
+  else job = [tc(project), best ? tc(best.street) + (where ? ", " + where : "") : ""].filter(Boolean).join(" - ");
+  if(!job) return null;       // nothing that says which job this is: no suggestion
+  job = job.slice(0, 100).trim();
+  return {full: [job, tc(sheet)].filter(Boolean).join(" - ").slice(0, 130).trim(), job, project: tc(project), key: best ? best.key : ""};
+}
+async function planNameFor(id){
+  const st = docStore.get(id); if(!st || !st.pdf) return null;
+  const tc = await (await st.pdf.getPage(1)).getTextContent();
+  return planNameFrom(sheetLines(tc.items));
+}
+function nameHintCheck(){
+  const bar = document.getElementById("nameHint"); if(!bar) return;
+  const id = pdfDoc && mode==="pdf" ? curDocId : "", s = id && !nameNo.has(id) && docMeta(id) ? nameSug[id] : null;
+  if(!s){ bar.classList.remove("show"); bar.dataset.id = ""; return; }
+  if(bar.dataset.id===id && bar.classList.contains("show")) return;     // keep what is being typed
+  bar.dataset.id = id;
+  bar.innerHTML = '<span class="sl">📝 '+t("Name read from the first page:")+'</span><input type="text" id="nameHintIn" maxlength="140" autocomplete="off" spellcheck="false">'+
+    '<button class="btn" data-a="use">'+t("Use this name")+'</button><button class="btn x" data-a="x" title="'+t("Not now")+'">✕</button>';
+  bar.querySelector("input").value = s.full;
+  bar.classList.add("show");
+}
+function jobNameIsAuto(id, oldBase){ return !!(docs[0] && docs[0].id===id && (!projectName || nameNorm(projectName)===nameNorm(oldBase))); }
+function useSuggestedName(id, typed){
+  const d = docMeta(id), s = nameSug[id]; if(!d) return;
+  const v = String(typed || "").trim().replace(/\.pdf$/i, "").slice(0, 140); if(!v) return;
+  if(typeof viewBlocked==="function" && viewBlocked()) return;
+  const old = d.name.replace(/\.pdf$/i, ""), auto = jobNameIsAuto(id, old);   // the job has no name of its own yet: it would have taken the file's
+  pushHistory(); d.name = v; if(curDocId===id) pdfName = v;
+  if(auto){ projectName = (s && v===s.full ? s.job : v).slice(0, 120); syncTitle(); }
+  delete nameSug[id]; nameNo.add(id);
+  refreshAll(); nameHintCheck();
+  toast((auto ? "Plan and project named: " : "Plan renamed: ")+shortName(v, 70), 6000);
+}
+{
+  const bar = document.getElementById("nameHint");
+  bar.addEventListener("click", e => {
+    e.stopPropagation();
+    const b = e.target.closest("button"); if(!b) return;
+    const id = bar.dataset.id;
+    if(b.dataset.a==="use") useSuggestedName(id, bar.querySelector("input").value);
+    else { nameNo.add(id); nameHintCheck(); }
+  });
+  bar.addEventListener("keydown", e => {
+    if(e.target.id!=="nameHintIn") return;
+    e.stopPropagation();
+    if(e.key==="Enter"){ e.preventDefault(); useSuggestedName(bar.dataset.id, e.target.value); }
+    else if(e.key==="Escape"){ nameNo.add(bar.dataset.id); nameHintCheck(); }
+  });
+  for(const ev of ["pointerdown", "mousedown", "dblclick", "wheel"]) bar.addEventListener(ev, e => e.stopPropagation());
+  // a PDF just added: read its first page in the background and offer the name
+  const ap = addPdfFiles; addPdfFiles = async function(){
+    const had = new Set(docs.map(d => d.id));
+    const r = await ap.apply(this, arguments);
+    (async () => {
+      for(const d of docs.filter(x => !had.has(x.id)).slice(0, 8)){
+        if(/^Sample Residence\b/.test(d.name)) continue;      // the built-in sample is already named
+        try{
+          const s = await planNameFor(d.id); if(!s) continue;
+          const base = nameNorm(d.name.replace(/\.pdf$/i, "")), has = x => !x || base.includes(nameNorm(x));
+          if(nameNorm(s.full)===base || ((s.project || s.key) && has(s.project) && has(s.key))) continue;   // the file's name already says it
+          nameSug[d.id] = s;
+        }catch(err){ console.warn("plan name", err); }
+      }
+      nameHintCheck();
+    })();
+    return r; };
+  // plans menu → ✎ → ✨: the same reading for a plan that is already in the project
+  document.getElementById("docList").addEventListener("click", async e => {
+    const b = e.target.closest('[data-act="rensug"]'); if(!b) return;
+    const row = b.closest(".drow"), id = row ? row.dataset.id : "";
+    let s = null; try{ s = await planNameFor(id); }catch{}
+    const inp = document.querySelector("#docList .dren");
+    if(!inp || docRen!==id) return;
+    if(s && s.full){ nameSug[id] = s; nameNo.add(id); inp.value = s.full; inp.focus(); inp.select(); }
+    else toast(docStore.get(id) && docStore.get(id).pdf ? "Couldn't read a name on the first page — a scanned plan has no text to read" : "Open this plan first, then try again", 6000);
+  });
+  const cr = commitDocRename; commitDocRename = function(){
+    const id = docRen, d = id ? docMeta(id) : null, was = d ? d.name : "", auto = d ? jobNameIsAuto(id, was.replace(/\.pdf$/i, "")) : false;
+    const r = cr.apply(this, arguments);
+    if(d && d.name!==was){
+      const s = nameSug[id];
+      if(s && auto && d.name===s.full){ projectName = s.job; syncTitle(); if(typeof scheduleAutosave==="function") scheduleAutosave(); toast("Plan and project named: "+shortName(d.name, 70), 6000); }
+      delete nameSug[id]; nameNo.add(id); nameHintCheck();
+    }
+    return r; };
 }
 
 // ---- nothing fails silently: an unexpected script error says so once (the work stays; autosave keeps it) ----
